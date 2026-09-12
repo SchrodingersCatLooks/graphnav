@@ -9,7 +9,7 @@
  */
 
 import { z } from 'zod';
-import { locatorSchema } from '../graph/types';
+import { locatorSchema } from '../graph/types.ts';
 
 /** One request covers one document and at most this much text. */
 export const GENERATION_LIMITS = {

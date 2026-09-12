@@ -1,119 +1,111 @@
 import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import type { Server } from 'node:http';
+import { createRelayServer, EXTENSION_ORIGIN, MAX_BODY_BYTES, type RelayConfig } from '../relay/src/app';
+import { callProvider, type ProviderCall } from '../relay/src/providers';
+import { extractFromDocument } from '../lib/google/docs-content';
+import { draftJsonSchema } from '../lib/generation/relay-provider';
 import { graphDraftSchema } from '../lib/generation/types';
-import {
-  RelayRejectedError,
-  RelayUnreachableError,
-  createRelayProvider,
-  draftJsonSchema,
-  relayReachable,
-} from '../lib/generation/relay-provider';
 
-const settings = { url: 'http://127.0.0.1:8787', token: 'test-token' };
-
-/** Replaces fetch for one call, returning what the relay would have said. */
-function withFetch<T>(handler: typeof fetch, run: () => Promise<T>): Promise<T> {
-  const original = globalThis.fetch;
-  globalThis.fetch = handler;
-  return run().finally(() => { globalThis.fetch = original; });
+const config: RelayConfig = { token: 'synthetic-session-code-for-testing-only', apiKey: 'synthetic-provider-key', model: 'gpt-5-mini', provider: 'openai' };
+async function listen(server: Server) {
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const address = server.address(); if (!address || typeof address === 'string') throw new Error('No test port');
+  return `http://127.0.0.1:${address.port}`;
 }
+async function close(server: Server) { server.closeAllConnections(); await new Promise<void>((resolve) => server.close(() => resolve())); }
+const headers = { Origin: EXTENSION_ORIGIN, Authorization: `Bearer ${config.token}`, 'Content-Type': 'application/json' };
+async function input() {
+  const fixture = JSON.parse(await readFile('tests/fixtures/docs-tabs-response.json', 'utf8'));
+  const extracted = extractFromDocument(fixture, 'doc-1', ['t.0'], 'account-1');
+  return { purpose: 'concept-connections', documentId: 'doc-1', passages: extracted.tabs.flatMap((tab) => tab.passages), totalCharacters: extracted.totalCharacters, truncated: extracted.truncated, existingNodeIds: [] };
+}
+function empty(call: ProviderCall) { return { kind: 'json' as const, text: JSON.stringify({ draftVersion: 1, inputHash: JSON.parse(call.input).inputHash, nodes: [], relationships: [] }) }; }
 
-const jsonResponse = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
-
-const request = () => ({
-  instructions: 'i', input: '{}', timeoutMs: 1000, signal: new AbortController().signal,
+test('real relay health requires pairing, rejects other origins and exposes configuration without secrets', async () => {
+  const server = createRelayServer(config); const url = await listen(server);
+  try {
+    expect((await fetch(`${url}/health`)).status).toBe(401);
+    expect((await fetch(`${url}/health`, { headers: { ...headers, Origin: 'https://unrelated.test' } })).status).toBe(403);
+    const health = await (await fetch(`${url}/health`, { headers })).json();
+    expect(health).toEqual({ protocol: 1, ready: true, model: 'gpt-5-mini' });
+    expect(JSON.stringify(health)).not.toContain(config.apiKey);
+    // An extension GET without Origin is accepted only with the secret pairing.
+    expect((await fetch(`${url}/health`, { headers: { Authorization: headers.Authorization } })).status).toBe(200);
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers: { Authorization: headers.Authorization } })).status).toBe(403);
+    expect((await fetch(`${url}/no-such-route`, { headers })).status).toBe(404);
+  } finally { await close(server); }
 });
 
-test('the schema sent to the model is generated from the contract we validate against', () => {
-  const schema = draftJsonSchema();
-
-  // Not a hand-written duplicate: it describes the same draft shape.
-  expect(schema).toHaveProperty('properties');
-  const properties = (schema as { properties: Record<string, unknown> }).properties;
-  expect(Object.keys(properties).sort()).toEqual(['draftVersion', 'inputHash', 'nodes', 'relationships']);
-
-  // The Zod object is the single source of truth for both.
-  expect(graphDraftSchema.safeParse({
-    draftVersion: 1, inputHash: 'a'.repeat(64), nodes: [], relationships: [],
-  }).success).toBe(true);
+test('invalid and oversized selections never call the provider; valid input uses the shared schema and hash', async () => {
+  let calls = 0, captured: ProviderCall | undefined;
+  const server = createRelayServer(config, async (_name, call) => { calls++; captured = call; return empty(call); }); const url = await listen(server);
+  try {
+    const valid = await input();
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers, body: JSON.stringify({ ...valid, totalCharacters: 0 }) })).status).toBe(400);
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers, body: 'x'.repeat(MAX_BODY_BYTES + 1) })).status).toBe(413);
+    expect(calls).toBe(0);
+    const response = await fetch(`${url}/draft`, { method: 'POST', headers, body: JSON.stringify(valid) });
+    expect(response.status).toBe(200); expect(calls).toBe(1);
+    const reply = await response.json();
+    expect(graphDraftSchema.safeParse(JSON.parse(reply.text)).success).toBe(true);
+    expect(captured!.schema).toEqual(draftJsonSchema());
+    expect(captured!.instructions).toContain('untrusted source material');
+    expect(JSON.parse(captured!.input).passages.map((passage: { text: string }) => passage.text)).toEqual(valid.passages.map((passage) => passage.text));
+    expect(captured!.input).not.toContain('account-1');
+  } finally { await close(server); }
 });
 
-test('the model key never leaves the relay, only the shared token is sent', async () => {
-  let sentHeaders: Record<string, string> = {};
-  let sentBody = '';
-
-  await withFetch(async (_url, init) => {
-    sentHeaders = (init?.headers ?? {}) as Record<string, string>;
-    sentBody = String(init?.body ?? '');
-    return jsonResponse(200, { kind: 'json', text: '{}' });
-  }, () => createRelayProvider(settings).propose(request()));
-
-  expect(sentHeaders.authorization).toBe('Bearer test-token');
-  // Nothing resembling a provider key is present anywhere in the request.
-  expect(sentBody).not.toContain('sk-');
-  expect(JSON.stringify(sentHeaders)).not.toContain('sk-');
-  // The schema travels with the request, so the relay stays contract-agnostic.
-  expect(JSON.parse(sentBody).schemaName).toBe('graph_draft');
-  expect(JSON.parse(sentBody).schema).toHaveProperty('properties');
+test('a bad model hash never passes server validation and a launch request cap bounds provider attempts', async () => {
+  let calls = 0;
+  const server = createRelayServer({ ...config, maxRequests: 1 }, async () => { calls++; return { kind: 'json', text: JSON.stringify({ draftVersion: 1, inputHash: 'f'.repeat(64), nodes: [], relationships: [] }) }; }); const url = await listen(server);
+  try {
+    const body = JSON.stringify(await input());
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers, body })).status).toBe(502);
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers, body })).status).toBe(429);
+    expect(calls).toBe(1);
+  } finally { await close(server); }
 });
 
-test('a stopped relay reads as AI being off, not as a broken extension', async () => {
-  const outcome = withFetch(
-    () => Promise.reject(new TypeError('Failed to fetch')),
-    () => createRelayProvider(settings).propose(request()),
-  );
-
-  await expect(outcome).rejects.toThrow(RelayUnreachableError);
-  await expect(outcome).rejects.toThrow(/Manual maps still work/);
+test('caller disconnect aborts the provider and frees the relay for a later request', async () => {
+  let captured: AbortSignal | undefined;
+  const server = createRelayServer(config, async (_name, call) => {
+    captured = call.signal;
+    await new Promise<void>((_resolve, reject) => call.signal.addEventListener('abort', () => reject(new Error('cancelled')), { once: true }));
+    return empty(call);
+  }); const url = await listen(server);
+  try {
+    const body = JSON.stringify(await input()), controller = new AbortController();
+    const request = fetch(`${url}/draft`, { method: 'POST', headers, body, signal: controller.signal }).catch(() => null);
+    await expect.poll(() => !!captured).toBe(true);
+    expect((await fetch(`${url}/draft`, { method: 'POST', headers, body })).status).toBe(409);
+    controller.abort(); await request;
+    await expect.poll(() => captured!.aborted).toBe(true);
+  } finally { await close(server); }
 });
 
-test('relay rejections explain which side to fix', async () => {
-  const cases: Array<[number, RegExp]> = [
-    [401, /RELAY_TOKEN matches on both sides/],
-    [403, /ALLOWED_ORIGIN matches the extension ID/],
-    [413, /too large/i],
-    [503, /no model key configured/],
-    [504, /did not respond in time/],
-  ];
-
-  for (const [status, expected] of cases) {
-    const outcome = withFetch(
-      () => Promise.resolve(jsonResponse(status, { error: 'x' })),
-      () => createRelayProvider(settings).propose(request()),
-    );
-    await expect(outcome).rejects.toThrow(RelayRejectedError);
-    await expect(outcome).rejects.toThrow(expected);
-  }
+test('timeouts settle even when a provider ignores abort and missing configuration never calls it', async () => {
+  let calls = 0;
+  const provider = async () => { calls++; return new Promise<never>(() => {}); };
+  const missing = createRelayServer({ ...config, apiKey: '' }, provider), slow = createRelayServer({ ...config, timeoutMs: 25 }, provider);
+  const missingUrl = await listen(missing), slowUrl = await listen(slow);
+  try {
+    const body = JSON.stringify(await input());
+    expect((await fetch(`${missingUrl}/draft`, { method: 'POST', headers, body })).status).toBe(503); expect(calls).toBe(0);
+    expect((await fetch(`${slowUrl}/draft`, { method: 'POST', headers, body })).status).toBe(504); expect(calls).toBe(1);
+  } finally { await close(missing); await close(slow); }
 });
 
-test('a refusal is passed through rather than turned into an error', async () => {
-  const reply = await withFetch(
-    () => Promise.resolve(jsonResponse(200, { kind: 'refusal', reason: 'Declined.' })),
-    () => createRelayProvider(settings).propose(request()),
-  );
-
-  expect(reply).toEqual({ kind: 'refusal', reason: 'Declined.' });
-});
-
-test('an unrecognised relay response is refused, not passed to validation', async () => {
-  const outcome = withFetch(
-    () => Promise.resolve(jsonResponse(200, { unexpected: true })),
-    () => createRelayProvider(settings).propose(request()),
-  );
-
-  await expect(outcome).rejects.toThrow(/unexpected response/);
-});
-
-test('reachability reports false instead of throwing when nothing is listening', async () => {
-  const down = await withFetch(
-    () => Promise.reject(new TypeError('Failed to fetch')),
-    () => relayReachable(settings),
-  );
-  expect(down).toBe(false);
-
-  const up = await withFetch(
-    () => Promise.resolve(jsonResponse(200, { ok: true })),
-    () => relayReachable(settings),
-  );
-  expect(up).toBe(true);
+test('OpenAI adapter bounds output, disables response storage and refuses incomplete replies', async () => {
+  const original = globalThis.fetch; let sent: any;
+  try {
+    globalThis.fetch = async (_url, options) => { sent = JSON.parse(options!.body as string); return new Response(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'output_text', text: '{' }, { type: 'output_text', text: '}' }] }] })); };
+    const call: ProviderCall = { apiKey: 'synthetic-only', model: 'gpt-5-mini', input: '{}', instructions: 'test', schema: draftJsonSchema(), schemaName: 'graph_draft', signal: new AbortController().signal };
+    expect(await callProvider('openai', call)).toEqual({ kind: 'json', text: '{}' });
+    expect(sent).toMatchObject({ store: false, max_output_tokens: 8000, reasoning: { effort: 'minimal' }, text: { format: { strict: true } } });
+    globalThis.fetch = async () => new Response(JSON.stringify({ status: 'incomplete', output: [{ content: [{ type: 'output_text', text: '{}' }] }] }));
+    await expect(callProvider('openai', call)).rejects.toThrow('incomplete');
+    globalThis.fetch = async () => new Response(JSON.stringify({ status: 'completed', output: [{ content: [{ type: 'refusal', refusal: 'Declined' }] }] }));
+    expect(await callProvider('openai', call)).toEqual({ kind: 'refusal', reason: 'Declined' });
+  } finally { globalThis.fetch = original; }
 });

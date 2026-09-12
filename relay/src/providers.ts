@@ -12,11 +12,24 @@
  * file for it changes nothing elsewhere.
  */
 
+async function boundedBody(response: Response): Promise<unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('provider_empty_body');
+  let size = 0, text = ''; const decoder = new TextDecoder();
+  try {
+    for (;;) { const part = await reader.read(); if (part.done) break; size += part.value.length; if (size > 512 * 1024) { await reader.cancel(); throw new Error('provider_response_too_large'); } text += decoder.decode(part.value, { stream: true }); }
+    return JSON.parse(text + decoder.decode());
+  } finally { reader.releaseLock(); }
+}
+
 export type ProviderName = 'openai' | 'gemini';
 
 export type ProviderCall = {
   apiKey: string;
   model: string;
+  projectId?: string;
+  organizationId?: string;
+  onUsage?: (usage: { model: string; inputTokens: number; outputTokens: number; totalTokens: number }) => void;
   instructions: string;
   input: string;
   schema: Record<string, unknown>;
@@ -40,8 +53,14 @@ async function callOpenAi(call: ProviderCall): Promise<ProviderReply> {
     headers: {
       authorization: `Bearer ${call.apiKey}`,
       'content-type': 'application/json',
+      ...(call.projectId ? { 'OpenAI-Project': call.projectId } : {}),
+      ...(call.organizationId ? { 'OpenAI-Organization': call.organizationId } : {}),
     },
+    redirect: 'error',
     body: JSON.stringify({
+      store: false,
+      max_output_tokens: 8000,
+      ...((call.model || DEFAULT_MODEL.openai).startsWith('gpt-5-mini') ? { reasoning: { effort: 'minimal' } } : {}),
       model: call.model || DEFAULT_MODEL.openai,
       instructions: call.instructions,
       input: call.input,
@@ -58,10 +77,14 @@ async function callOpenAi(call: ProviderCall): Promise<ProviderReply> {
   });
 
   if (!response.ok) throw new Error(`openai_${response.status}`);
-  const body = await response.json() as {
+  const body = await boundedBody(response) as {
+    status?: string; model?: string; usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
     output_text?: string;
     output?: Array<{ content?: Array<{ type?: string; text?: string; refusal?: string }> }>;
   };
+
+  if (body.status !== 'completed') throw new Error('openai_incomplete_response');
+  if (body.usage) call.onUsage?.({ model: body.model ?? call.model, inputTokens: body.usage.input_tokens ?? 0, outputTokens: body.usage.output_tokens ?? 0, totalTokens: body.usage.total_tokens ?? 0 });
 
   // A refusal is a first-class outcome, not an error to be retried.
   for (const item of body.output ?? []) {
@@ -71,7 +94,7 @@ async function callOpenAi(call: ProviderCall): Promise<ProviderReply> {
   }
 
   const text = body.output_text
-    ?? body.output?.flatMap((item) => item.content ?? []).find((part) => part.type === 'output_text')?.text;
+    ?? body.output?.flatMap((item) => item.content ?? []).filter((part) => part.type === 'output_text').map((part) => part.text ?? '').join('');
   if (!text) throw new Error('openai_empty_response');
   return { kind: 'json', text };
 }
@@ -84,10 +107,12 @@ async function callGemini(call: ProviderCall): Promise<ProviderReply> {
     method: 'POST',
     signal: call.signal,
     headers: { 'x-goog-api-key': call.apiKey, 'content-type': 'application/json' },
+    redirect: 'error',
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: call.instructions }] },
       contents: [{ role: 'user', parts: [{ text: call.input }] }],
       generationConfig: {
+        maxOutputTokens: 8000,
         responseMimeType: 'application/json',
         responseSchema: call.schema,
       },
@@ -95,13 +120,13 @@ async function callGemini(call: ProviderCall): Promise<ProviderReply> {
   });
 
   if (!response.ok) throw new Error(`gemini_${response.status}`);
-  const body = await response.json() as {
+  const body = await boundedBody(response) as {
     candidates?: Array<{ finishReason?: string; content?: { parts?: Array<{ text?: string }> } }>;
   };
 
   const candidate = body.candidates?.[0];
   // Gemini reports a blocked answer through finishReason rather than a field.
-  if (candidate?.finishReason && !['STOP', 'MAX_TOKENS'].includes(candidate.finishReason)) {
+  if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
     return { kind: 'refusal', reason: `The model stopped: ${candidate.finishReason}.` };
   }
 
