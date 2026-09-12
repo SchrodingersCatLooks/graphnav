@@ -1,5 +1,5 @@
 import { Dexie, type Table } from 'dexie';
-import type { Graph, GraphNode, Relationship, Source, ItemEdit, LayoutItem, SourceCache, StoredBlob, ProposalDecision } from '../graph/types';
+import type { Graph, GraphNode, Relationship, Source, ItemEdit, LayoutItem, SourceCache, StoredBlob, ProposalDecision, UndoEntry } from '../graph/types';
 
 // Open only in an extension-owned page or service worker. Content scripts use
 // the worker API after the M1-B handoff; never import this into a Google page.
@@ -13,6 +13,7 @@ export class GraphDatabase extends Dexie {
   sourceCache!: Table<SourceCache, string>;
   blobs!: Table<StoredBlob, string>;
   proposalDecisions!: Table<ProposalDecision, [string, string]>;
+  undoEntries!: Table<UndoEntry, number>;
 
   constructor(name = 'graphnav') {
     super(name);
@@ -34,6 +35,12 @@ export class GraphDatabase extends Dexie {
     // A user's maps and saved PDFs survive this exactly as they were.
     this.version(2).stores({
       proposalDecisions: '[graphId+proposalKey], graphId, decision',
+    });
+
+    // Version 3 adds the undo journal. Another additive table, so saved maps,
+    // decisions and stored PDFs are untouched and no upgrade step is needed.
+    this.version(3).stores({
+      undoEntries: '++seq, graphId, [graphId+seq]',
     });
     this.on('versionchange', () => this.close());
   }

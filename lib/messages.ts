@@ -70,7 +70,9 @@ export type Request =
       acceptNodes: Array<{ tempId: string; label?: string }>;
       acceptRelationships: Array<{ tempId: string; label?: string }>;
       rejectNodeTempIds: string[]; rejectRelationshipTempIds: string[] }
-  | { type: 'LIST_DECISIONS'; graphId: string };
+  | { type: 'LIST_DECISIONS'; graphId: string }
+  | { type: 'UNDO'; graphId: string }
+  | { type: 'UNDO_DEPTH'; graphId: string };
 
 export type Response<T = unknown> =
   | { ok: true; data: T }

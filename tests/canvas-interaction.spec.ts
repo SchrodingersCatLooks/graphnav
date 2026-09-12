@@ -107,6 +107,23 @@ test('direct canvas gestures: double-click creates, double-click renames, and dr
     await expect(page.locator('.react-flow__edge')).toHaveCount(1);
     // The original keeps its name; the new one is the untitled idea.
     await expect(page.locator('.react-flow__node')).toContainText(['Junction hypothesis', 'New idea']);
+    // Undo takes back the last change, and names what it will take back.
+    const undo = page.getByRole('button', { name: '↶ Undo' });
+    await expect(undo).toBeEnabled();
+    await expect(undo).toHaveAttribute('title', /Undo add connection|Undo add node/);
+    await undo.click();
+    await expect(page.locator('.react-flow__edge')).toHaveCount(0);
+
+    await undo.click();
+    await expect(page.locator('.react-flow__node')).toHaveCount(1);
+
+    // The keyboard shortcut does the same thing.
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(page.locator('.react-flow__node').first()).toContainText('New idea');
+
+    // Undo stops at the beginning rather than erroring or emptying the map.
+    for (let i = 0; i < 6; i += 1) await page.keyboard.press('ControlOrMeta+z');
+    await expect(undo).toBeDisabled();
   } finally {
     await context.close();
     await rm(profile, { recursive: true, force: true });

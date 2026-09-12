@@ -27,6 +27,7 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
   const [editing, setEditing] = useState(true);
   const [focusRequest, setFocusRequest] = useState<{ id: string; nonce: number }>();
   const [creationMode, setCreationMode] = useState<'manual' | 'ai' | null>(null);
+  const [undoStep, setUndoStep] = useState<{ steps: number; label?: string }>({ steps: 0 });
   const entryFlow = !!entryScreen && entryScreen !== 'graph';
   const toolsOpen = !embedded || tool !== null;
   const [connecting, setConnecting] = useState(false);
@@ -74,6 +75,26 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
     else if (entryScreen === 'existing') setTool('maps');
     else { setTool('new'); setCreationMode(entryScreen === 'manual' ? 'manual' : entryScreen === 'automated' ? 'ai' : null); }
   }, [entryScreen]);
+  async function undoLast() {
+    const id = current.current?.graph.id;
+    if (!id) return;
+    await perform(async () => { await repository.undo(id); });
+    await load(id);
+  }
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z' || event.shiftKey) return;
+      // Leave the browser's own undo alone while someone is editing text.
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) return;
+      event.preventDefault();
+      void undoLast();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   function startNewGraph() { setNewMap(''); setCreationMode(null); showTool('new'); onEntryScreenChange?.('new'); }
   function chooseCreation(mode: 'manual' | 'ai') { setCreationMode(mode); onEntryScreenChange?.(mode === 'manual' ? 'manual' : 'automated'); }
   function openExisting(id: string) {
@@ -103,6 +124,9 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
       setQuery(''); setFrom(''); setTo(''); setTargetStatus('');
     } else if (embedded && value.nodes.length > current.current.nodes.length) setCanvasVersion((version) => version + 1);
     current.current = value; setSnapshot(value);
+    void repository.undoDepth(value.graph.id).then((depth) => {
+      if (current.current?.graph.id === value.graph.id) setUndoStep(depth ?? { steps: 0 });
+    }).catch(() => setUndoStep({ steps: 0 }));
     if (context && selectedMap.current !== id) {
       const result = await sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, graphId: id });
       if (!result.ok) throw new Error(result.error);
@@ -230,6 +254,12 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
   const selectedNodeId = selection?.itemType === 'node' ? selection.itemId : undefined;
   const selectedHasChildren = selectedNodeId && snapshot?.relationships.some((edge) => edge.kind === 'contains' && edge.members.some((member) => member.nodeId === selectedNodeId && member.role === 'from'));
 
+  // Undo belongs in both toolbars: the side panel and the full workspace page
+  // are the same editor, and a change made in one is undoable from the other.
+  const undoButton = snapshot ? <button className="undo-button" disabled={busy || dirty || undoStep.steps === 0}
+    title={undoStep.label ? `Undo ${undoStep.label.toLowerCase()}` : 'Nothing to undo'}
+    onClick={() => void undoLast()}>↶ Undo</button> : null;
+
   return <div hidden={entryScreen === 'home' || entryScreen === 'account'} className={`graphnav-editor${entryFlow ? ' entry-flow' : ''}${editing ? ' is-editing' : ' is-viewing'}${embedded && !snapshot && !busy && tool ? ' creating-graph' : ''}${embedded ? ' embedded' : ''}${toolsOpen ? '' : ' tools-closed'}`}><main className="workspace">
     <header hidden={entryFlow} className="workspace-header">
       {!embedded && <a className="brand" href="workspace.html"><GraphMark size={28} /><span>GraphNav</span></a>}
@@ -238,9 +268,10 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
         {editing && <button disabled={busy || dirty || visibleNodes.length < 2} aria-pressed={connecting} onClick={() => { showTool(null); setConnecting(!connecting); setConnectionStart(null); }}>Connect</button>}
         <button hidden={!snapshot} className="edit-graph-button" disabled={busy || dirty || !snapshot} aria-pressed={editing} onClick={() => { showTool(null); setEditing(!editing); setSelection(null); }}>{editing ? 'Done editing' : 'Edit graph'}</button>
         <button disabled={busy || dirty} aria-pressed={tool === 'new'} onClick={startNewGraph}>New Graph</button>
+        {undoButton}
         {(aiSource || context?.kind === 'drive') && <button hidden={!snapshot} disabled={busy || dirty} aria-pressed={tool === 'ai'} onClick={() => showTool(tool === 'ai' ? null : 'ai')}>AI</button>}
         <button disabled={dirty} aria-pressed={tool === 'maps'} onClick={() => showTool(tool === 'maps' ? null : 'maps')}>More</button>
-      </nav> : <><a className="source-link" href="reader.html" target="_blank" rel="noreferrer">Open a PDF ↗</a><button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button><button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button></>}
+      </nav> : <><a className="source-link" href="reader.html" target="_blank" rel="noreferrer">Open a PDF ↗</a>{undoButton}<button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button><button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button></>}
       <span className="save-state" role="status">{busy ? 'Saving…' : embedded && !snapshot && !error ? 'Choose how to start' : dirty ? 'Unsaved edits' : error ? 'Needs attention' : 'Saved locally'}</span>
       <input ref={file} className="file-input" type="file" accept=".json,.graphnav.json,application/json" aria-label="Import graph backup" onChange={(event) => {
         const selected = event.target.files?.[0]; event.target.value = '';

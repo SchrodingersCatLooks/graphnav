@@ -215,7 +215,7 @@ test('floating move and resize survive Chrome restart without changing nodes, th
   const worker = installed.context.serviceWorkers()[0]!;
   const graphRows = () => worker.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('graphnav'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
-    try { return await Promise.all(['nodes', 'relationships', 'layoutItems', 'itemEdits'].map((table) => new Promise((resolve, reject) => { const request = db.transaction(table).objectStore(table).getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }))); }
+    try { return await Promise.all(['nodes', 'relationships', 'layoutItems', 'itemEdits'].map((table) => db.objectStoreNames.contains(table) ? new Promise((resolve, reject) => { const request = db.transaction(table).objectStore(table).getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }) : Promise.resolve([]))); }
     finally { db.close(); }
   });
   const original = await graphRows();
@@ -481,7 +481,9 @@ test('launcher choices preserve existing maps through manual and automated creat
   await expect(page.locator('.react-flow__node')).toHaveCount(0);
   const storedCount = () => installed.context.serviceWorkers()[0]!.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('graphnav'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
-    try { return await new Promise<number>((resolve, reject) => { const request = db.transaction('graphs').objectStore('graphs').count(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
+    // Nothing has been saved until the extension opens the database, so a
+    // store that does not exist yet means zero maps, not a failure.
+    try { if (!db.objectStoreNames.contains('graphs')) return 0; return await new Promise<number>((resolve, reject) => { const request = db.transaction('graphs').objectStore('graphs').count(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
     finally { db.close(); }
   });
   expect(await storedCount()).toBe(0);
@@ -605,7 +607,7 @@ test('Graph starts with a compact launcher and New Graph has a separate backable
 async function fixtureRecords(context: BrowserContext, store: string) {
   return context.serviceWorkers()[0]!.evaluate(async (store) => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('graphnav'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
-    try { return await new Promise<any[]>((resolve, reject) => { const request = db.transaction(store).objectStore(store).getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
+    try { if (!db.objectStoreNames.contains(store)) return []; return await new Promise<any[]>((resolve, reject) => { const request = db.transaction(store).objectStore(store).getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); }
     finally { db.close(); }
   }, store);
 }

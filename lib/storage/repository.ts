@@ -86,13 +86,102 @@ export class GraphRepository {
   // proposalDecisions is included so reads and imports can carry decisions.
   private tables() { return [this.db.graphs, this.db.sources, this.db.nodes, this.db.relationships, this.db.itemEdits, this.db.layoutItems, this.db.proposalDecisions]; }
   private async graph(id: string) { return requireValue(await this.db.graphs.get(id), 'This map no longer exists.'); }
-  private async mutate<T>(id: string, revision: number, action: (graph: Graph) => Promise<T>): Promise<T> {
-    return this.db.transaction('rw', this.tables(), async () => {
+  /** How many steps back a map keeps. Bounded so the journal cannot grow without limit. */
+  static readonly UNDO_DEPTH = 25;
+
+  private async mutate<T>(id: string, revision: number, action: (graph: Graph) => Promise<T>, undoLabel?: string): Promise<T> {
+    return this.db.transaction('rw', [...this.tables(), this.db.undoEntries], async () => {
       const graph = await this.graph(id);
       if (graph.contentRevision !== revision) throw new ConflictError();
+
+      // Captured before the change and written in the same transaction, so a
+      // failed action leaves neither a partial change nor a phantom undo step.
+      const before = undoLabel ? await this.snapshotFor(id) : undefined;
+
       const result = await action(graph);
       await this.db.graphs.put({ ...graph, contentRevision: graph.contentRevision + 1, updatedAt: Date.now() });
+
+      if (before && undoLabel) {
+        await this.db.undoEntries.add({ graphId: id, createdAt: Date.now(), label: undoLabel, snapshot: before });
+        const seqs = (await this.db.undoEntries.where('graphId').equals(id).primaryKeys()) as number[];
+        const excess = seqs.sort((a, b) => a - b).slice(0, Math.max(0, seqs.length - GraphRepository.UNDO_DEPTH));
+        if (excess.length) await this.db.undoEntries.bulkDelete(excess);
+      }
       return result;
+    });
+  }
+
+  /**
+   * Records a step for a change made outside this class.
+   *
+   * Must be called inside an open read-write transaction that already includes
+   * undoEntries, and before the change, so the snapshot is the prior state.
+   */
+  async recordUndoStep(graphId: string, label: string): Promise<void> {
+    await this.db.undoEntries.add({ graphId, createdAt: Date.now(), label, snapshot: await this.snapshotFor(graphId) });
+    const seqs = (await this.db.undoEntries.where('graphId').equals(graphId).primaryKeys()) as number[];
+    const excess = seqs.sort((a, b) => a - b).slice(0, Math.max(0, seqs.length - GraphRepository.UNDO_DEPTH));
+    if (excess.length) await this.db.undoEntries.bulkDelete(excess);
+  }
+
+  /** Reads a graph's records inside an open transaction. */
+  private async snapshotFor(id: string): Promise<GraphSnapshot> {
+    const graph = await this.graph(id);
+    const nodes = await this.db.nodes.where('graphId').equals(id).toArray();
+    const relationships = await this.db.relationships.where('graphId').equals(id).toArray();
+    const sourceIds = new Set(nodes.flatMap((n) => n.sourceId ? [n.sourceId] : []));
+    for (const item of [...nodes, ...relationships]) for (const evidence of item.evidence) sourceIds.add(evidence.sourceId);
+    const sources = (await this.db.sources.bulkGet([...sourceIds])).filter((s): s is Source => !!s);
+    return {
+      graph, nodes, sources, relationships,
+      itemEdits: await this.db.itemEdits.where('graphId').equals(id).toArray(),
+      layoutItems: await this.db.layoutItems.where('graphId').equals(id).toArray(),
+      decisions: await this.db.proposalDecisions.where('graphId').equals(id).toArray(),
+    };
+  }
+
+  async undoDepth(graphId: string): Promise<{ steps: number; label?: string }> {
+    const entries = await this.db.undoEntries.where('graphId').equals(graphId).toArray();
+    const latest = entries.sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)).at(-1);
+    return { steps: entries.length, ...(latest ? { label: latest.label } : {}) };
+  }
+
+  /**
+   * Restores the map to the state before the most recent recorded change.
+   *
+   * Undoing is itself a change, so the revision advances: another tab holding
+   * the old revision is refused rather than silently overwriting the undo.
+   * Source records are left alone, being shared and rebuildable.
+   */
+  async undo(graphId: string): Promise<{ undone: string } | null> {
+    return this.db.transaction('rw', [...this.tables(), this.db.undoEntries], async () => {
+      const entries = await this.db.undoEntries.where('graphId').equals(graphId).toArray();
+      const entry = entries.sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0)).at(-1);
+      if (!entry) return null;
+
+      const current = await this.graph(graphId);
+      const { snapshot } = entry;
+
+      for (const table of [this.db.nodes, this.db.relationships]) {
+        await table.where('graphId').equals(graphId).delete();
+      }
+      await this.db.itemEdits.where('graphId').equals(graphId).delete();
+      await this.db.layoutItems.where('graphId').equals(graphId).delete();
+      await this.db.proposalDecisions.where('graphId').equals(graphId).delete();
+
+      await this.db.nodes.bulkAdd(snapshot.nodes);
+      await this.db.relationships.bulkAdd(snapshot.relationships);
+      await this.db.itemEdits.bulkAdd(snapshot.itemEdits);
+      await this.db.layoutItems.bulkAdd(snapshot.layoutItems);
+      if (snapshot.decisions?.length) await this.db.proposalDecisions.bulkAdd(snapshot.decisions);
+
+      await this.db.graphs.put({
+        ...snapshot.graph,
+        contentRevision: current.contentRevision + 1,
+        updatedAt: Date.now(),
+      });
+      await this.db.undoEntries.delete(entry.seq!);
+      return { undone: entry.label };
     });
   }
   async listGraphs(): Promise<Graph[]> { return this.db.graphs.orderBy('updatedAt').reverse().toArray(); }
@@ -128,7 +217,7 @@ export class GraphRepository {
   }
   async renameGraph(id: string, revision: number, title: string) {
     const checked = graphSchema.shape.title.parse(title);
-    return this.mutate(id, revision, async (graph) => { graph.title = checked; });
+    return this.mutate(id, revision, async (graph) => { graph.title = checked; }, 'Rename map');
   }
   async addNode(graphId: string, revision: number, input: z.input<typeof newNodeSchema>): Promise<string> {
     const value = newNodeSchema.parse(input);
@@ -140,7 +229,7 @@ export class GraphRepository {
       await this.db.nodes.add(node);
       await this.db.layoutItems.add({ graphId, itemType: 'node', itemId: node.id, ...value.position, pinned: false, ...stamp() });
       return node.id;
-    });
+    }, 'Add node');
   }
   async editNode(graphId: string, revision: number, nodeId: string, input: { label: string; body: string; url?: string }) {
     const parsed = newNodeSchema.parse({ id: nodeId, label: input.label, body: input.body, locator: input.url ? { kind: 'web', url: input.url } : undefined, position: { x: 0, y: 0 } });
@@ -149,7 +238,7 @@ export class GraphRepository {
       if (node.origin !== 'manual' || node.sourceId) throw new Error('Use personal overrides to annotate imported nodes.');
       const { locator: _old, ...base } = node;
       await this.db.nodes.put({ ...base, baseLabel: parsed.label, body: parsed.body, ...(parsed.locator ? { locator: parsed.locator } : {}), updatedAt: Date.now() });
-    });
+    }, 'Edit node');
   }
   private async nodeInGraph(graphId: string, id: string) {
     const node = requireValue(await this.db.nodes.get(id), 'Node not found.');
@@ -169,7 +258,7 @@ export class GraphRepository {
       for (const member of value.members) await this.nodeInGraph(graphId, member.nodeId);
       await this.db.relationships.add({ id: value.id, graphId, members: value.members, memberNodeIds: value.members.map((m) => m.nodeId), kind: 'personal', origin: 'manual', baseLabel: value.label, evidence: [], ...stamp() });
       return value.id;
-    });
+    }, 'Add connection');
   }
   async saveConnection(keyInput: ItemKey, revision: number, input: z.infer<typeof connectionValuesSchema>) {
     const key = itemKeySchema.parse(keyInput), value = connectionValuesSchema.parse(input);
@@ -189,7 +278,7 @@ export class GraphRepository {
       const old = await this.db.itemEdits.get(itemTuple(key));
       // Replace the override values so omitted fields can revert to source defaults.
       await this.db.itemEdits.put({ ...key, ...stamp(), createdAt: old?.createdAt ?? Date.now(), ...edits });
-    });
+    }, 'Edit item');
   }
   async removeItem(keyInput: ItemKey, revision: number) {
     const key = itemKeySchema.parse(keyInput);
@@ -211,7 +300,7 @@ export class GraphRepository {
       } else await this.db.relationships.delete(key.itemId);
       await this.db.itemEdits.delete(itemTuple(key));
       await this.db.layoutItems.delete(itemTuple(key));
-    });
+    }, 'Remove item');
   }
   private async deleteRelation(relation: Relationship) {
     await this.db.relationships.delete(relation.id);
@@ -316,7 +405,7 @@ export class GraphRepository {
       graphSchema.parse(graph);
       // Missing children may have moved. Keep their nodes and personal links;
       // absence from a folder is not proof the underlying file was deleted.
-    });
+    }, 'Refresh sources');
   }
   async exportGraph(id: string): Promise<string> {
     const snapshot = validateSnapshot(await this.readGraph(id));

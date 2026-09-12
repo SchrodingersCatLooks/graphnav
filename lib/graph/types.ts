@@ -108,6 +108,15 @@ export const snapshotSchema = z.object({
 /** Version 2 adds decisions. Version 1 backups still import: old files must keep working. */
 export const backupSchema = z.object({ format: z.literal('graphnav'), version: z.union([z.literal(1), z.literal(2)]), snapshot: snapshotSchema }).strict();
 export const BACKUP_VERSION = 2 as const;
+/**
+ * One step the user can take back.
+ *
+ * Stores the graph as it was before a change rather than an inverse command:
+ * an inverse has to be written and kept correct for every operation, while a
+ * before-state is right by construction and cannot drift as commands change.
+ */
+export type UndoEntry = { seq?: number; graphId: string; createdAt: number; label: string; snapshot: GraphSnapshot };
+
 export type SourceCache = { id: string; sourceId: string; sourceVersion: string; chunkKey: string; payload: string; byteSize: number; lastAccessedAt: number };
 export type StoredBlob = { id: string; name?: string; blob: Blob; mimeType: string; byteSize: number; createdAt: number };
 export const newNodeSchema = z.object({ id, label, body: z.string().max(20_000).default(''), locator: locatorSchema.optional(), position: pointSchema });

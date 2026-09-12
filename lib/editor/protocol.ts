@@ -7,12 +7,13 @@ export type SourceContext = z.infer<typeof sourceContextSchema>;
 export const scopeKey = (context: SourceContext) => `${context.kind}:${context.kind === 'drive' ? 'folder' : 'tabs'}:${context.sourceId}`;
 export type Candidate = { key: string; title: string; kind: string; locator: Locator; parentKey?: string; path: string };
 export type Catalog = { context: SourceContext; title: string; complete: boolean; items: Candidate[] };
-type Methods = 'listGraphs' | 'readGraph' | 'createGraph' | 'addNode' | 'editNode' | 'connect' | 'saveConnection' | 'setPersonalEdit' | 'removeItem' | 'savePosition' | 'saveView' | 'exportGraph' | 'importGraph';
+type Methods = 'listGraphs' | 'readGraph' | 'createGraph' | 'addNode' | 'editNode' | 'connect' | 'saveConnection' | 'setPersonalEdit' | 'removeItem' | 'savePosition' | 'saveView' | 'exportGraph' | 'importGraph' | 'undo' | 'undoDepth';
 export type EditorRepository = Pick<GraphRepository, Methods>;
 const id = z.string().min(1).max(300), revision = z.number().int().nonnegative();
 const request = <O extends string, S extends z.ZodType>(op: O, args: S) => z.object({ type: z.literal('EDITOR'), op: z.literal(op), args }).strict();
 export const editorRequestSchema = z.discriminatedUnion('op', [
   request('listGraphs', z.tuple([])), request('readGraph', z.tuple([id])),
+  request('undo', z.tuple([id])), request('undoDepth', z.tuple([id])),
   request('createGraph', z.tuple([z.string().trim().min(1).max(200)])),
   request('createContextMap', z.tuple([z.string().trim().min(1).max(200), sourceContextSchema])),
   request('openPageMap', z.tuple([sourceContextSchema])),

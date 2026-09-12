@@ -16,6 +16,7 @@ export const editorClient: EditorRepository = {
   removeItem: (...args) => call('removeItem', args), savePosition: (...args) => call('savePosition', args),
   saveView: (...args) => call('saveView', args), exportGraph: (id) => call('exportGraph', [id]),
   importGraph: (json) => call('importGraph', [json]),
+  undo: (id) => call('undo', [id]), undoDepth: (id) => call('undoDepth', [id]),
 };
 const source = ({ kind, sourceId }: SourceContext): SourceContext => ({ kind, sourceId });
 export const readCatalog = (context: SourceContext, refresh = false) => call<Catalog>('catalog', [source(context), refresh]);

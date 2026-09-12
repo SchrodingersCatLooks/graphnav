@@ -160,7 +160,7 @@ export async function applyProposals(
 
   const tables = [
     db.graphs, db.sources, db.nodes, db.relationships,
-    db.itemEdits, db.layoutItems, db.proposalDecisions,
+    db.itemEdits, db.layoutItems, db.proposalDecisions, db.undoEntries,
   ];
 
   await db.transaction('rw', tables, async () => {
@@ -206,6 +206,10 @@ export async function applyProposals(
       await db.sources.put(created);
       sourceRowIds.set(passage.sourceId, created.id);
     }
+
+    // Accepting is the least reversible thing the AI flow does, so it records
+    // a step like any other change. Captured before anything is written.
+    await repository.recordUndoStep(request.graphId, 'Save AI review');
 
     const existing = await db.proposalDecisions.where('graphId').equals(request.graphId).toArray();
     const decided = new Map(existing.map((decision) => [decision.proposalKey, decision]));

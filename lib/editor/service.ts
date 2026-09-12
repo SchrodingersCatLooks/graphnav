@@ -24,7 +24,7 @@ export class EditorService {
     const request = editorRequestSchema.parse(raw), repository = this.repository;
     const args = request.args;
     // On Google pages, do not expose another signed-in account's saved maps.
-    const graphId = ['readGraph', 'addNode', 'editNode', 'connect', 'saveView', 'exportGraph', 'arrange'].includes(request.op) ? args[0] :
+    const graphId = ['readGraph', 'addNode', 'editNode', 'connect', 'saveView', 'exportGraph', 'arrange', 'undo', 'undoDepth'].includes(request.op) ? args[0] :
       ['saveConnection', 'setPersonalEdit', 'removeItem', 'savePosition'].includes(request.op) ? (args[0] as { graphId: string }).graphId : undefined;
     if (!ownPage && typeof graphId === 'string') {
       const graph = (await repository.readGraph(graphId)).graph;
@@ -38,6 +38,8 @@ export class EditorService {
         return rows.filter((graph) => !graph.accountScope || graph.accountScope === account);
       }
       case 'readGraph': return repository.readGraph(...request.args);
+      case 'undo': return repository.undo(...request.args);
+      case 'undoDepth': return repository.undoDepth(...request.args);
       case 'openPageMap': {
         const [context] = request.args, account = await this.sources.account();
         const find = async () => (await repository.listGraphs()).find((graph) => graph.accountScope === account && graph.createdVia === 'import' && graph.sourceBindings[0]?.key === scopeKey(context));

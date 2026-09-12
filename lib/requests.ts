@@ -59,6 +59,8 @@ export const requestSchema = z.discriminatedUnion('type', [
     rejectRelationshipTempIds: z.array(id).max(80),
   }).strict(),
   z.object({ type: z.literal('LIST_DECISIONS'), graphId: id }).strict(),
+  z.object({ type: z.literal('UNDO'), graphId: id }).strict(),
+  z.object({ type: z.literal('UNDO_DEPTH'), graphId: id }).strict(),
 ]);
 
 /** Content scripts are declared for these origins only. */

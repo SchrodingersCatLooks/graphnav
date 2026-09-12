@@ -184,6 +184,10 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
     }
     case 'APPLY_PROPOSALS':
       return { ok: true, data: await applyProposals(repository.db, request) };
+    case 'UNDO':
+      return { ok: true, data: await repository.undo(request.graphId) };
+    case 'UNDO_DEPTH':
+      return { ok: true, data: await repository.undoDepth(request.graphId) };
     case 'LIST_DECISIONS':
       return { ok: true, data: await listDecisions(repository.db, request.graphId) };
     case 'CHECK_TARGETS': {
