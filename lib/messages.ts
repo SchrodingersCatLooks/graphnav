@@ -8,6 +8,7 @@
 
 import { browser } from 'wxt/browser';
 import type { Locator } from './graph/types';
+import type { ImportedItem } from './storage/repository';
 
 export type SourceItem = {
   /** Stable provider ID. Drive file ID, or `${documentId}:${tabId}` for a tab. */
@@ -54,6 +55,16 @@ export type Response<T = unknown> =
 export type AuthStatus = { connected: boolean };
 export type AccountKeyResult = { accountKey: string };
 /** Returned after an import so the caller can open the stored graph. */
+/** One source scope ready to hand to the repository. */
+export type ScopedImport = {
+  scopeKey: string;
+  /** False when a read was cut short, so the repository keeps unseen children. */
+  complete: boolean;
+  title: string;
+  accountKey: string;
+  items: ImportedItem[];
+};
+
 export type ImportResult = { graphId: string; scopeKey: string; nodeCount: number; complete: boolean };
 /** Where a NAVIGATE request actually sent the user. */
 export type NavigateResult = { url: string };

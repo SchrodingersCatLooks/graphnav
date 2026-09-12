@@ -6,16 +6,9 @@
 
 import { LIMITS } from '../graph/types';
 import { importedKey, type ImportedItem } from '../storage/repository';
+import type { ScopedImport } from '../messages';
 import { getFileMetadata, listFolderChildren } from './drive';
 import { getDocumentTabs } from './docs';
-
-export type ScopedImport = {
-  scopeKey: string;
-  /** False when a read was cut short, so the repository keeps unseen children. */
-  complete: boolean;
-  title: string;
-  items: ImportedItem[];
-};
 
 export function driveScopeKey(folderId: string): string {
   return `drive:folder:${folderId}`;
@@ -78,6 +71,7 @@ export async function importDriveFolder(folderId: string, accountKey: string): P
     scopeKey: driveScopeKey(folderId),
     complete: !children.truncated && !trimmed,
     title: folder.name,
+    accountKey,
     items,
   };
 }
@@ -138,6 +132,7 @@ export async function importDocTabs(documentId: string, accountKey: string): Pro
     scopeKey: docsScopeKey(documentId),
     complete: !trimmed,
     title: document.title,
+    accountKey,
     items,
   };
 }

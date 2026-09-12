@@ -4,11 +4,11 @@ import { AuthRequiredError, connect, disconnect, isConnected } from '../lib/goog
 import { getAccountKey } from '../lib/google/account';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
-import { importDocTabs, importDriveFolder, type ScopedImport } from '../lib/google/import';
+import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository } from '../lib/storage/repository';
 import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema } from '../lib/requests';
-import type { ImportResult, Request, Response } from '../lib/messages';
+import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
 // state worth losing. The database lives in the extension origin; content
@@ -16,14 +16,14 @@ import type { ImportResult, Request, Response } from '../lib/messages';
 const repository = new GraphRepository();
 
 /** Reuses the graph already bound to this source scope instead of duplicating it. */
-async function storeImport(scoped: ScopedImport, accountKey: string): Promise<ImportResult> {
+async function storeImport(scoped: ScopedImport): Promise<ImportResult> {
   const graphs = await repository.listGraphs();
   const existing = graphs.find((graph) => graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
   const graph = existing ?? (await repository.createGraph(scoped.title, crypto.randomUUID(), 'import'));
 
   await repository.refreshScope(graph.id, graph.contentRevision, {
     scopeKey: scoped.scopeKey,
-    accountKey,
+    accountKey: scoped.accountKey,
     complete: scoped.complete,
     items: scoped.items,
   });
@@ -58,14 +58,10 @@ async function handle(raw: unknown): Promise<Response> {
       return { ok: true, data: await listFolderChildren(request.folderId) };
     case 'GET_DOC_TABS':
       return { ok: true, data: await getDocumentTabs(request.documentId) };
-    case 'IMPORT_DRIVE_FOLDER': {
-      const accountKey = await getAccountKey();
-      return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, accountKey), accountKey) };
-    }
-    case 'IMPORT_DOC_TABS': {
-      const accountKey = await getAccountKey();
-      return { ok: true, data: await storeImport(await importDocTabs(request.documentId, accountKey), accountKey) };
-    }
+    case 'IMPORT_DRIVE_FOLDER':
+      return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey())) };
+    case 'IMPORT_DOC_TABS':
+      return { ok: true, data: await storeImport(await importDocTabs(request.documentId, await getAccountKey())) };
     case 'LIST_GRAPHS':
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':

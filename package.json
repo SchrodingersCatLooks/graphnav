@@ -16,6 +16,7 @@
   "dependencies": {
     "@xyflow/react": "^12.11.6",
     "dexie": "^4.4.6",
+    "pdfjs-dist": "^6.3.289",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "zod": "^4.6.2"
