@@ -130,6 +130,24 @@ extension ID confirmed as `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Both calls used real OAuth tokens through Chrome Identity. No token appears in any message
 payload, in storage, or in page context.
 
+### M2-B import, verified 2026-09-12
+
+Same browser and extension ID. Imports go through the background worker into the Dexie
+repository; content scripts never open IndexedDB on a Google origin.
+
+- `ACCOUNT_KEY` returned a Drive `permissionId`. This confirms `about.get` is permitted by the
+  existing `drive.metadata.readonly` scope, so no extra Chrome permission and no re-consent is
+  needed for account scoping. The value is an opaque account ID, not an email address.
+- `IMPORT_DRIVE_FOLDER` on the demo folder stored 11 nodes (ten subfolders plus the folder
+  itself) with `complete: true`.
+- Running the same import a second time returned the **same** `graphId`, so a repeat import
+  reuses the graph bound to that source scope instead of creating a duplicate.
+- `IMPORT_DOC_TABS` on the demo Doc stored 5 nodes (four tabs plus the document) with
+  `complete: true`.
+
+Not yet verified: node click-through to a real destination, and reopening a stored graph in the
+workspace after a browser restart.
+
 ## 6. Which steps need whom
 
 | Step | Who | Status |
