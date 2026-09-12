@@ -102,8 +102,9 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh has claimed UX2-A on rajvansh-ui for the requested saved-map opening view with Edit graph, New graph and Generate with AI.
-Saved-map navigation becomes the default, with editing controls revealed deliberately and AI starting from an explicit content selection.
+Rajvansh has claimed UX2-A on rajvansh-ui for the requested saved-map opening view with Edit graph and New graph.
+Saved-map navigation becomes the default; if none exists, open New graph with Manually and With AI sub-options.
+Do not create an automatic baseline merely by opening an empty source; manual source autofill/baseline remains an explicit creation/edit action.
 This uses existing graph/generation contracts and does not claim G3 review persistence complete.
 
 Rajvansh's UX1 runtime fixes are merged in [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc).
