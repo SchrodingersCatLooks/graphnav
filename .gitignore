@@ -1,0 +1,27 @@
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+coverage/
+.wxt/
+.output/
+.vite/
+*.tsbuildinfo
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# Personal source material and temporary working files
+local-data/
+local-uploads/
+tmp/
+*.log
+.DS_Store
+.idea/
+
+# Commit package-lock.json and share intentional editor settings separately.
