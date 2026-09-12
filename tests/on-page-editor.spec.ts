@@ -748,3 +748,49 @@ test('Add lazily browses document tabs and handles support click connections wit
   const doc = await newPage;
   await expect(doc).toHaveURL('https://docs.google.com/document/d/demo-doc/edit?tab=t.detail');
 });
+
+test('long source lists scroll even when the host page cancels wheel', async ({ installed }) => {
+  test.setTimeout(60_000);
+  /**
+   * Drive and Docs run their own scrolling and cancel wheel on the document.
+   * A cancelled wheel takes our panel's scroll regions with it, so a folder or
+   * tab list longer than the drawer simply stops moving and the rows below are
+   * unreachable — there is no keyboard route to them either. The synthetic host
+   * used elsewhere has no such handler, which is why this went unnoticed.
+   */
+  await installed.context.serviceWorkers()[0]!.evaluate(() => { (globalThis as any).fixtureLarge = true; });
+  const page = await open(installed.context, 'https://docs.google.com/document/d/large-doc/edit');
+  await closeTools(page);
+  await page.getByRole('button', { name: 'Add', exact: true }).click();
+  await expect(page.locator('.source-tree')).toBeVisible();
+
+  await page.evaluate(() => {
+    document.addEventListener('wheel', (event) => event.preventDefault(), { passive: false });
+  });
+
+  const scrollTops = () => page.evaluate(() => {
+    const root = (document.querySelector('graphnav-ui') as any)?.shadowRoot ?? document;
+    return {
+      tree: (root.querySelector('.source-tree') as HTMLElement).scrollTop,
+      drawer: (root.querySelector('.sidebar') as HTMLElement).scrollTop,
+    };
+  });
+  const overflowing = await page.evaluate(() => {
+    const root = (document.querySelector('graphnav-ui') as any)?.shadowRoot ?? document;
+    const tree = root.querySelector('.source-tree') as HTMLElement;
+    return tree.scrollHeight > tree.clientHeight;
+  });
+  expect(overflowing, 'the fixture must produce a list taller than its container').toBe(true);
+  expect(await scrollTops()).toMatchObject({ tree: 0 });
+
+  const tree = (await page.locator('.source-tree').boundingBox())!;
+  await page.mouse.move(tree.x + tree.width / 2, tree.y + tree.height / 2);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(async () => (await scrollTops()).tree).toBeGreaterThan(0);
+
+  // The drawer around it scrolls too, so controls below a long list stay reachable.
+  const drawer = (await page.locator('.sidebar').boundingBox())!;
+  await page.mouse.move(drawer.x + drawer.width / 2, drawer.y + 40);
+  await page.mouse.wheel(0, 600);
+  await expect.poll(async () => (await scrollTops()).drawer).toBeGreaterThan(0);
+});

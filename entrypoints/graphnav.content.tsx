@@ -74,7 +74,12 @@ export default defineContentScript({
         // React's manual popover handles viewport positioning in the top layer.
         position: 'inline',
         anchor: 'body',
-        isolateEvents: ['keydown', 'keyup', 'keypress', 'click', 'dblclick', 'pointerdown', 'pointerup'],
+        // 'wheel' matters as much as the rest: Drive and Docs cancel wheel on
+      // the document to run their own scrolling, and a cancelled wheel takes
+      // our panel's scroll regions with it — long folder and tab lists simply
+      // stop moving. Keeping the event inside the shadow root lets the list
+      // under the pointer scroll and leaves the host page alone.
+      isolateEvents: ['keydown', 'keyup', 'keypress', 'click', 'dblclick', 'pointerdown', 'pointerup', 'wheel'],
         onMount(container) {
           const app = document.createElement('div');
           container.append(app);
