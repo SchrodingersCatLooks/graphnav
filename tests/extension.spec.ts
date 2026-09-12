@@ -1,3 +1,4 @@
+import { panelSettings, tools } from './ui-helpers';
 import { test as base, expect, chromium, type BrowserContext } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -89,6 +90,7 @@ test('Docs shell uses document context and supports keyboard opening', async ({ 
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByText('Google Docs', { exact: true })).toBeVisible();
+  await tools(page, 'Sources');
   await expect(page.getByRole('heading', { name: 'Add existing', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
@@ -102,8 +104,7 @@ test('Drive SPA navigation updates context without duplicate buttons', async ({ 
   await trigger.click();
   await expect(page.getByText('My Drive', { exact: true })).toBeVisible();
   await page.evaluate(() => history.pushState({}, '', '/drive/u/1/folders/next-folder'));
-  await expect(page.getByRole('dialog')).toHaveCount(0);
-  await trigger.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText('Drive folder', { exact: true })).toBeVisible();
   await expect(trigger).toHaveCount(1);
   await page.evaluate(() => history.pushState({}, '', '/drive/u/1/recent'));
@@ -213,6 +214,7 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
       return {};
     }) as typeof chrome.identity.getAuthToken;
   });
+  await page.getByRole('button', { name: 'Google account', exact: true }).click();
   await page.getByRole('button', { name: 'Check connection', exact: true }).click();
   await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
@@ -223,6 +225,7 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
 test('floating controls support keyboard, cancel a drag, and stay reachable after zoom and viewport changes', async ({ page }, testInfo) => {
   await page.goto('https://docs.google.com/document/d/fixture-doc/edit');
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await panelSettings(page);
   await page.getByRole('button', { name: 'Float panel', exact: true }).click();
   const panel = page.getByRole('dialog');
   const move = page.getByRole('button', { name: 'Move graph panel' });

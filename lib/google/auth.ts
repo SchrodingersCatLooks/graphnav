@@ -31,8 +31,7 @@ export async function connect(): Promise<void> {
 }
 
 export async function disconnect(): Promise<void> {
-  const token = await getToken(false);
-  if (token) await browser.identity.removeCachedAuthToken({ token });
+  await browser.identity.clearAllCachedAuthTokens();
 }
 
 /** Carries the status so a caller can tell a missing target from a transient failure. */

@@ -15,6 +15,7 @@ export const editorRequestSchema = z.discriminatedUnion('op', [
   request('listGraphs', z.tuple([])), request('readGraph', z.tuple([id])),
   request('createGraph', z.tuple([z.string().trim().min(1).max(200)])),
   request('createContextMap', z.tuple([z.string().trim().min(1).max(200), sourceContextSchema])),
+  request('openPageMap', z.tuple([sourceContextSchema])),
   request('arrange', z.tuple([id, revision, z.array(z.object({ itemId: id, itemType: z.enum(['node', 'relationship']), ...pointSchema.shape }).strict()).max(LIMITS.nodes + LIMITS.relationships), z.boolean()])),
   request('attachSource', z.tuple([sourceContextSchema, id, revision, id, z.string().max(1500)])),
   request('addNode', z.tuple([id, revision, newNodeSchema])),

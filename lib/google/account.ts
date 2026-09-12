@@ -11,6 +11,11 @@ import { authorizedGet } from './auth';
 
 type AboutResponse = { user?: { permissionId?: string } };
 
+export async function getAccountLabel(): Promise<string | undefined> {
+  const about = await authorizedGet<{ user?: { emailAddress?: string; displayName?: string } }>('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress,displayName)');
+  return about.user?.emailAddress ?? about.user?.displayName;
+}
+
 export async function getAccountKey(): Promise<string> {
   const url = 'https://www.googleapis.com/drive/v3/about?fields=user(permissionId)';
   const about = await authorizedGet<AboutResponse>(url);

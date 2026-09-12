@@ -1,3 +1,4 @@
+import { tools } from './ui-helpers';
 import { test, expect, chromium } from '@playwright/test';
 import { createServer, type ServerResponse } from 'node:http';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -49,8 +50,10 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
     expect(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const page = await context.newPage(); await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto(`${origin}/reader.html`);
     await page.getByLabel('Choose PDF file').setInputFiles(resolve('tests/fixtures/demo-paper.pdf'));
+  await tools(page, 'Sources');
     await page.getByRole('button', { name: 'Build baseline (5)', exact: true }).click();
     await expect(page.locator('.react-flow__node')).toHaveCount(5);
+  await tools(page, 'AI');
     await page.getByRole('button', { name: 'Select content for AI', exact: true }).click();
     const panel = page.getByRole('region', { name: 'AI assistance' });
     await expect(panel).toContainText('AI is ready');
@@ -89,6 +92,7 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
     await panel.getByRole('button', { name: 'Check AI connection', exact: true }).click();
     await expect(generate).toBeDisabled();
     await panel.getByRole('button', { name: 'Close AI tools', exact: true }).click();
+  await tools(page, 'Add idea');
     await page.getByLabel('Node name', { exact: true }).fill('Manual work remains available');
     await page.getByRole('button', { name: 'Add node', exact: true }).click();
     await expect(page.locator('.react-flow__node')).toHaveCount(6);

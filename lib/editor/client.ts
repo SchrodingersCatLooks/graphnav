@@ -22,6 +22,7 @@ export const readCatalog = (context: SourceContext, refresh = false) => call<Cat
 export const applySource = (context: SourceContext, graphId: string | null, revision: number | null, mode: 'selected' | 'baseline' | 'refresh', keys: string[] = []) => call<string>('applySource', [source(context), graphId, revision, mode, keys]);
 export const attachSource = (context: SourceContext, graphId: string, revision: number, nodeId: string, key: string) => call<void>('attachSource', [source(context), graphId, revision, nodeId, key]);
 export const createContextMap = (title: string, context: SourceContext) => call<string>('createContextMap', [title, source(context)]);
+export const openPageMap = (context: SourceContext) => call<{ graphId: string; created: boolean }>('openPageMap', [source(context)]);
 export async function arrangeMap(graphId: string, revision: number, newOnly = false) {
   const { sourceLayout } = await import('./layout');
   const snapshot = await editorClient.readGraph(graphId);

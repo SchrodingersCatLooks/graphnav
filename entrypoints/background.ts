@@ -1,7 +1,7 @@
 import { defineBackground } from 'wxt/utils/define-background';
 import { browser } from 'wxt/browser';
 import { AuthRequiredError, connect, disconnect, isConnected } from '../lib/google/auth';
-import { getAccountKey } from '../lib/google/account';
+import { getAccountKey, getAccountLabel } from '../lib/google/account';
 import { checkTargets } from '../lib/google/availability';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
@@ -86,8 +86,9 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
   const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
   const owner = `${sender.documentId ?? sender.tab?.id ?? ''}:${sender.url ?? ''}`;
   async function checkMap(graphId: string) {
-    const graph = (await repository.readGraph(graphId)).graph;
+    const snapshot = await repository.readGraph(graphId), graph = snapshot.graph;
     if (!ownPage && graph.accountScope && graph.accountScope !== await getAccountKey()) throw new Error('Connect the Google account that owns this map.');
+    return snapshot;
   }
   switch (request.type) {
     case 'AI_STATUS': return { ok: true, data: await relay.status() };
@@ -100,11 +101,13 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       await relay.forget(); return { ok: true, data: null };
     case 'GENERATE_DRAFT': return { ok: true, data: await generation.generate(request, owner, ownPage) };
     case 'CANCEL_DRAFT': generation.cancel(request.requestId, owner); return { ok: true, data: null };
-    case 'AUTH_STATUS':
-      return { ok: true, data: { connected: await isConnected() } };
+    case 'AUTH_STATUS': {
+      const connected = await isConnected();
+      return { ok: true, data: { connected, ...(connected ? { accountLabel: await getAccountLabel().catch(() => undefined) } : {}) } };
+    }
     case 'CONNECT':
       await connect();
-      return { ok: true, data: { connected: true } };
+      return { ok: true, data: { connected: true, accountLabel: await getAccountLabel().catch(() => undefined) } };
     case 'DISCONNECT':
       await disconnect();
       return { ok: true, data: { connected: false } };
@@ -122,18 +125,28 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       return { ok: true, data };
     }
     case 'PANEL_STATE': {
-      const context = sender.url ? getPageContext(sender.url) : null;
-      if (!context || sender.tab?.id === undefined || !request.source.startsWith(`${context.kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };
+      // Chrome retains the injection URL after a same-document Drive navigation.
+      // Trust the already-validated content-script origin, not its stale route.
+      const origin = sender.url ? new URL(sender.url).origin : '';
+      const kind = origin === 'https://drive.google.com' ? 'drive' : origin === 'https://docs.google.com' ? 'docs' : null;
+      if (!kind || sender.tab?.id === undefined || !request.source.startsWith(`${kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };
       const key = `panel:${sender.tab.id}`, mapKey = `panel-map:${sender.tab.id}`;
+      const account = await getAccountKey().catch(() => 'local');
+      const preferenceKey = `page-map:v1:${account}:${request.source}`;
       // sender.url may retain the URL from content-script injection during SPA navigation.
       // Separate keys prevent a late map selection from reopening a closed panel.
-      if (request.graphId) { await checkMap(request.graphId); await browser.storage.session.set({ [mapKey]: { source: request.source, graphId: request.graphId } }); }
+      if (request.graphId) {
+        await checkMap(request.graphId);
+        await browser.storage.session.set({ [mapKey]: { source: request.source, graphId: request.graphId } });
+        await browser.storage.local.set({ [preferenceKey]: request.graphId });
+      }
       if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
       const stored = await browser.storage.session.get([key, mapKey]);
       const value = stored[key], map = stored[mapKey];
-      const same = !!value && typeof value === 'object' && 'source' in value && value.source === request.source;
-      const state: PanelState = { open: same && 'open' in value && value.open === true,
-        ...(map && typeof map === 'object' && 'source' in map && map.source === request.source && 'graphId' in map && typeof map.graphId === 'string' ? { graphId: map.graphId } : {}),
+      const preferred = (await browser.storage.local.get(preferenceKey))[preferenceKey];
+      const sameSurface = !!value && typeof value === 'object' && 'source' in value && typeof value.source === 'string' && value.source.startsWith(`${kind}:`);
+      const state: PanelState = { open: sameSurface && 'open' in value && value.open === true,
+        ...(map && typeof map === 'object' && 'source' in map && map.source === request.source && 'graphId' in map && typeof map.graphId === 'string' ? { graphId: map.graphId } : typeof preferred === 'string' ? { graphId: preferred } : {}),
       };
       return { ok: true, data: state };
     }
@@ -207,15 +220,34 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       return { ok: true, data: null };
     }
     case 'NAVIGATE': {
-      if (request.graphId) await checkMap(request.graphId);
+      const snapshot = request.graphId ? await checkMap(request.graphId) : undefined;
       // The locator is the node's stored destination, so navigation does not
       // depend on layout or on re-reading the source.
-      const url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator, request.graphId), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
+      let url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator, request.graphId), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
+      if (request.locator.kind === 'drive') {
+        const fileId = request.locator.fileId;
+        const folder = snapshot?.sources.some((source) => source.provider === 'google-drive' && source.kind === 'folder' && source.resourceId === fileId);
+        // Old maps may lack webViewLink. Use their stored folder identity so
+        // navigation does not depend on a redirect or another metadata request.
+        if (folder) url = fileId === 'root' ? 'https://drive.google.com/drive/my-drive' : `https://drive.google.com/drive/folders/${encodeURIComponent(fileId)}`;
+        else if (request.locator.webViewLink) {
+          const linked = getPageContext(request.locator.webViewLink);
+          if (linked?.sourceId === fileId) url = linked.kind === 'docs' ? destinationUrl({ kind: 'docs', documentId: fileId }) : `https://drive.google.com/drive/folders/${encodeURIComponent(fileId)}`;
+        }
+      }
       if (!url) return { ok: false, error: 'This destination is not supported.' };
       // Content scripts cannot open tabs themselves, so the worker does it.
-      const context = sender.url ? getPageContext(sender.url) : null;
+      const currentUrl = sender.tab?.id !== undefined ? (await browser.tabs.get(sender.tab.id)).url ?? sender.url : sender.url;
+      const context = currentUrl ? getPageContext(currentUrl) : null;
       const sameDoc = request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined;
       const destination = getPageContext(url);
+      if (destination?.kind === 'drive' && sender.url && new URL(sender.url).origin === 'https://drive.google.com' && sender.tab?.id !== undefined) {
+        const source = `drive:${destination.sourceId}`;
+        await browser.storage.session.set({ [`panel:${sender.tab.id}`]: { source, open: true } });
+        await browser.storage.session.remove(`panel-map:${sender.tab.id}`);
+        await browser.tabs.update(sender.tab.id, { url });
+        return { ok: true, data: { url } };
+      }
       if (request.graphId && destination) {
         // Publish map context before injection, including for a newly opened Doc.
         const tabId = sameDoc ? sender.tab!.id : (await browser.tabs.create({ url: 'about:blank', active: true })).id;

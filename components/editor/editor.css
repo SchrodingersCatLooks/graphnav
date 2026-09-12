@@ -141,3 +141,50 @@
 .graphnav-editor .source-warning { display: block; color: #8a512d; font-size: 11px; margin: 4px 0 10px; }
 .graphnav-editor .react-flow__node.unavailable-node { border-color: #bf906d; background: #fff9f2; }
 .graphnav-editor.embedded .map-tools { flex-shrink: 0; max-height: 96px; overflow: auto; gap: 6px; }
+
+/* The map keeps its full viewport; one focused tool drawer opens over it. */
+.graphnav-editor [hidden] { display: none !important; }
+.graphnav-editor.embedded .workspace-body { position: relative; display: flex; flex-direction: column; }
+.graphnav-editor.embedded .map-area { flex: 1; width: 100%; }
+.graphnav-editor.embedded .sidebar { position: absolute; z-index: 10; top: 8px; bottom: 8px; left: 8px; width: min(320px, calc(100% - 16px)); height: auto; max-height: none; padding: 14px; border: 1px solid #d4e2db; border-radius: 12px; box-shadow: 0 8px 30px #183b3526; background: #fcfdfc; }
+.graphnav-editor.embedded .drawer-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: sticky; top: -14px; z-index: 2; background: #fcfdfc; padding: 10px 0; margin-top: -14px; border-bottom: 1px solid #e0e8e4; margin-bottom: 14px; }
+.graphnav-editor .drawer-heading button { font-size: 20px; line-height: 1; padding: 6px 10px; }
+.graphnav-editor.embedded .map-heading { padding: 10px 14px; flex-wrap: nowrap; }
+.graphnav-editor.embedded .map-heading > div { min-width: 0; flex: 1; }
+.graphnav-editor.embedded .map-heading h2 { font-size: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.graphnav-editor .page-map-button { font-size: 11px; padding: 6px 8px; }
+.graphnav-editor .editor-actions { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.graphnav-editor .editor-actions button[aria-pressed=true] { background: #e5f1eb; border-color: #39836c; }
+.graphnav-editor .backup-actions, .graphnav-editor .welcome-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+.graphnav-editor .map-tools { position: relative; overflow: visible !important; flex-shrink: 0; }
+.graphnav-editor .map-options { margin-left: auto; font-size: 11px; }
+.graphnav-editor .map-options summary { cursor: pointer; color: #526f61; padding: 5px; }
+.graphnav-editor .map-options > div { position: absolute; z-index: 12; right: 8px; top: 100%; padding: 12px; border: 1px solid #d3dfda; border-radius: 10px; background: white; display: grid; gap: 10px; box-shadow: 0 8px 25px #173b3026; max-width: min(300px, 94%); max-height: 45vh; overflow: auto; }
+.graphnav-editor .connect-prompt { padding: 8px 12px; background: #e2f2e9; color: #205d48; font-size: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.graphnav-editor .connect-prompt span { flex: 1; min-width: 160px; }
+.graphnav-editor .connect-prompt button { padding: 4px 8px; font-size: 11px; }
+.graphnav-editor .react-flow__node.connecting-node { box-shadow: 0 0 0 3px #42a98466; border-color: #248566; }
+.graphnav-editor button.node-title { border: 0; background: transparent; color: inherit; font: inherit; padding: 0; border-radius: 3px; text-align: center; }
+.graphnav-editor button.node-title:hover { background: transparent; text-decoration: underline; }
+.graphnav-editor .node-title span { font-size: 10px; opacity: .65; }
+.graphnav-editor .node-actions { display: flex; justify-content: center; gap: 4px; margin-top: 9px; }
+.graphnav-editor .node-actions button { font-size: 10px; font-weight: 500; padding: 3px 6px; background: transparent; border-color: #dce7e1; }
+.graphnav-editor.embedded .react-flow__node-default { padding: 12px; }
+.graphnav-editor.embedded .count-badge { display: none; }
+.graphnav-editor.embedded .canvas-caption { background: #f5f8f6de; border-radius: 6px; padding: 3px; left: 48px; right: 50px; }
+.graphnav-editor.embedded .source-options { max-height: 40vh; }
+@container (max-width: 450px) {
+  .graphnav-editor.embedded .workspace-header { padding: 6px 8px; }
+  .graphnav-editor.embedded .editor-actions { gap: 4px; }
+  .graphnav-editor.embedded .save-state { font-size: 9px; }
+  .graphnav-editor.embedded .map-heading h2 { font-size: 16px; }
+}
+.graphnav-editor .map-tools > label { flex: 1; min-width: 100px; max-width: 220px; font-size: 0; }
+.graphnav-editor .map-tools input { font-size: 11px; padding: 5px 7px; }
+.graphnav-editor.embedded .map-heading .eyebrow { display: none; }
+.graphnav-editor.embedded .map-heading { padding: 7px 12px; }
+.graphnav-editor.embedded .map-heading h2 { margin-top: 0; }
+.graphnav-editor.embedded .workspace-header { min-height: 38px; padding: 6px 10px; }
+
+.graphnav-editor .graph-edge-label { position: absolute; pointer-events: all; padding: 3px 6px; border: 1px solid transparent; background: #f5f8f6; color: #416253; line-height: 1.25; border-radius: 5px; max-width: 180px; overflow-wrap: anywhere; }
+.graphnav-editor .graph-edge-label:hover, .graphnav-editor .graph-edge-label:focus-visible { border-color: #6e9b88; background: white; }
