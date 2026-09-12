@@ -9,7 +9,8 @@ DONE means the task result is verified and published on main; application tasks 
 A scheduled step or published specification is not evidence that an application feature is complete.
 A tasks belong to Rajvansh on `rajvansh-ui`; B tasks belong to Eddy on `partner-data`.
 
-The target remains 6 AM code freeze and 4 PM submission on September 12, local Eastern time.
+The user removed the 6 AM freeze.
+Continue the full V1/V2 scope and clean, easy-to-navigate UI through tested checkpoints; submission remains 4 PM on September 12, local Eastern time.
 Expired feature timeboxes have been replaced with dependencies rather than implying that missed slots were completed.
 Steps 1-9 establish the core; 10-13 finish the additional intended interactions; 14 verifies the claimed release; 15 covers rest/pitch/submission.
 A deadline-driven reduction needs an explicit decision and accurate open tasks.
@@ -62,7 +63,7 @@ Task IDs are preserved for existing handoffs even where the numbered order chang
 | G2-B | Eddy | 7 | Generate and validate a structured graph draft | TODO | Real model response proposes supported concepts/relationships beyond containment; schema, sizes, IDs, evidence excerpts, and selected-source references validate; unsupported references never reach live storage; model ID/timing recorded |
 | G3-A | Rajvansh | 8 | Inspect evidence and accept/edit/reject suggestions | TODO | Preview supporting passage and destination; accept one, edit another, reject another; distinguish suggestions, personal edges, and source structure using the same editor |
 | G3-B | Eddy | 8 | Persist proposals, decisions, and accepted records safely | TODO | Additive database/backup migration preserves 88a4d00 maps and old backups; acceptance is atomic; refresh/regeneration retains user edits and exact rejection/removal decisions without duplicating accepted items |
-| M4-A | Rajvansh | 9 | Add the extension-owned PDF reader and graph | TODO | Local file picker, readable pages, graph beside the PDF, three working jumps, personal editing, and reused selected-text generation/review controls; reuse N1 section/page suggestions and autofill; Add selected or Build baseline must work with GPT unavailable. |
+| M4-A | Rajvansh | 9 | Add the extension-owned PDF reader and graph | DOING | Claimed on rajvansh-ui; see PDF_HANDOFF for reader, local-library and shared-editor boundary.  Local file picker, readable pages, graph beside the PDF, three working jumps, personal editing, and reused selected-text generation/review controls; reuse N1 section/page suggestions and autofill; Add selected or Build baseline must work with GPT unavailable. |
 | M4-B | Eddy | 9 | Supply PDF text, identity, destinations, and storage | DOING | Eddy PDF.js extraction, SHA-256 identity, outline/heading locators and fixture tests merged. Reader, real-paper test, durable bytes/reattachment and selected-content generation integration remain open. |
 | X1-A | Rajvansh | 10 | Group relationship controls | TODO | UC-08: select several members and From/To or peer roles; one labeled junction; edit members and recover from removal |
 | X1-B | Eddy | 10 | Group editing commands and invariants | TODO | Validate same-graph unique membership, role combinations, deletion behavior, backup, and reopen using existing member-list records |
@@ -98,7 +99,7 @@ These remain future provider/public-release choices, not prerequisites for the b
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M2-A / M5-A checkpoint merged; next M4-A / G1-A | PR #9 merged as 487b315. Typecheck/build/52 tests pass; temporary integration with Eddy f412f9b also passes all 63 tests. UI settings, focus, collapse, paged lists/canvas, readable layout and source warnings verified in installed fixtures. | Live-account reload/check pending; PDF reader and AI UI open; API project owner unresolved. | Continue PDF reader and selected-content preview against the shared contracts. Eddy should fetch main and read EDITOR_HANDOFF before changing shared messages. |
+| Rajvansh | M4-A on `rajvansh-ui` | PR #9 is merged and verified; PDF reader implementation starts from Eddy's existing PDF.js extractor and shared graph repository. | AI API owner unresolved; no authorized real demo PDF selected. These do not block local reader implementation and fixture checks. | Build local picker, page/section suggestions, graph beside readable pages, exact jumps, durable bytes and backup reattachment. Shared boundary is in PDF_HANDOFF. |
 | Partner | G1-B / `partner-data` at `f412f9b` | Reported from branch, unmerged. G1-B extraction and draft contract complete with 11 fixture-backed tests; combined suite 58 of 59 passing, the one failure being the known intermittent `workspace.spec.ts:43`, which passes in isolation. Earlier runtime through `4738cb2` is merged on main via PR #6. | G0-B cannot start: the model key and API project owner are unresolved (G0-A). PDF has no reader or real-paper acceptance. No model has been called, so G2-B is unstarted. | Await G0-A, then G0-B relay. Meanwhile M0-B demo PDF and M4-B real-paper checks. |
 
 Eddy's latest branch report is preserved above, including his reported intermittent workspace test.

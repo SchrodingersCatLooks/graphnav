@@ -65,7 +65,8 @@ This does not block manual/source-assisted maps or PDF reading.
 A meaningful authorized text PDF and document passages supporting useful connections are still needed for final demos.
 
 V1 and V2 both remain in the requested target.
-The 6 AM code-freeze target and 4 PM Eastern submission, including sleep, meals, pitch work, and submission buffer, remain in BUILD_PLAN.
+The user removed the 6 AM code freeze; there is no automatic stop at that time.
+The full V1/V2 and usability target remains, with 4 PM Eastern submission and flexible human rest, meals, pitch work, and submission buffer recorded in BUILD_PLAN.
 The remaining open rows are requirements, not silently approved cuts.
 
 ## Shared rules
@@ -119,3 +120,7 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
   Verified current main runtime matches `c209a87`, with typecheck/build/52 tests and inspected screenshots.
   The isolated combination with Eddy's `f412f9b` passes all 63 tests; his branch and current tracker updates are preserved.
   M2-A/M5-A remain REVIEW for their targeted live-account checks; PDF and AI work remain open.
+
+- 2026-09-12: Removed the 6 AM freeze at the user's request.
+  Rajvansh claims M4-A for the PDF reader and documents its shared boundary in PDF_HANDOFF.
+  This is a claim and schedule update, not a completed PDF or V2 feature.

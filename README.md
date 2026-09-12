@@ -17,7 +17,8 @@ A fresh live-account run on Rajvansh's account is not claimed.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
-The code-freeze target is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan includes rest and pitch preparation.
+The 6 AM code freeze has been removed by the user.
+Implementation continues toward the full V1/V2 target; submission remains 4 PM on September 12, local Eastern time, with human rest and pitch preparation still planned.
 Publishing these documents does not merge the application features they describe.
 **Documentation workflow:** keep planning, task claims, progress, and status directly updated on main at each checkpoint.
 Use the [shared-documentation procedure](./AGENTS.md#shared-documentation-lives-on-main) so both assistants see current information while feature code remains on its working branch.

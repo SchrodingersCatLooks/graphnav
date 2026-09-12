@@ -290,12 +290,15 @@ The merger updates STATUS only after the verified slice reaches main.
 
 ## Deadline, rest, and submission
 
-The user's target is code freeze at 6 AM and submission at 4 PM on September 12, local Eastern time.
+The user removed the 6 AM code freeze on September 12.
+The submission deadline remains 4 PM, local Eastern time.
+Continue implementation through tested checkpoints until the full V1/V2 functionality and a clean, easy-to-navigate interface are achieved.
 The earlier 1:20-based feature timeboxes have been replaced by dependency order because their elapsed slots are not reliable remaining estimates.
 At every gate, compare actual progress with the clock and record blockers instead of silently removing requirements.
-Begin release acceptance by 5:15 AM; if required functionality is missing, make an explicit scope/deadline decision and state the incomplete capabilities accurately.
-At 6 AM, save/freeze the verified checkpoint and preserve the planned rest/pitch blocks.
-This plan defines the full work; it does not guarantee that every remaining feature can fit before that target.
+There is no automatic 5:15 AM acceptance gate or 6 AM stop.
+Run release checks as capabilities become ready and record the exact verified release candidate before presentation/submission.
+If required functionality remains incomplete near submission, disclose it and obtain a scope decision instead of marking it complete.
+Keep the human rest, meals, pitch, and submission blocks below; the rest window can move while agent implementation continues.
 
 ## Step 15: prepare the pitch and submit
 
@@ -304,7 +307,7 @@ This plan defines the full work; it does not guarantee that every remaining feat
 
 | Local Eastern time | Rajvansh | Eddy |
 | --- | --- | --- |
-| 6:00-11:00 AM | Sleep after saving the checkpoint | Sleep |
+| Flexible rest window | Preserve planned sleep/rest; timing can move while agent work continues | Preserve planned sleep/rest |
 | 11:00-11:30 AM | Breakfast | Breakfast |
 | 11:30 AM-1:00 PM | Deck: problem, assisted creation, source navigation, meaningful AI connection, evidence, saved work, tested limits | Clean demo setup, relay startup, exact-build backup recording, package/access checks |
 | 1:00-1:30 PM | Lunch | Lunch |
