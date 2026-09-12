@@ -15,11 +15,32 @@ import type { ImportResult, Request, Response, ScopedImport } from '../lib/messa
 // scripts reach it only through these messages.
 const repository = new GraphRepository();
 
-/** Reuses the graph already bound to this source scope instead of duplicating it. */
-async function storeImport(scoped: ScopedImport): Promise<ImportResult> {
+/**
+ * Chooses the map this scope belongs to.
+ *
+ * Expanding a subfolder must add to the map already on screen rather than
+ * starting a second one, so an explicit target wins. Otherwise a scope reopens
+ * the map already bound to it, and only a genuinely new scope creates a map.
+ */
+async function targetGraph(scoped: ScopedImport, intoGraphId?: string) {
   const graphs = await repository.listGraphs();
-  const existing = graphs.find((graph) => graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
-  const graph = existing ?? (await repository.createGraph(scoped.title, crypto.randomUUID(), 'import'));
+
+  if (intoGraphId) {
+    const requested = graphs.find((graph) => graph.id === intoGraphId);
+    if (!requested) throw new Error('That map no longer exists.');
+    // A map holds one account's sources; mixing them would break refresh.
+    if (scoped.accountKey !== 'local' && requested.accountScope && requested.accountScope !== scoped.accountKey) {
+      throw new Error('That map belongs to a different Google account.');
+    }
+    return requested;
+  }
+
+  const bound = graphs.find((graph) => graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
+  return bound ?? (await repository.createGraph(scoped.title, crypto.randomUUID(), 'import'));
+}
+
+async function storeImport(scoped: ScopedImport, intoGraphId?: string): Promise<ImportResult> {
+  const graph = await targetGraph(scoped, intoGraphId);
 
   await repository.refreshScope(graph.id, graph.contentRevision, {
     scopeKey: scoped.scopeKey,
@@ -59,9 +80,9 @@ async function handle(raw: unknown): Promise<Response> {
     case 'GET_DOC_TABS':
       return { ok: true, data: await getDocumentTabs(request.documentId) };
     case 'IMPORT_DRIVE_FOLDER':
-      return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey())) };
+      return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey()), request.intoGraphId) };
     case 'IMPORT_DOC_TABS':
-      return { ok: true, data: await storeImport(await importDocTabs(request.documentId, await getAccountKey())) };
+      return { ok: true, data: await storeImport(await importDocTabs(request.documentId, await getAccountKey()), request.intoGraphId) };
     case 'LIST_GRAPHS':
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':
