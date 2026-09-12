@@ -164,3 +164,7 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
   Typecheck/build/all 102 tests pass; pairing, generation, evidence navigation, cancellation, refusal and manual fallback are verified with an installed extension and local synthetic provider.
   Actual OpenAI authentication returned 401 invalid_api_key; no model request succeeded.
   Eddy’s de16b0c relay needs client/server reconciliation, and G3-B database/proposal ownership is explicitly assigned to Eddy.
+
+- 2026-09-12: Replacement private API credential passed authentication and model availability lookup.
+  Eddy’s server checkpoint a8325dc is on main; its full integration is being checked by Rajvansh, including correcting the old hash computation and adding request limits.
+  This supersedes the earlier authentication failure but does not yet claim a generated result or successful provider billing.
