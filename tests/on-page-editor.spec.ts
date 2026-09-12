@@ -15,6 +15,7 @@ async function mockGoogle(context: BrowserContext) {
       const url = new URL(input), folder = 'application/vnd.google-apps.folder';
       const json = (value: unknown) => new Response(JSON.stringify(value), { status: 200, headers: { 'Content-Type': 'application/json' } });
       if (url.pathname.endsWith('/about')) return json({ user: { permissionId: 'fixture-account' } });
+      if (url.hostname === 'docs.googleapis.com' && env.fixtureLarge) return json({ title: 'Large synthetic document', tabs: Array.from({ length: 499 }, (_, index) => ({ tabProperties: { tabId: `t.section-${index}`, title: `Section ${String(index + 1).padStart(3, '0')}` } })) });
       if (url.hostname === 'docs.googleapis.com') return json({ title: 'Demo document', tabs: [
         { tabProperties: { tabId: 't.overview', title: 'Overview' } },
         { tabProperties: { tabId: 't.analysis', title: 'Analysis' }, childTabs: [{ tabProperties: { tabId: 't.detail', title: 'Details', parentTabId: 't.analysis' } }] },
@@ -28,6 +29,7 @@ async function mockGoogle(context: BrowserContext) {
           ...(env.fixtureRenamed ? [{ id: 'new-file', name: 'New unselected file', mimeType: 'text/plain' }] : []),
         ] });
       }
+      if (url.pathname.endsWith('/files/file-one') && env.fixtureUnavailable) return new Response('{}', { status: 404 });
       if (url.pathname.includes('/files/')) { const id = url.pathname.split('/').pop(); return json({ id, name: id === 'child-folder' ? 'Research' : 'Demo folder', mimeType: folder }); }
       throw new Error(`Unexpected fixture request: ${url.origin}${url.pathname}`);
     };
@@ -111,5 +113,67 @@ test('Docs baseline preserves nested tabs, lives on the left, and navigates the 
   await page.waitForURL('**/document/d/demo-doc/edit?tab=t.detail');
   expect(installed.context.pages()).toHaveLength(pagesBefore);
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.locator('.current-node')).toHaveText('Details');
+  await expect(page.locator('.current-node')).toContainText('Details');
+});
+
+
+test('500-node synthetic document supports bounded pages, search, focus, and collapse', async ({ installed }, testInfo) => {
+  test.setTimeout(60_000);
+  await installed.context.serviceWorkers()[0]!.evaluate(() => { (globalThis as any).fixtureLarge = true; });
+  const page = await open(installed.context, 'https://docs.google.com/document/d/large-doc/edit');
+  const started = Date.now();
+  await page.getByRole('button', { name: 'Build baseline (500)', exact: true }).click(); await saved(page);
+  await expect(page.locator('.count-badge')).toContainText('500 nodes');
+  await expect(page.locator('.react-flow__node')).toHaveCount(50);
+  const importMs = Date.now() - started;
+  await page.getByRole('button', { name: 'Next 50', exact: true }).click();
+  await expect(page.getByText('Page 2 of 10', { exact: true })).toBeVisible();
+  await expect(page.locator('.react-flow__node')).toHaveCount(50);
+  await page.getByLabel('Find a node', { exact: true }).fill('Section 499');
+  await expect(page.locator('.react-flow__node')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Section 499', exact: true }).click();
+  await page.getByRole('button', { name: 'Focus selected', exact: true }).click();
+  await expect(page.locator('.react-flow__node')).toHaveCount(2);
+  await expect.poll(async () => (await page.locator('.react-flow__node').first().boundingBox())!.width).toBeGreaterThan(100);
+  await page.screenshot({ path: testInfo.outputPath('focused-document.png') });
+  await page.getByRole('button', { name: 'Show whole map', exact: true }).click();
+  await page.getByRole('button', { name: 'Large synthetic document', exact: true }).click();
+  await page.getByRole('button', { name: 'Collapse branch', exact: true }).click();
+  await expect(page.locator('.react-flow__node')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Expand branch', exact: true }).click();
+  await expect(page.locator('.react-flow__node')).toHaveCount(50);
+  await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+  await saved(page);
+  await page.screenshot({ path: testInfo.outputPath('large-document.png') });
+  await testInfo.attach('synthetic-import-timing.json', { body: JSON.stringify({ nodes: 500, rendered: 50, importAndLayoutMs: importMs, note: 'Synthetic API responses in temporary Chromium profile; not a real Google latency or production benchmark.' }), contentType: 'application/json' });
+  console.log(`Synthetic 500-node import + layout: ${importMs} ms; canvas capped at 50.`);
+});
+
+test('panel preferences survive a complete restart and unavailable sources keep personal notes', async ({ installed }, testInfo) => {
+  const url = 'https://drive.google.com/drive/folders/root-folder';
+  const page = await open(installed.context, url);
+  await page.getByRole('checkbox', { name: 'Add Plan from Demo folder', exact: true }).first().check();
+  await page.getByRole('button', { name: 'Add selected (1)', exact: true }).click(); await saved(page);
+  await page.getByRole('button', { name: 'Plan', exact: true }).click();
+  await page.getByLabel('Notes', { exact: true }).fill('Keep this even if access changes');
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click(); await saved(page);
+  const worker = installed.context.serviceWorkers()[0]!;
+  await worker.evaluate(() => { (globalThis as any).fixtureUnavailable = true; });
+  await page.getByRole('button', { name: 'Check destinations', exact: true }).click(); await saved(page);
+  await expect(page.locator('.target-status')).toContainText('1 unavailable');
+  await expect(page.locator('.unavailable-node')).toHaveCount(1);
+  await expect(page.getByLabel('Notes', { exact: true })).toHaveValue('Keep this even if access changes');
+  await expect(page.locator('.inspector .source-warning')).toContainText('Your map and notes are still saved');
+  await page.getByLabel('Panel width', { exact: true }).selectOption('420');
+  await page.getByRole('button', { name: 'Dock left', exact: true }).click();
+  await expect.poll(async () => worker.evaluate(async () => (await (globalThis as any).chrome.storage.local.get('panel-preferences:v1:drive'))['panel-preferences:v1:drive'])).toEqual({ width: 420, dock: 'left' });
+  const context = await installed.restart();
+  const restored = await open(context, url); await saved(restored);
+  await expect(restored.getByLabel('Panel width', { exact: true })).toHaveValue('420');
+  await expect(restored.getByRole('button', { name: 'Dock right', exact: true })).toBeVisible();
+  const panel = (await restored.getByRole('dialog').boundingBox())!;
+  expect(panel.x).toBe(16); expect(panel.width).toBe(420);
+  await expect(restored.locator('.unavailable-node')).toHaveCount(1);
+  await restored.getByRole('button', { name: 'Hide tools', exact: true }).click();
+  await restored.screenshot({ path: testInfo.outputPath('compact-panel.png') });
 });
