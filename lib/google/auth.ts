@@ -35,6 +35,14 @@ export async function disconnect(): Promise<void> {
   if (token) await browser.identity.removeCachedAuthToken({ token });
 }
 
+/** Carries the status so a caller can tell a missing target from a transient failure. */
+export class HttpError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
+  }
+}
+
 export class AuthRequiredError extends Error {
   constructor() {
     super('Not connected to Google.');
@@ -63,7 +71,8 @@ export async function authorizedGet<T>(url: string): Promise<T> {
 
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
-    throw new Error(
+    throw new HttpError(
+      response.status,
       `${response.status} ${response.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}`,
     );
   }

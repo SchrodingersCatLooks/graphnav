@@ -2,6 +2,7 @@ import { defineBackground } from 'wxt/utils/define-background';
 import { browser } from 'wxt/browser';
 import { AuthRequiredError, connect, disconnect, isConnected } from '../lib/google/auth';
 import { getAccountKey } from '../lib/google/account';
+import { checkTargets } from '../lib/google/availability';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
@@ -103,6 +104,31 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':
       return { ok: true, data: await repository.readGraph(request.graphId) };
+    case 'CHECK_TARGETS': {
+      const snapshot = await repository.readGraph(request.graphId);
+      // Only Google-backed sources can be checked; a local PDF has no server.
+      const targets = snapshot.sources
+        .filter((source) => source.provider !== 'local-pdf')
+        .map((source) => ({ sourceKey: source.sourceKey, resourceId: source.resourceId }));
+
+      const checks = await checkTargets(targets);
+      let changed = 0;
+      for (const check of checks) {
+        // 'unknown' means the check itself failed, so say nothing about the target.
+        if (check.state === 'unknown') continue;
+        if (await repository.markSourceAvailability(check.sourceKey, check.state)) changed += 1;
+      }
+
+      return {
+        ok: true,
+        data: {
+          checked: checks.length,
+          unavailable: checks.filter((c) => c.state === 'unavailable').length,
+          unknown: checks.filter((c) => c.state === 'unknown').length,
+          changed,
+        },
+      };
+    }
     case 'NAVIGATE': {
       // The locator is the node's stored destination, so navigation does not
       // depend on layout or on re-reading the source.
