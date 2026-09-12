@@ -2,18 +2,16 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) is merged on main as `487b315`, extending the editor and Google integration from PR #6.
-Drive and Docs now open an editable graph on the page, with existing-source suggestions, selected imports, structural baselines, personal nodes/connections, ELK arrangement, local saving, and backups.
-The Docs graph sits on the left and opens document tabs in the same browser tab.
-The toolbar popup also opens an optional My maps workspace.
+**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #12](https://github.com/SchrodingersCatLooks/graphnav/pull/12).
+Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
+AI connection settings and draft/evidence display work against the local test relay; a real model and persistent review decisions are not yet verified.
 
-**Still open:** PDF reading, GPT generation/evidence review, source-authoring controls, group editing, and floating panel placement.
-The PDF extractor is a tested foundation, not a reader.
-V1 and V2 remain in the requested MVP target; consult TASK_LIST for exact status rather than treating all planned features as shipped.
+**Still open:** actual provider integration and accepted/edited/rejected AI persistence, source-authoring controls, group editing, floating placement and final demo acceptance.
+V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Verification:** typecheck, production build, and all 52 tests pass on Node 22.23.2 / npm 10.9.9.
-Installed browser tests use synthetic Google responses and temporary profiles; Eddy separately reports live Google reads/imports/navigation and restart success.
-A fresh live-account run on Rajvansh's account is not claimed.
+**Verification:** Node 22.23.2 / npm 10.9.9 typecheck, production build and all 102 tests pass.
+Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
+No live generated graph or fresh Google-account acceptance is implied by those tests.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.

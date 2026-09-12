@@ -1,6 +1,6 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #11 merged as `1453ec6`.
+Last shared update: 2026-09-12, after runtime PR #12 merged as `c947fa1`.
 
 ## Working on main
 
@@ -8,7 +8,7 @@ Last shared update: 2026-09-12, after runtime PR #11 merged as `1453ec6`.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
 [PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
-The current main runtime matches checkpoint 8f092f1.
+The current main runtime matches checkpoint 148dfa4.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -35,7 +35,7 @@ Eddy's application work through 179d98f is included through normal merges.
   Selection/purpose/map changes invalidate preview state, cancelled/late reads cannot replace newer choices, and preview sends nothing to a model.
 - Generation input validation binds text, character totals, passage IDs, account/source/locator/version and allowed map-node IDs.
   Empty drafts require valid identity/schema; late output after timeout and caller cancellation are refused.
-  This is tested request infrastructure, not a live AI connection.
+  The merged extension client now pairs with a local relay and displays validated drafts/evidence; the actual provider connection is still unverified.
 - Eddy's authored six-page demo paper and generation/scale tests are now included on main.
 
 ## Verification and limits
@@ -68,7 +68,9 @@ No complete-MVP or production-scale acceptance is claimed.
 ## Next work and account action
 
 G1-A is merged and verified for selected-content preview.
-Rajvansh claims G2-A for extension relay pairing, request/cancel handling and proposal UI.
+G2-A extension pairing, request/cancel handling and proposal/evidence UI merged in PR #12.
+All 102 tests pass, including an installed Chrome extension talking to a real loopback HTTP fixture.
+The actual server/provider and persistent review decisions remain open.
 Eddy should bring main into partner-data and read GENERATION_HANDOFF before changing the same generation/type/request files.
 His work through 179d98f is now merged, including the authored paper and request/scale tests.
 The review fixes are implemented with reproductions and regression checks; Eddy retains server/provider startup and proposal-persistence/migrations.
@@ -78,7 +80,9 @@ No model has been called, no accepted-AI persistence is implemented, and no comp
 The user supplied OpenAI project, organization and key metadata.
 These IDs do not authenticate model requests.
 A private ignored .env.relay.local file is prepared on Rajvansh’s laptop for the actual secret; it is not committed or bundled.
-G0-A remains blocked on the account owner saving the secret locally and verifying live access, funding and the test-spend limit.
+The user saved a value locally, but the first private GET /v1/models check returned 401 invalid_api_key.
+The user has been asked to replace it with the complete actual secret.
+G0-A remains blocked on successful authentication and verifying live model access, funding and the test-spend limit.
 Do not put a key in chat, GitHub, extension storage, or the browser bundle.
 This does not block manual/source-assisted maps or PDF reading.
 Eddy's authored six-page demo PDF is now on main at demo/GraphNav-demo-paper.pdf; it is not an independent publication.
@@ -155,3 +159,8 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 
 - 2026-09-12: G0-A now has project metadata and a private local setup path.
   Actual credentials and live API access remain unverified; no model request or new runtime acceptance is claimed.
+
+- 2026-09-12: Merged PR #12 as c947fa1, runtime 148dfa4.
+  Typecheck/build/all 102 tests pass; pairing, generation, evidence navigation, cancellation, refusal and manual fallback are verified with an installed extension and local synthetic provider.
+  Actual OpenAI authentication returned 401 invalid_api_key; no model request succeeded.
+  Eddy’s de16b0c relay needs client/server reconciliation, and G3-B database/proposal ownership is explicitly assigned to Eddy.

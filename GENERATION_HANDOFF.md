@@ -49,7 +49,7 @@ The combined suite passed 94 tests; the last preview layout refinement passed ty
 Rajvansh now claims G2-A extension-side files: a loopback client in lib/generation/relay.ts, typed status/configure/generate/cancel messages, extension-owned pairing settings, and the existing GenerationPanel/DraftReview UI.
 wxt.config.ts needs only an additional http://127.0.0.1:8787/* host permission for that client; preserve the Google OAuth block.
 Eddy owns the separate relay package, actual provider adapter, startup docs and G3-B decision persistence.
-No runtime file for that relay client or pairing exists at this documentation checkpoint yet.
+The client, pairing settings, draft/evidence UI and tests are now merged in PR #12, runtime 148dfa4.
 
 The client/server contract for the next bounded integration is:
 
@@ -81,3 +81,21 @@ The file and its values are not in GitHub and must not be imported into the WXT/
 The planned server can read OPENAI_API_KEY plus optional OPENAI_PROJECT_ID, OPENAI_ORG_ID and OPENAI_BASE_URL from its own process environment.
 A real model, billing/access and the demo spend cap remain unverified.
 Eddy still owns the relay package, provider adapter and startup command; the extension uses only its separate session pairing code.
+
+## PR #12 integration and explicit G3-B ownership
+
+Rajvansh merged the client side in PR #12 as c947fa1 after typecheck/build/all 102 tests.
+The installed loopback fixture verifies the extension’s real HTTP request, expected extension Origin on POST, selected-only text, pairing, cancellation, invalid/refused output, and source navigation.
+No real model has been called.
+The first private OpenAI GET /v1/models authentication check returned 401 invalid_api_key and the user is correcting the secret locally.
+
+Eddy’s de16b0c relay is now available on partner-data.
+Its port/routes/payload/auth/health contract must be reconciled with the client contract above before real integration can work.
+Rajvansh owns that immediate integration review and will preserve Eddy’s server/provider code through normal commits.
+Eddy should avoid concurrent changes to the relay/client bridge during that checkpoint.
+
+G3-B is explicitly Eddy’s implementation lane, including lib/storage/database.ts additive migrations, a proposal store in lib/generation, graph/evidence types, atomic repository acceptance, backups, and storage tests.
+There is no additional approval blocker merely because Rajvansh originally created those files.
+Rajvansh will keep new UI work outside those persistence files while G3-B is active.
+Eddy should publish the typed proposal-store API and request/reply handoff on main before Rajvansh connects accept/edit/reject controls.
+Keep proposal text/evidence, accepted IDs, edited labels and rejection/removal decisions persistent; reusing the same proposal or regenerating must not duplicate accepted work.
