@@ -4,6 +4,8 @@ A Chrome extension for navigating and organizing Drive folders, Google Docs tabs
 
 **Current state:** documentation and team workflow are ready. The application has not been built. [STATUS.md](./STATUS.md) is the source of truth for what works now.
 
+**Release order:** V1 lets users manually create/edit idea nodes and meaningful connections, attach and navigate real sources, and save their work. APIs/PDF parsing may import source structure. V2 adds GPT-assisted graph drafts with evidence and accept/edit/reject controls. V2 is planned; generation must not be required for the V1 editor.
+
 ## Start here
 
 | File | What it answers | When to update |

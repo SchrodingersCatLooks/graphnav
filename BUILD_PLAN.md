@@ -1,6 +1,6 @@
 # Tonight's build plan
 
-Build **one Chrome extension** with the same graph interface for Drive folders, Google Docs tabs, and individual research PDFs. We will finish one usable experience together before expanding to the next.
+Build **one Chrome extension** with the same graph interface for Drive folders, Google Docs tabs, and individual research PDFs. **V1 is manual graph creation/editing plus real source navigation and saving. V2 adds GPT-assisted draft generation to that same product.** Finish a useful manual experience first; do not substitute a generated diagram for the editor or make V1 depend on a model call.
 
 This is a proposed 15-hour schedule measured from when you start: **12 hours building and 3 hours preparing the presentation**. If less time remains, use the cut order below and preserve the last 3 hours. Current progress belongs in [TASK_LIST.md](./TASK_LIST.md) and [STATUS.md](./STATUS.md), not in this schedule.
 
@@ -18,15 +18,15 @@ Both spend the same blocks on the same milestone. For example, during Docs work 
 | --- | --- | --- | --- | --- |
 | 0:00–0:30 | Same project and demo | Clone repo; agree on the interface and scope | Clone repo; prepare one demo folder, tabbed Doc, and text PDF | Same plan, shared source access, one task each |
 | 0:30–2:00 | Extension shell and first Google read | Scaffold WXT/React/TypeScript; load the extension; add Graph button and empty panel | Configure Google project and sign-in; read a folder and Doc; define shared data types with you | Both run the same merged scaffold; real API response or a documented auth blocker |
-| 2:00–4:00 | Real Drive graph | Build shared nodes, edges, expand/collapse, focus, and open controls | Convert Drive files/folders to graph data; wire opening, loading, and initial save | Open a real folder, expand it, open a file, close graph, and reopen it |
+| 2:00–4:00 | First manual graph with real Drive sources | Build source/idea nodes, add/connect/label/edit/remove personal items, and basic expand/open controls | Supply real source nodes and destinations; implement graph edit commands and initial save | Add an idea and labeled connection to a real source, open it, edit the connection, and reopen saved state |
 | 4:00–6:00 | Real Docs tab graph | Reuse graph in a Docs panel; show selected tab and preview/details | Read tabs recursively and wire exact tab navigation | Navigate to a top-level tab and a nested tab in the real Doc |
 | 6:00–8:00 | Paper graph and reader | Build extension PDF reader with graph beside it | Use PDF.js to read bookmarks/text and map section nodes to destinations | Open a paper and click at least three nodes to the correct locations |
-| 8:00–10:00 | Saved edits and useful authoring | Add personal connection/note controls and one source-action form; show save/refresh status | Persist state and PDFs; merge refresh safely; implement the chosen source action | Reopen without losing a note/layout; create a real folder or Doc tab with permission |
+| 8:00–10:00 | Complete V1 editing and refresh | Finish note/relationship editing and focus; show save/refresh status; add a source-action form if time allows | Preserve edits during refresh, persist PDFs, and implement one source action if time allows | Add/edit/remove personal nodes and edges; reopen and refresh without losing accepted edits; test any implemented source write |
 | 10:00–12:00 | Reliable demonstration build | Improve labels and readability; test each surface on partner's build | Fix data/auth/navigation bugs; produce packaged build and verify restart | Same final commit, clean build, actual browser walkthrough, then freeze features |
 | 12:00–13:00 | Story and demo assets | Draft the short deck | Record a backup demo and prepare a clean demo browser | Deck describes only working features |
 | 13:00–15:00 | Rehearsed presentation | Lead problem, product, and value | Lead demo and technical explanation | Both rehearse the full pitch, timing, handoffs, and questions |
 
-At each checkpoint, merge a working slice into `main`, pull it, and run it together. A screenshot of a graph is not completion: its clicks must work.
+At each checkpoint, merge a working slice into `main`, pull it, and run it together. A screenshot of a graph is not completion: its clicks must work. If the initial manual editor takes longer than M2, finish its create/connect/edit/save cycle before adding another surface; shorten secondary integrations instead of dropping manual editing.
 
 ## Step 1 Make development work
 
@@ -74,10 +74,12 @@ If auth has no successful read by hour 2, stop spending both people's time on it
 Agree on this small data contract before writing adapters:
 
 - **Graph:** source kind, source ID, account key where relevant, refresh time, nodes, and edges.
-- **Node:** stable ID, title, type, and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page. Personal notes may have no external target.
-- **Edge:** stable ID, source node, target node, and type (`contains`, `references`, `related`); include provenance for non-structural edges.
+- **Node:** stable ID, title, type (`source`, `idea`, or `note` plus source subtype), and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page. Keep source titles separate from personal display labels; ideas/notes may have no external target.
+- **Edge:** stable ID, endpoints, relationship label, explanation, and origin (`imported`, `manual`, `ai-suggested`, `ai-accepted`). V2 may attach supporting source anchors and a draft ID. Preserve accepted user edits independently of later drafts.
 - **Personal state:** positions, collapsed nodes, notes, and custom edges, stored separately from the source graph.
-- **Adapter:** `load`, `refresh`, and `navigate`, with optional supported creation actions. No token in graph data.
+- **Adapter:** `load`, `refresh`, and `navigate`, with optional supported source actions. No token in graph data.
+- **Graph editing:** shared commands to add/update/remove personal nodes and edges and attach source destinations. Removing a personal graph item does not delete its original file.
+- **V2 generation boundary:** a separate module accepts selected source excerpts and returns draft nodes/edges plus evidence references. Keep the model call out of the graph UI; do not build this module until V1's manual cycle works.
 
 Suggested ownership: you own `components/graph/` and visible entrypoints; partner owns `lib/adapters/`, `lib/storage/`, and the background worker. Agree together on `lib/graph/types.ts`. Only one person edits shared types, package files, or WXT configuration at a time; hand off changes explicitly.
 
@@ -89,7 +91,22 @@ Suggested ownership: you own `components/graph/` and visible entrypoints; partne
 
 **PDF:** start with a local text-based PDF in our extension-owned reader. Use PDF.js bookmarks when present; otherwise propose page-aware heading anchors and let the user correct them. Use bundled code/workers. Do not attempt to inject into Chrome's built-in PDF viewer. Remote URL import is optional; local file selection keeps the first reader independent of publisher restrictions.
 
-**Creation:** first ship one working source action, then add the others if time permits. Target folder creation and Doc tab add/rename. Google Docs exposes `addDocumentTab` and `updateDocumentTabProperties` requests. Verify against the actual account before claiming support. [Docs write requests](https://developers.google.com/workspace/docs/api/reference/rest/v1/documents/request).
+**Creation:** manual idea nodes and labeled relationships are core V1. Once their create/edit/remove/save cycle works, add one real source action and then the others if time permits. Target folder creation and Doc tab add/rename. Google Docs exposes `addDocumentTab` and `updateDocumentTabProperties` requests. Verify against the actual account before claiming support. [Docs write requests](https://developers.google.com/workspace/docs/api/reference/rest/v1/documents/request).
+
+## Planned V2 GPT-assisted generation
+
+V2 is the next product stage, not a requirement to finish tonight's V1. Start after the manual acceptance check passes and time remains before the feature freeze; otherwise continue after the hackathon. Do not mark it DOING or completed until work actually starts.
+
+| Task | Rajvansh | Partner | Completion check |
+| --- | --- | --- | --- |
+| G1 Select and extract | Source selection and selected-content preview | Extract bounded Doc/PDF content with stable passage/tab/page references | Selected input can be inspected and every source anchor resolves |
+| G2 Propose a graph | Loading/error/cancel state for Generate draft | Server-side GPT call behind a replaceable generator interface; validate structured proposals and reference IDs | A bounded draft with source/idea nodes and evidence-backed proposed edges is returned |
+| G3 Review and persist | Show evidence and accept/edit/reject controls in the existing editor | Keep drafts separate; persist acceptance and preserve user edits on refresh/regeneration | Accept one edge, edit another, reject another, reopen and regenerate without losing those decisions |
+| G4 Verify product value | Test the full navigation and correction workflow | Check invalid citations, model errors, content limits, and repeated generation | Source destinations work; failed generation leaves manual editing and saved graphs usable |
+
+Folder metadata is sufficient for a structural Drive view, but V2 needs actual content from supported selected files. Initially support one Doc or text PDF; do not silently read a whole Drive for semantic analysis. Send only selected content to the model with the user's authorization. Keep the provider API key on a server, outside the extension and GitHub. A development server can run locally for a prototype; deployment and multiuser authentication are separate work.
+
+Check the current official model API documentation when implementing G2. Record provenance and source excerpts; discard or flag proposals whose referenced passages or destinations cannot be validated. The graph editor, source integrations, navigation, and persistence remain independent of generation.
 
 ## How to use AI without getting out of sync
 
@@ -117,8 +134,8 @@ These choices make the prototype easier to extend and test with larger sources. 
 
 ## Finish and cut order
 
-By hour 10, protect anything already working. Drop AI suggestions, full citation extraction, extra themes, arbitrary publisher pages, a full editor, additional platforms, and cloud sync. If time is tight, ship one source creation action instead of all three, and correct PDF anchors manually if automatic heading detection is unreliable. If a whole integration is blocked, explicitly reduce the demo to the real completed surfaces.
+By hour 10, protect the V1 manual create/connect/edit/navigate/save cycle. Keep GPT generation in the planned V2 queue if it is not ready; defer full citation extraction, extra themes, arbitrary publisher pages, a full editor, additional platforms, and cloud sync. Reduce source creation actions and secondary integrations before removing core manual editing. Correct PDF anchors manually if automatic heading detection is unreliable. If an integration is blocked, explicitly reduce the demo to the real completed surfaces.
 
-At hour 12 stop adding features. Show: normal interface → Graph → expand/focus → open exact destination → add a personal connection or source item → reopen with saved state → repeat briefly in the other completed surface. Target a 2–3 minute demo and adjust to the organizer's actual limit. Keep the backup recording from the same final build.
+At hour 12 stop adding features. Show: normal interface → Graph → attach a source and add an idea → connect and label them → edit the connection → open the exact source destination → reopen with saved state → repeat briefly in another completed surface. Show V2 only if the actual selected-content, evidence-review, and saved-edit workflow works; otherwise identify it as planned. Target a 2–3 minute demo and adjust to the organizer's actual limit. Keep the backup recording from the same final build.
 
 If possible, ask two people unfamiliar with the sample to find a tab and a paper section. Record only actual task results. Use those observations to simplify confusing controls, not to invent performance claims.
