@@ -103,15 +103,32 @@ Then **APIs & Services → Credentials → Create credentials → OAuth client I
 Give the client ID to Rajvansh for the manifest. A client ID is not a secret credential, but
 tokens are: tokens stay in the background worker and never reach page context or this repo.
 
-## 5. Demo sources (M0, still unresolved)
+## 5. Demo sources (M0)
 
-M1-B is only complete when a real folder and a real Doc are read through the installed
-extension. That needs agreed sources, accessible to both test accounts:
+| Source | ID |
+| --- | --- |
+| Drive folder `GraphNav demo drive` | `1lCy7TGKSvo5XjIKljT1rTqkDAU-NHRPD` |
+| Doc `GraphNav demo paper` | `1rfb2-1rBQccYfo3y9marX-YiPAbuJno49VeUyT6Aj6I` |
 
-- one Drive folder with a few files
-- one Google Doc using tabs, including at least one nested tab
+The folder holds ten numbered subfolders, one of which (`04 Raw Data`) contains a nested
+`Session Logs` folder so expand/collapse has a real second level. The Doc has three top-level
+tabs (Overview, Methods, Findings) and one sub-tab (Scope and Definitions) nested under
+Overview. Both are shared with the second test account as Editor.
 
-Record the chosen IDs here once picked. Use authorized demo content, never personal documents.
+Demo content was authored for this project. No personal documents are used.
+
+## 5a. Verified reads
+
+Performed in the installed extension on 2026-09-12, Chrome 152.0.7977.84 / macOS 26.5.2,
+extension ID confirmed as `pidejkbkldalibjaehjfpjkcpjpcenpk`.
+
+- `LIST_FOLDER` on the demo folder returned all ten subfolders as `type: 'folder'`, each with a
+  `webViewLink` destination, and `truncated: false`.
+- `GET_DOC_TABS` on the demo Doc returned the document title and four tab items. The sub-tab
+  carried `parentId` referencing its parent tab, so nesting is preserved.
+
+Both calls used real OAuth tokens through Chrome Identity. No token appears in any message
+payload, in storage, or in page context.
 
 ## 6. Which steps need whom
 
@@ -121,10 +138,10 @@ Record the chosen IDs here once picked. Use authorized demo content, never perso
 | 2 Project and APIs | Partner, in browser | DONE. `graphnav` project created, Drive API and Docs API enabled |
 | 3 Scope choice | From BUILD_PLAN | DONE. Recorded in section 3 |
 | 4 Consent screen and client | Partner, in browser | DONE. External/Testing, both test users added, Chrome Extension client created |
-| Manifest edit | Partner, handed over by M1-A | BLOCKED until the M1-A scaffold merges |
-| Background auth handler | Partner, in code | BLOCKED until the M1-A scaffold merges |
-| 5 Demo sources | Both | TODO. M0 folder and Doc still unchosen |
-| First real Drive and Doc read | Partner | TODO. Nothing has called a Google API yet |
+| Manifest edit | Partner, handed over by M1-A | DONE. Key, identity, host access, OAuth client and scopes applied |
+| Background auth handler | Partner, in code | DONE. Background worker, auth module, Drive and Docs adapters |
+| 5 Demo sources | Both | DONE. Folder and Doc created, shared, and recorded above |
+| First real Drive and Doc read | Partner | DONE. Both reads verified in the installed extension |
 
 Console setup was performed in Google's newer **Google Auth Platform** layout, where Branding,
 Audience, Data Access, and Clients are separate screens rather than one consent-screen wizard.
