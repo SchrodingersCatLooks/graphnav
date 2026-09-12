@@ -9,13 +9,12 @@ import { usePanelPlacement } from './usePanelPlacement';
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
-  const [connected, setConnected] = useState(false);
   const [authEpoch, setAuthEpoch] = useState(0);
   const lastConnection = useRef(false);
   function connectionChanged(value: boolean) {
     if (lastConnection.current !== value) {
       lastConnection.current = value;
-      setConnected(value); setAuthEpoch((epoch) => epoch + 1);
+      setAuthEpoch((epoch) => epoch + 1);
     }
   }
   const [editorBusy, setEditorBusy] = useState(false);
@@ -123,7 +122,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
 
           <div className="panel-auth"><GoogleConnection onConnected={connectionChanged} disabled={editorBusy} /></div>
           {context.label === 'Drive Home' && <p className="home-map-note">Home shows your My Drive map. Open a folder for its own map.</p>}
-          <GraphEditor layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} googleConnected={connected} onBusyChange={setEditorBusy} />
+          <GraphEditor panelOpen={open} layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} onBusyChange={setEditorBusy} />
 
           <footer className="panel-footer flex items-center justify-between gap-3">
             <span>{placement.floating ? 'Floating overlay' : 'Fixed overlay'}</span>

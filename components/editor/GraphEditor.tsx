@@ -2,26 +2,29 @@ import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } 
 import { GraphMark } from '../GraphMark';
 import { GraphCanvas, type Selection } from '../graph/GraphCanvas';
 import { destinationUrl, effectiveLabel, LIMITS, type Graph, type GraphSnapshot, type GraphNode, type Locator } from '../../lib/graph/types';
-import { editorClient as repository, createContextMap, arrangeMap, openPageMap } from '../../lib/editor/client';
+import { editorClient as repository, createContextMap, arrangeMap } from '../../lib/editor/client';
 import { scopeKey, type SourceContext } from '../../lib/editor/protocol';
 import { SourcePicker } from './SourcePicker';
 import { sendToBackground, type CheckTargetsResult, type PanelState } from '../../lib/messages';
 import { projectGraph } from '../../lib/graph/view';
 import { pdfReaderPath, type PdfLocator } from '../../lib/pdf/navigation';
+import { DriveGenerationPanel } from '../generation/DriveGenerationPanel';
 import { GenerationPanel } from '../generation/GenerationPanel';
 import { docsGenerationSource, type GenerationSource } from '../../lib/generation/selection';
 import './editor.css';
 
 const storageError = (reason: unknown) => reason instanceof Error ? reason.message : 'The change could not be saved. Please retry.';
 type Action = (current: GraphSnapshot | null) => Promise<string | void>;
-type Tool = 'sources' | 'idea' | 'connect' | 'edit' | 'maps' | 'ai' | null;
+type Tool = 'new' | 'sources' | 'idea' | 'connect' | 'edit' | 'maps' | 'ai' | null;
 export type SourceToolsProps = { snapshot: GraphSnapshot | null; selectedNode?: GraphNode; busy: boolean; apply: (action: Action) => Promise<boolean> };
-type Props = { generationSource?: GenerationSource; context?: SourceContext; authEpoch?: number; googleConnected?: boolean; activeTabId?: string; layoutKey?: string; initialGraphId?: string | null; sourceTools?: (props: SourceToolsProps) => ReactNode; onNavigatePdf?: (locator: PdfLocator) => Promise<void>; onBusyChange?: (busy: boolean) => void; onGraphChange?: (id: string) => void };
-export function GraphEditor({ generationSource, context, authEpoch = 0, googleConnected = authEpoch > 0, activeTabId, layoutKey = 'workspace', initialGraphId, sourceTools, onNavigatePdf, onBusyChange, onGraphChange }: Props) {
+type Props = { panelOpen?: boolean; generationSource?: GenerationSource; context?: SourceContext; authEpoch?: number; activeTabId?: string; layoutKey?: string; initialGraphId?: string | null; sourceTools?: (props: SourceToolsProps) => ReactNode; onNavigatePdf?: (locator: PdfLocator) => Promise<void>; onBusyChange?: (busy: boolean) => void; onGraphChange?: (id: string) => void };
+export function GraphEditor({ panelOpen = true, generationSource, context, authEpoch = 0, activeTabId, layoutKey = 'workspace', initialGraphId, sourceTools, onNavigatePdf, onBusyChange, onGraphChange }: Props) {
   const embedded = !!context || !!sourceTools;
   const docsSource = useMemo(() => context?.kind === 'docs' ? docsGenerationSource(context.sourceId) : undefined, [context?.kind, context?.sourceId, authEpoch]);
   const aiSource = generationSource ?? docsSource;
   const [tool, setTool] = useState<Tool>(null);
+  const [editing, setEditing] = useState(!embedded);
+  const [creationMode, setCreationMode] = useState<'manual' | 'ai' | null>(null);
   const toolsOpen = !embedded || tool !== null;
   const [connecting, setConnecting] = useState(false);
   const [connectionStart, setConnectionStart] = useState<string | null>(null);
@@ -53,19 +56,27 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
   const file = useRef<HTMLInputElement>(null);
   const [importName, setImportName] = useState('');
 
+  useEffect(() => {
+    if (embedded && panelOpen && !dirty) {
+      setEditing(false); setTool(snapshot ? null : 'new'); setSelection(null);
+      setConnecting(false); setConnectionStart(null);
+    }
+  }, [panelOpen]);
+  useEffect(() => { if (tool === 'new' && creationMode) newMapInput.current?.focus(); }, [tool, creationMode]);
+  function startNewGraph() { setNewMap(''); setCreationMode(null); showTool('new'); }
   function showTool(next: Tool) {
     if (dirty) { setError('Save or cancel your edits first.'); return; }
+    if (next === 'sources' || next === 'idea' || next === 'connect' || next === 'edit') setEditing(true);
     setTool(next); setConnecting(false); setConnectionStart(null);
   }
   async function pageMap() {
     if (!context) return;
-    const result = await openPageMap(context);
-    setPageMapId(result.graphId);
-    if (result.created) {
-      const data = await repository.readGraph(result.graphId);
-      await arrangeMap(result.graphId, data.graph.contentRevision, true);
-    }
-    return result.graphId;
+    const rows = await repository.listGraphs();
+    const bound = rows.filter((graph) => graph.sourceBindings[0]?.key === scopeKey(context));
+    const found = bound.find((graph) => graph.createdVia === 'import') ?? bound.sort((a, b) => a.createdAt - b.createdAt)[0];
+    if (!found) { startNewGraph(); return; }
+    setPageMapId(found.id);
+    return found.id;
   }
 
   async function load(id: string, stillCurrent = () => true) {
@@ -88,7 +99,7 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
     let active = true;
     setBusy(true); setError('');
     current.current = null; setSnapshot(null); setSelection(null);
-    setConnecting(false); setConnectionStart(null); setPageMapId(null);
+    setConnecting(false); setConnectionStart(null); setPageMapId(null); setEditing(!embedded); setTool(null);
     selectedMap.current = null;
     void (async () => {
       try {
@@ -98,11 +109,10 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
         const panel = context ? await sendToBackground<PanelState>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }) : null;
         const remembered = panel?.ok ? panel.data.graphId : undefined;
         const requested = initialGraphId ?? remembered ?? (embedded ? '' : decodeURIComponent(location.hash.slice(1)));
-        let id = initialGraphId !== undefined ? rows.find((graph) => graph.id === requested)?.id : context ? rows.find((graph) => graph.id === remembered)?.id ?? rows.find((graph) => graph.createdVia === 'import' && graph.sourceBindings[0]?.key === scopeKey(context))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
-        if (context && googleConnected && !id) id = await pageMap();
+        const id = initialGraphId !== undefined ? rows.find((graph) => graph.id === requested)?.id : context ? rows.find((graph) => graph.id === remembered)?.id ?? rows.find((graph) => graph.sourceBindings[0]?.key === scopeKey(context))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
         if (!active) return;
         if (id) await load(id, () => active);
-        else { current.current = null; setSnapshot(null); setSelection(null); }
+        else { current.current = null; setSnapshot(null); setSelection(null); if (embedded) { setCreationMode(null); setTool('new'); } }
         const updated = await repository.listGraphs();
         if (active) setGraphs(updated);
       } catch (reason) { if (active) setError(storageError(reason)); }
@@ -135,7 +145,7 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
   }
   function select(value: Selection | null) {
     if (dirty) { setError('Save or cancel your current edits before selecting something else.'); return; }
-    setSelection(value); setTool('edit');
+    setEditing(true); setSelection(value); setTool('edit');
   }
   function connect(source: string, target: string, label: string) {
     if (!source || !target) return;
@@ -149,7 +159,7 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
   }
   function chooseConnection(nodeId: string) {
     if (busy || dirty) return;
-    setTool(null); setConnecting(true);
+    setEditing(true); setTool(null); setConnecting(true);
     if (!connectionStart) setConnectionStart(nodeId);
     else if (connectionStart !== nodeId) connect(connectionStart, nodeId, 'relates to');
     else { setConnecting(false); setConnectionStart(null); }
@@ -191,17 +201,15 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
   const selectedNodeId = selection?.itemType === 'node' ? selection.itemId : undefined;
   const selectedHasChildren = selectedNodeId && snapshot?.relationships.some((edge) => edge.kind === 'contains' && edge.members.some((member) => member.nodeId === selectedNodeId && member.role === 'from'));
 
-  return <div className={`graphnav-editor${embedded ? ' embedded' : ''}${toolsOpen ? '' : ' tools-closed'}`}><main className="workspace">
+  return <div className={`graphnav-editor${editing ? ' is-editing' : ' is-viewing'}${embedded && !snapshot && !busy && tool ? ' creating-graph' : ''}${embedded ? ' embedded' : ''}${toolsOpen ? '' : ' tools-closed'}`}><main className="workspace">
     <header className="workspace-header">
       {!embedded && <a className="brand" href="workspace.html"><GraphMark size={28} /><span>GraphNav</span></a>}
       {embedded ? <nav className="editor-actions" aria-label="Map actions">
-        <button aria-pressed={tool === 'sources'} disabled={dirty} onClick={() => showTool(tool === 'sources' ? null : 'sources')}>Sources</button>
-        <button disabled={busy || dirty || !snapshot} aria-pressed={tool === 'idea'} onClick={() => showTool(tool === 'idea' ? null : 'idea')}>Add idea</button>
-        <button disabled={busy || dirty || visibleNodes.length < 2} aria-pressed={connecting} onClick={() => { showTool(null); setConnecting(!connecting); setConnectionStart(null); }}>Connect</button>
-        {aiSource && <button disabled={dirty} aria-pressed={tool === 'ai'} onClick={() => showTool(tool === 'ai' ? null : 'ai')}>AI</button>}
+        <button hidden={!snapshot} className="edit-graph-button" disabled={busy || dirty || !snapshot} aria-pressed={editing} onClick={() => { showTool(null); setEditing(!editing); setSelection(null); }}>{editing ? 'Done editing' : 'Edit graph'}</button>
+        <button disabled={busy || dirty} aria-pressed={tool === 'new'} onClick={startNewGraph}>New graph</button>
         <button disabled={dirty} aria-pressed={tool === 'maps'} onClick={() => showTool(tool === 'maps' ? null : 'maps')}>More</button>
       </nav> : <><a className="source-link" href="reader.html" target="_blank" rel="noreferrer">Open a PDF ↗</a><button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button><button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button></>}
-      <span className="save-state" role="status">{busy ? 'Saving…' : dirty ? 'Unsaved edits' : error ? 'Needs attention' : 'Saved locally'}</span>
+      <span className="save-state" role="status">{busy ? 'Saving…' : embedded && !snapshot && !error ? 'Choose how to start' : dirty ? 'Unsaved edits' : error ? 'Needs attention' : 'Saved locally'}</span>
       <input ref={file} className="file-input" type="file" accept=".json,.graphnav.json,application/json" aria-label="Import graph backup" onChange={(event) => {
         const selected = event.target.files?.[0]; event.target.value = '';
         if (!selected) return;
@@ -209,32 +217,40 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
         void perform(async () => { const id = await repository.importGraph(await selected.text()); setSelection(null); setImportName(selected.name); return id; });
       }} />
     </header>
+    {embedded && editing && <nav className="edit-actions" aria-label="Edit graph tools">
+      <button aria-pressed={tool === 'sources'} disabled={dirty} onClick={() => showTool(tool === 'sources' ? null : 'sources')}>Sources</button>
+      <button disabled={busy || dirty || !snapshot} aria-pressed={tool === 'idea'} onClick={() => showTool(tool === 'idea' ? null : 'idea')}>Add idea</button>
+      <button disabled={busy || dirty || visibleNodes.length < 2} aria-pressed={connecting} onClick={() => { showTool(null); setConnecting(!connecting); setConnectionStart(null); }}>Connect</button>
+      <span>Changes save automatically.</span>
+    </nav>}
     {error && <div className="error-banner" role="alert"><span>{error}</span><button disabled={busy || dirty} onClick={() => void perform(async () => undefined)}>Reload saved map</button></div>}
     <div className="workspace-body">
       <aside className="sidebar" aria-label="Map editor">
-        {embedded && <div className="drawer-heading"><strong>{tool === 'sources' ? 'Add from your sources' : tool === 'idea' ? 'Add an idea' : tool === 'ai' ? 'AI suggestions' : tool === 'edit' ? 'Edit selection' : tool === 'connect' ? 'Connect by name' : 'Your maps'}</strong><button aria-label="Close tools" disabled={dirty} onClick={() => showTool(null)}>×</button></div>}
+        {embedded && <div className="drawer-heading"><strong>{tool === 'new' ? 'Create a new graph' : tool === 'sources' ? 'Add from your sources' : tool === 'idea' ? 'Add an idea' : tool === 'ai' ? 'AI suggestions' : tool === 'edit' ? 'Edit selection' : tool === 'connect' ? 'Connect by name' : 'Your maps'}</strong><button aria-label="Close tools" disabled={dirty} hidden={!snapshot && tool === 'new'} onClick={() => showTool(null)}>×</button></div>}
         {embedded && tool === 'maps' && <div className="backup-actions"><button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button><button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button></div>}
         {graphs.length > 0 && <section className="map-target" hidden={embedded && tool !== 'maps'} aria-label="Choose the map to work on">
-          <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>
+          <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); setEditing(!embedded); showTool(null); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>
           {embedded && <p className="local-note">Add sources to this map, or choose another. Each map keeps its own connections.</p>}
-          <div className="map-target-actions"><button type="button" disabled={busy || dirty} onClick={() => newMapInput.current?.focus()}>New map</button>
+          <div className="map-target-actions">{!embedded && <button type="button" disabled={busy || dirty} onClick={() => newMapInput.current?.focus()}>New map</button>}
             {context && snapshot && <button type="button" disabled={busy || dirty} onClick={() => void perform(async (data) => { if (data) { const result = await sendToBackground({ type: 'OPEN_PDF_READER', graphId: data.graph.id }); if (!result.ok) throw new Error(result.error); } })}>Add a PDF to this map</button>}
           </div>
         </section>}
         <div hidden={embedded && tool !== 'sources'}>
         {context && <SourcePicker context={context} snapshot={snapshot} selectedNode={selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined} busy={busy || dirty} authEpoch={authEpoch} apply={applySources} />}
         {sourceTools?.({ snapshot, selectedNode: selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined, busy: busy || dirty, apply: applySources })}
-          {context && <button disabled={busy || dirty} onClick={() => { setNewMap(''); showTool('maps'); requestAnimationFrame(() => newMapInput.current?.focus()); }}>Start a blank map instead</button>}
+          {context && <button disabled={busy || dirty} onClick={startNewGraph}>Start a blank map instead</button>}
         </div>
         <div hidden={embedded && tool !== 'ai'}>
-        {aiSource && <GenerationPanel source={aiSource} graphKey={`${snapshot?.graph.id ?? 'new'}:${snapshot?.graph.contentRevision ?? 0}`} graphId={snapshot?.graph.id} revision={snapshot?.graph.contentRevision} busy={busy || dirty} onNavigate={async (locator) => { if (locator.kind === 'pdf' && onNavigatePdf) await onNavigatePdf(locator); else { const result = await sendToBackground({ type: 'NAVIGATE', locator, graphId: snapshot?.graph.id }); if (!result.ok) throw new Error(result.error); } }} />}
+        {aiSource && <GenerationPanel expanded={embedded && tool === 'ai'} source={aiSource} graphKey={`${snapshot?.graph.id ?? 'new'}:${snapshot?.graph.contentRevision ?? 0}`} graphId={snapshot?.graph.id} revision={snapshot?.graph.contentRevision} busy={busy || dirty} onNavigate={async (locator) => { if (locator.kind === 'pdf' && onNavigatePdf) await onNavigatePdf(locator); else { const result = await sendToBackground({ type: 'NAVIGATE', locator, graphId: snapshot?.graph.id }); if (!result.ok) throw new Error(result.error); } }} />}
+        {!aiSource && context?.kind === 'drive' && tool === 'ai' && <DriveGenerationPanel context={context} graphId={snapshot?.graph.id} revision={snapshot?.graph.contentRevision} busy={busy || dirty} onNavigate={async (locator) => { const result = await sendToBackground({ type: 'NAVIGATE', locator, graphId: snapshot?.graph.id }); if (!result.ok) throw new Error(result.error); }} />}
         </div>
-        <section className="map-picker" hidden={embedded && tool !== 'maps'}>
-          <h1>Your workspace</h1><p className="muted">Ideas, connections, and a place to return to.</p>
-          <form onSubmit={(event) => { event.preventDefault(); void perform(async () => { const id = context ? await createContextMap(newMap, context) : (await repository.createGraph(newMap)).id; setNewMap(''); setSelection(null); setQuery(''); return id; }); }}>
+        <section className="map-picker" hidden={embedded && tool !== 'new'}>
+          {!embedded && <h1>Your workspace</h1>}<p className="muted">{embedded ? snapshot ? 'Your current graph stays saved. Choose how to start.' : 'Choose how to start. You can edit every graph.' : 'Ideas, connections, and a place to return to.'}</p>
+          {embedded && <div className="new-graph-options" aria-label="How to create your graph"><button type="button" aria-label="Manually" aria-pressed={creationMode === 'manual'} onClick={() => setCreationMode('manual')}><strong>Manually</strong><span>Start with your ideas or choose existing folders, files and tabs.</span></button><button type="button" aria-label="With AI" aria-pressed={creationMode === 'ai'} onClick={() => setCreationMode('ai')}><strong>With AI</strong><span>Choose source content and generate a draft using its text.</span></button></div>}
+          {(!embedded || creationMode) && <form onSubmit={(event) => { event.preventDefault(); void perform(async () => { const id = context ? await createContextMap(newMap, context) : (await repository.createGraph(newMap)).id; setNewMap(''); setSelection(null); setQuery(''); setEditing(creationMode !== 'ai'); setTool(creationMode === 'ai' ? 'ai' : context || sourceTools ? 'sources' : 'idea'); return id; }); }}>
             <label>New map name<input ref={newMapInput} aria-label="New map name" value={newMap} onChange={(e) => setNewMap(e.target.value)} maxLength={200} placeholder="e.g. Research plan" required /></label>
-            <button className="primary" disabled={busy || dirty || !newMap.trim()}>Create map</button>
-          </form>
+            <button className="primary" disabled={busy || dirty || !newMap.trim()}>{embedded && creationMode === 'ai' ? 'Continue with AI' : 'Create map'}</button>
+          </form>}
         </section>
         {snapshot && <>
           <section hidden={embedded && tool !== 'idea'}><h2>Add an idea</h2><form onSubmit={(event) => {
@@ -265,9 +281,9 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
         {importName && <p className="local-note">Imported {importName} as a separate map.</p>}
       </aside>
       <section className="map-area" aria-label="Current map">
-        <div className="map-heading"><div><span className="eyebrow">{context ? snapshot?.graph.id === pageMapId || (snapshot?.graph.createdVia === 'import' && snapshot?.graph.sourceBindings[0]?.key === scopeKey(context)) ? 'THIS PAGE' : 'PROJECT MAP' : 'YOUR MAP'}</span><h2>{snapshot?.graph.title ?? 'Start with an idea.'}</h2></div>{context && <button className="page-map-button" disabled={busy || dirty} onClick={() => { setTool(null); setSelection(null); void perform(() => pageMap()); }}>This page</button>}{snapshot && <span className="count-badge">{snapshot.nodes.length} node{snapshot.nodes.length === 1 ? '' : 's'} · {snapshot.relationships.length} connection{snapshot.relationships.length === 1 ? '' : 's'}</span>}</div>
+        <div className="map-heading"><div><span className="eyebrow">{context ? snapshot?.graph.id === pageMapId || (snapshot?.graph.createdVia === 'import' && snapshot?.graph.sourceBindings[0]?.key === scopeKey(context)) ? 'THIS PAGE' : 'PROJECT MAP' : 'YOUR MAP'}</span><h2>{snapshot?.graph.title ?? 'Start with an idea.'}</h2></div>{context && snapshot && <button className="page-map-button" disabled={busy || dirty} onClick={() => { setTool(null); setEditing(false); setSelection(null); void perform(() => pageMap()); }}>This page</button>}{snapshot && <span className="count-badge">{snapshot.nodes.length} node{snapshot.nodes.length === 1 ? '' : 's'} · {snapshot.relationships.length} connection{snapshot.relationships.length === 1 ? '' : 's'}</span>}</div>
         {connecting && <div className="connect-prompt" role="status"><span>{connectionStart ? `Now click the node to connect to ${effectiveLabel(snapshot!.nodes.find((node) => node.id === connectionStart)!, snapshot!.itemEdits)}.` : 'Click two nodes to connect them.'}</span><button onClick={() => { setConnecting(false); setConnectionStart(null); }}>Cancel connection</button><button onClick={() => { setConnecting(false); setConnectionStart(null); setTool('connect'); }}>Choose by name</button></div>}
-        {snapshot && <div className="map-tools" aria-label="Graph tools"><label>Find a node<input aria-label="Find a node" type="search" value={query} onChange={(e) => { setQuery(e.target.value); setGraphPage(0); setCanvasVersion((value) => value + 1); }} placeholder="Search this map" /></label><button disabled={busy || dirty || !snapshot.nodes.length} onClick={() => void perform(async (data) => { if (data) { await arrangeMap(data.graph.id, data.graph.contentRevision); setCanvasVersion((value) => value + 1); } })}>Arrange map</button>
+        {snapshot && <div className="map-tools" aria-label="Graph tools"><label>Find a node<input aria-label="Find a node" type="search" value={query} onChange={(e) => { setQuery(e.target.value); setGraphPage(0); setCanvasVersion((value) => value + 1); }} placeholder="Search this map" /></label><button hidden={embedded && !editing} disabled={busy || dirty || !snapshot.nodes.length} onClick={() => void perform(async (data) => { if (data) { await arrangeMap(data.graph.id, data.graph.contentRevision); setCanvasVersion((value) => value + 1); } })}>Arrange map</button>
           <details className="map-options"><summary>Map options</summary><div>
           {snapshot.sources.some((source) => source.provider !== 'local-pdf') && <button disabled={busy || dirty} onClick={() => void perform(async (data) => {
             if (!data) return;
@@ -281,12 +297,12 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, googleCo
           {projection && projection.pages > 1 && <><button disabled={projection.page === 0} onClick={() => setGraphPage(projection.page - 1)}>Previous 50</button><span>Page {projection.page + 1} of {projection.pages}</span><button disabled={projection.page === projection.pages - 1} onClick={() => setGraphPage(projection.page + 1)}>Next 50</button></>}
           <span>Dashed lines show source structure. Your own connections are solid.</span></div></details></div>}
         {targetStatus && <p className="target-status" role="status">{targetStatus}</p>}
-        {snapshot ? <GraphCanvas key={`${snapshot.graph.id}:${canvasVersion}:${focusId}:${collapsedIds.join(',')}:${graphPage}:${query}`} focusId={focusId} collapsedIds={collapsedIds} page={graphPage} activeTabId={activeTabId} fit={canvasVersion > 0 || !!query || !!focusId || collapsedIds.length > 0 || graphPage > 0} snapshot={snapshot} query={query} busy={busy || dirty} connectingFrom={connectionStart}
-          onOpen={embedded ? openNode : undefined} onChooseConnection={embedded ? chooseConnection : undefined}
+        {snapshot ? <GraphCanvas key={`${snapshot.graph.id}:${canvasVersion}:${focusId}:${collapsedIds.join(',')}:${graphPage}:${query}`} focusId={focusId} collapsedIds={collapsedIds} page={graphPage} activeTabId={activeTabId} fit={canvasVersion > 0 || !!query || !!focusId || collapsedIds.length > 0 || graphPage > 0} snapshot={snapshot} query={query} busy={busy || dirty} editable={editing} connectingFrom={connectionStart}
+          onOpen={embedded ? openNode : undefined} onChooseConnection={embedded && editing ? chooseConnection : undefined}
           onSelect={select} onConnect={(connection) => connect(connection.source, connection.target, 'relates to')}
           onPosition={(item, point) => { void perform(async (data) => { if (data?.graph.id === snapshot.graph.id) await repository.savePosition({ ...item, graphId: data.graph.id }, point); }); }}
           onView={(view) => { if (query || focusId || collapsedIds.length > 0 || graphPage > 0) return; void perform(async (data) => { if (data?.graph.id === snapshot.graph.id) await repository.saveView(data.graph.id, view); }); }}
-        /> : <div className="welcome"><GraphMark size={66} /><h2>Make room for connections.</h2><p>{busy ? 'Opening your saved page map…' : 'Choose Sources to use existing files, or start with your own ideas.'}</p>{embedded && <div className="welcome-actions"><button onClick={() => showTool('sources')}>Choose sources</button><button onClick={() => showTool('maps')}>Create a map</button></div>}</div>}
+        /> : <div className="welcome"><GraphMark size={66} /><h2>Make room for connections.</h2><p>{busy ? 'Opening your saved page map…' : 'Create a graph manually or with AI.'}</p>{embedded && <div className="welcome-actions"><button onClick={startNewGraph}>Create a map</button></div>}</div>}
       </section>
     </div>
   </main></div>;

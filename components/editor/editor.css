@@ -188,3 +188,23 @@
 
 .graphnav-editor .graph-edge-label { position: absolute; pointer-events: all; padding: 3px 6px; border: 1px solid transparent; background: #f5f8f6; color: #416253; line-height: 1.25; border-radius: 5px; max-width: 180px; overflow-wrap: anywhere; }
 .graphnav-editor .graph-edge-label:hover, .graphnav-editor .graph-edge-label:focus-visible { border-color: #6e9b88; background: white; }
+
+.graphnav-editor .edit-actions { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-bottom: 1px solid #dae6df; background: #f0f7f3; flex-shrink: 0; }
+.graphnav-editor .edit-actions button { padding: 5px 9px; font-size: 11px; }
+.graphnav-editor .edit-actions span { margin-left: auto; font-size: 10px; color: #687e72; }
+.graphnav-editor .edit-graph-button { background: #e8f3ed; color: #285f4d; }
+.graphnav-editor.is-viewing .react-flow__handle { visibility: hidden; }
+.graphnav-editor .drive-ai-picker { display: grid; gap: 12px; }
+.graphnav-editor .drive-ai-picker p { font-size: 12px; color: #62746c; line-height: 1.6; }
+.graphnav-editor .drive-ai-picker label { display: grid; gap: 6px; }
+@container (max-width: 450px) { .graphnav-editor .edit-actions span { display: none; } }
+.graphnav-editor .new-graph-options { display: grid; gap: 10px; margin: 16px 0; }
+.graphnav-editor .new-graph-options button { text-align: left; display: grid; gap: 6px; padding: 14px; }
+.graphnav-editor .new-graph-options strong { font-size: 15px; }
+.graphnav-editor .new-graph-options span { font-size: 12px; font-weight: 400; line-height: 1.5; color: #6d7c74; }
+.graphnav-editor .new-graph-options button[aria-pressed=true] { border-color: #498b72; background: #edf6f0; }
+.graphnav-editor.creating-graph .sidebar { position: relative; inset: auto; width: min(440px, calc(100% - 24px)); margin: auto; max-height: calc(100% - 24px); flex: 0 1 auto; box-shadow: none; }
+.graphnav-editor.creating-graph .map-area { display: none; }
+
+.graphnav-editor.embedded .map-picker { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+.graphnav-editor.creating-graph .drawer-heading { font-size: 18px; }

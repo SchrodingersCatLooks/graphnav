@@ -1,4 +1,4 @@
-import { tools } from './ui-helpers';
+import { blankMap, currentMapId, restoreMap, tools } from './ui-helpers';
 import { test, expect, chromium } from '@playwright/test';
 import { createServer, type ServerResponse } from 'node:http';
 import { mkdtemp, rm } from 'node:fs/promises';
@@ -50,11 +50,12 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
     expect(await settings.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const page = await context.newPage(); await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto(`${origin}/reader.html`);
     await page.getByLabel('Choose PDF file').setInputFiles(resolve('tests/fixtures/demo-paper.pdf'));
+    await blankMap(page, 'Original paper map');
   await tools(page, 'Sources');
     await page.getByRole('button', { name: 'Build baseline (5)', exact: true }).click();
     await expect(page.locator('.react-flow__node')).toHaveCount(5);
+    const originalId = await currentMapId(page);
   await tools(page, 'AI');
-    await page.getByRole('button', { name: 'Select content for AI', exact: true }).click();
     const panel = page.getByRole('region', { name: 'AI assistance' });
     await expect(panel).toContainText('AI is ready');
     await panel.getByRole('checkbox', { name: 'Analyze Page 2', exact: true }).check();
@@ -75,7 +76,7 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
     await expect(page.locator('.pdf-paper[data-page="2"]')).toBeVisible();
     await draft.locator('h3').scrollIntoViewIfNeeded();
     await page.screenshot({ path: testInfo.outputPath('ai-proposals.png') });
-    await expect(page.locator('.react-flow__node')).toHaveCount(5);
+    await expect(page.locator('.react-flow__node')).toHaveCount(0);
     mode = 'hold'; await generate.click();
     await expect.poll(() => !!held).toBe(true);
     await expect(panel.getByRole('button', { name: 'Cancel generation', exact: true })).toBeVisible();
@@ -86,7 +87,7 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
     await expect(panel).toContainText('The model declined this selection');
     mode = 'invalid'; await generate.click();
     await expect(panel).toContainText('The reply could not be used');
-    await expect(page.locator('.react-flow__node')).toHaveCount(5);
+    await expect(page.locator('.react-flow__node')).toHaveCount(0);
     await settings.getByRole('button', { name: 'Forget this connection', exact: true }).click();
     await expect(settings.getByRole('status')).toHaveText('Not connected');
     await panel.getByRole('button', { name: 'Check AI connection', exact: true }).click();
@@ -95,7 +96,9 @@ test('installed extension pairs with loopback, generates grounded proposals, nav
   await tools(page, 'Add idea');
     await page.getByLabel('Node name', { exact: true }).fill('Manual work remains available');
     await page.getByRole('button', { name: 'Add node', exact: true }).click();
-    await expect(page.locator('.react-flow__node')).toHaveCount(6);
+    await expect(page.locator('.react-flow__node')).toHaveCount(1);
+    await restoreMap(page, originalId);
+    await expect(page.locator('.react-flow__node')).toHaveCount(5);
     await testInfo.attach('loopback-protocol.json', { body: JSON.stringify({ requests: received.length, origins: received.map((entry) => entry.origin ?? null), provider: 'synthetic only' }), contentType: 'application/json' });
   } finally {
     await context.close(); await rm(profile, { recursive: true, force: true });

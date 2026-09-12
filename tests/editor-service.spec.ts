@@ -123,3 +123,11 @@ test('the page map is separate from personal maps, reused without refetching, an
   expect(restored).toEqual({ graphId: first!.graphId, created: false });
   expect((await repo.readGraph(first!.graphId)).itemEdits[0]).toMatchObject({ displayLabel: 'My root', notes: 'Keep this' });
 });
+
+test('a new context map belongs to its connected account before any source import', async () => {
+  const id = await call('createContextMap', ['Private idea', context]) as string;
+  await call('addNode', [id, 0, { id: 'private-node', label: 'My idea', position: { x: 0, y: 0 } }]);
+  account = 'other-account';
+  expect((await call('listGraphs', [], false) as { id: string }[]).map((graph) => graph.id)).not.toContain(id);
+  await expect(call('readGraph', [id], false)).rejects.toThrow('account that owns');
+});

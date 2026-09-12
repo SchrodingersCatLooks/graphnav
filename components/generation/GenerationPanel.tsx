@@ -9,7 +9,7 @@ import { DraftPreview } from './DraftPreview';
 import './generation.css';
 
 type Preview = { input: GenerationInput; hash: string; notices: string[]; names: string[] };
-export function GenerationPanel({ source, graphKey, graphId, revision, busy, onNavigate }: { source: GenerationSource; graphKey: string; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void> }) {
+export function GenerationPanel({ expanded = false, source, graphKey, graphId, revision, busy, onNavigate }: { expanded?: boolean; source: GenerationSource; graphKey: string; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void> }) {
   const [open, setOpen] = useState(false), [choices, setChoices] = useState<TextChoice[]>([]), [selected, setSelected] = useState<string[]>([]);
   const [purpose, setPurpose] = useState<GenerationInput['purpose']>('concept-connections');
   const [query, setQuery] = useState(''), [limit, setLimit] = useState(20);
@@ -27,6 +27,10 @@ export function GenerationPanel({ source, graphKey, graphId, revision, busy, onN
     if (sourceRef.current !== source) { invalidate(); setOpen(false); setSelected([]); setChoices([]); sourceRef.current = source; }
     return () => { operation.current++; connectionEpoch.current++; pending.current?.abort(); cancelRequest(); };
   }, [source]);
+  useEffect(() => {
+    if (expanded) { setOpen(true); void list(); void checkConnection(); }
+    else { invalidate(); setOpen(false); }
+  }, [expanded, source]);
   useEffect(() => {
     const element = previewElement.current, container = element?.closest('.sidebar');
     if (preview && element && container) container.scrollTop += element.getBoundingClientRect().top - container.getBoundingClientRect().top - 12;

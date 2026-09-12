@@ -56,11 +56,14 @@ export class EditorService {
         });
       }
       case 'createGraph': return repository.createGraph(...request.args);
-      case 'createContextMap': return repository.db.transaction('rw', repository.db.graphs, async () => {
-        const [title, context] = request.args, graph = await repository.createGraph(title);
-        await repository.db.graphs.update(graph.id, { sourceBindings: [{ key: scopeKey(context), complete: false, refreshedAt: 0, mode: 'selected', memberKeys: [], missingKeys: [] }] });
-        return graph.id;
-      });
+      case 'createContextMap': {
+        const accountScope = await this.sources.account().catch(() => null);
+        return repository.db.transaction('rw', repository.db.graphs, async () => {
+          const [title, context] = request.args, graph = await repository.createGraph(title);
+          await repository.db.graphs.update(graph.id, { accountScope, sourceBindings: [{ key: scopeKey(context), complete: false, refreshedAt: 0, mode: 'selected', memberKeys: [], missingKeys: [] }] });
+          return graph.id;
+        });
+      }
       case 'attachSource': {
         const [context, graphId, revision, nodeId, key] = request.args;
         const source = await this.source(context, false), item = source.items.find((item) => importedKey(item) === key);
