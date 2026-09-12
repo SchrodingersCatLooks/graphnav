@@ -12,12 +12,13 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## Build queue
 
-All application work is TODO. Hours are elapsed from the start of the proposed build session.
+M1-A is claimed on `rajvansh-ui`; other application work is unclaimed.
+Hours are elapsed from the start of the proposed build session.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | TODO | Same installed shell on both laptops; scripts and lockfile committed |
+| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DOING | Same installed shell on both laptops; scripts and lockfile committed |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
@@ -40,7 +41,7 @@ M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both row
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | Unclaimed | No application work started | Setup unverified | Claim M1-A after M0 |
+| Rajvansh | M1-A / `rajvansh-ui` | Read all six project documents; clean clone of `2370f24`; origin and GitHub access verified. Owns package files, WXT configuration, and visible entrypoints for this scaffold. | Partner access, demo sources, and both-laptop checks remain unverified under M0; do not block the independent shell. | Scaffold WXT/React/TypeScript/Tailwind, add reversible Drive/Docs panel, run checks. Hand shared configuration back at review; M1-C types remain for joint agreement. |
 | Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
