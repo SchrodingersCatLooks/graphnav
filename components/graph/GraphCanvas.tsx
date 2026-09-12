@@ -46,6 +46,29 @@ function GraphCard({ id, data, selected }: NodeProps<FlowNode>) {
   const [renaming, setRenaming] = useState<string | null>(null);
   const renameInput = useRef<HTMLInputElement>(null);
   useEffect(() => { if (renaming !== null) renameInput.current?.select(); }, [renaming]);
+  // F2 renames the selected node, the long-standing rename key in file
+  // managers, spreadsheets and IDEs.
+  //
+  // Not Enter: React Flow already binds Enter on a focused node for selection,
+  // with arrow keys to move it, so an Enter binding silently breaks keyboard
+  // navigation of the graph.
+  //
+  // Deliberately no Delete binding either: without undo, one stray key would
+  // destroy work with no way back.
+  useEffect(() => {
+    if (!selected || !data.onRename || data.busy || renaming !== null) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key !== 'F2') return;
+      // Never steal Enter from someone typing in a field or on a button.
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement
+        || active instanceof HTMLButtonElement || active instanceof HTMLSelectElement) return;
+      event.preventDefault();
+      setRenaming(data.label);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selected, data.onRename, data.busy, data.label, renaming]);
   const commitRename = () => {
     const value = (renaming ?? '').trim();
     if (value && value !== data.label) data.onRename?.(value);

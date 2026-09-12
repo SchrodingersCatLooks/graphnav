@@ -15,6 +15,10 @@ import { resolve, join } from 'node:path';
 const extensionId = 'pidejkbkldalibjaehjfpjkcpjpcenpk';
 const workspaceUrl = `chrome-extension://${extensionId}/workspace.html`;
 
+/** Selects the first card without triggering a rename. */
+const source0Click = async (page: import('@playwright/test').Page) =>
+  page.locator('.react-flow__node').first().click({ position: { x: 10, y: 10 } });
+
 test('direct canvas gestures: double-click creates, double-click renames, and dragging a connection out creates a connected node', async () => {
   test.setTimeout(90_000);
   const profile = await mkdtemp(join(tmpdir(), 'graphnav-canvas-'));
@@ -74,6 +78,20 @@ test('direct canvas gestures: double-click creates, double-click renames, and dr
     await page.locator('.react-flow__node').first().dblclick();
     await page.keyboard.press('Escape');
     await expect(page.locator('.react-flow__node')).toHaveCount(1);
+
+    // F2 renames the selected node without reaching for the mouse. Enter is
+    // left alone because React Flow uses it to select and move nodes.
+    await source0Click(page);
+    await page.keyboard.press('F2');
+    const keyboardField = page.locator('.react-flow__node').first().getByRole('textbox');
+    await expect(keyboardField).toBeVisible();
+    await keyboardField.press('Escape');
+    await expect(page.locator('.react-flow__node').first().getByRole('textbox')).toHaveCount(0);
+
+    // The shortcut must not fire while someone is typing in a panel field.
+    await page.getByLabel('Node name').fill('Typed in a field');
+    await page.getByLabel('Node name').press('F2');
+    await expect(page.locator('.react-flow__node').first().getByRole('textbox')).toHaveCount(0);
 
     // Dragging a connection onto empty canvas creates the node it reached for,
     // already connected, rather than silently doing nothing.

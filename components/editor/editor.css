@@ -317,3 +317,14 @@
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4;
   overflow: hidden; max-height: none;
 }
+
+/* Selection has to be legible at a glance once a map has twenty nodes: a
+   border alone disappears against a busy canvas. */
+.graphnav-editor .react-flow__node-card.selected {
+  border: 2px solid #176a52;
+  box-shadow: 0 0 0 3px #176a5226, 0 4px 16px #14332614;
+}
+/* Hint the shortcut without adding chrome to every card. */
+.graphnav-editor .react-flow__node-card.selected .card-title::after {
+  content: ' F2'; font-size: 9px; color: #6e9b88; white-space: nowrap; letter-spacing: .04em;
+}
