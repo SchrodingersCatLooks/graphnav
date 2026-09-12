@@ -10,6 +10,7 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 | DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
 | DOC-2 | Specify GitHub checkpoints and larger-source requirements | DONE | AGENTS and BUILD_PLAN include push verification, incremental loading, and performance acceptance criteria |
 | DOC-3 | Define manual V1 followed by GPT-assisted V2 | DONE | IDEA, BUILD_PLAN, AGENTS, README, STATUS, and this tracker reflect the release order |
+| DOC-4 | Specify the complete V1 + V2 MVP route and individual owners | DOING | Rajvansh is updating the execution plan on rajvansh-ui at the user's request. Include the on-page Drive/left Docs experience, real AI generation, source evidence, persistence, PDF support, account prerequisites, and release checks. Preserve Eddy's new partner-data work. |
 
 ## V1 manual build queue
 
