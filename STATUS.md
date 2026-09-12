@@ -1,6 +1,6 @@
 # Current project status
 
-Last documentation update: 2026-09-12. Update this file after a merged milestone or a shared blocker changes. This file describes the shared branch; individual work in progress belongs in TASK_LIST.
+Last documentation update: 2026-09-12 (Eddy's partner-data runtime status at `4738cb2`). Update this file after a merged milestone or a shared blocker changes. This file describes the shared branch; individual work in progress belongs in TASK_LIST.
 
 ## What is working
 
@@ -21,10 +21,13 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
 - Eddy now reports real folder and nested-Doc reads passing at M1-B checkpoint `a83d545`, with the expected extension ID.
   That code and Rajvansh's local-storage/editor work are integrated on `rajvansh-ui` for [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) review, not merged into main.
 - Demo source IDs are recorded in GOOGLE_SETUP.md; access and real reads on Rajvansh's account remain unverified.
-- Eddy's newer `partner-data` checkpoint `c6e6b5e` adds Drive/Docs import mapping, account lookup, navigation, and worker request validation/tests.
-  He reports real imports and exact destinations passing; browser-restart acceptance and Rajvansh's own-account acceptance remain open.
-  The current navigation opens a new browser tab, so the desired same-tab Docs behavior remains M3-B work.
-  This planning update inspected those changes but did not merge or independently verify them.
+- Eddy's `partner-data` tip is now `4738cb2`, seven commits past `c6e6b5e`. Reported from that branch, not merged and not independently verified here:
+  live Drive/Docs import with account scope, exact destination opening including a nested Doc tab, saved maps reopening intact after a full Chrome quit and relaunch,
+  expansion adding into the open map instead of creating a second one, PDF section extraction against a labeled synthetic fixture, and unavailable-target reporting.
+  Node 22.23.2 type-check, production build, and 40 automated tests pass on that branch.
+  The current navigation still opens a new browser tab, so same-document tab navigation remains M3-B work.
+  PDF extraction has never run against a real paper and has no reader entrypoint, so M4-B is partial.
+  `CHECK_TARGETS` marking is tested but has not been run against a genuinely deleted file.
   Rajvansh's screenshots show connected status, the expected extension ID, and a small personal map; raw source reads and the full acceptance sequence remain pending.
 
 ## Version status
@@ -54,8 +57,10 @@ The scaffold handoff no longer blocks M1-B.
 Eddy corrected the previous second-machine failure report: an improperly reloaded extension left a stale content script in the tab.
 After a proper reload, the popover/visualViewport fix passes the full checklist, including header/X reachability and increased zoom.
 No further UI defect is established by that earlier report, and no new runtime patch was needed.
-Google API reads pass on Eddy's laptop according to his handoff.
-The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M0 remains open until both-account access is confirmed.
+Google API reads, imports, navigation and restart persistence pass on Eddy's laptop according to his handoff.
+Repeated partner-laptop acceptance is no longer a routine gate, so M1-B is not blocked on a second-machine rerun; a second account is worth using only if a specific issue needs it.
+The real remaining risk is integration rather than verification: no runtime work from either lane is on main, so `main` still contains only the M1-A scaffold while both branches carry substantial unmerged code.
+M0 demo content is partly settled: the shared folder and four-tab Doc exist and are shared, but no authorized text PDF has been selected yet.
 
 ## Decision record
 
