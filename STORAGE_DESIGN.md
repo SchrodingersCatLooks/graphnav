@@ -1,7 +1,13 @@
-# GraphNav storage proposal
+# GraphNav storage design
 
-M1-C proposal by Rajvansh for joint review with Eddy.
-This document specifies the intended design; the database, shared types, migrations, and storage commands are not implemented.
+M1-C design by Rajvansh for joint review with Eddy.
+The user approved IndexedDB/Dexie and asked Rajvansh to implement the first slice.
+Initial shared types, version-1 database, repository commands, and the My maps workspace are now implemented on `rajvansh-ui`.
+The broader fields and workflows below remain a design target; [lib/graph/types.ts](./lib/graph/types.ts) is the current exact record format, and [M1C_HANDOFF.md](./M1C_HANDOFF.md) resolves the overlap with Eddy's proposal.
+The first slice supports manual editing, positions/view, validated backup/import, and fixture-tested source reconciliation.
+AI drafts, PDF reading/blob import, cache eviction, collapsed/resized layouts, unavailable-target UI, and live Google graph import are still pending.
+Eight stores are declared; sourceCache and blobs are reserved and unused by this first workspace.
+Schema version 1 is implemented; no later production upgrade exists yet.
 It covers manual maps, imported Drive/Docs/PDF structure, editable AI drafts, relationships with multiple participants, and movable graph/panel layouts.
 The current release order remains manual V1 followed by GPT-assisted V2.
 
@@ -13,8 +19,8 @@ Use `chrome.storage.local` only for small application preferences.
 Keep Google tokens in the background/Chrome Identity flow and future model-provider secrets on the generation server.
 Neither is graph data.
 
-The current repository contains the accepted shell but no database, storage implementation, or Dexie dependency.
-Do not create a hosted database or modify Eddy's manifest/background code as part of this proposal.
+The implementation uses Dexie, Zod validation, and React Flow.
+It incorporates Eddy's stable manifest ID and M1-B auth/read checkpoint unchanged; no hosted database is provisioned.
 This refines the earlier plan to put graph metadata in `chrome.storage.local`: related records and atomic edits belong together in IndexedDB.
 Chrome's local storage API has a default 10 MB quota; IndexedDB is a better fit for indexed records, transactions, and file blobs.
 Dexie supplies a small API for those transactions and versioned upgrades.
@@ -23,7 +29,8 @@ These are design choices based on our workload, not a claim that IndexedDB is be
 An extension's own pages and service worker share extension-origin storage.
 A content script opening IndexedDB would instead use its host page's storage.
 Therefore the Drive/Docs interface requests graph operations from the extension background worker; it never opens the page's IndexedDB.
-The extension-owned PDF reader can use a narrow file-blob repository path on the extension origin.
+The current extension-owned My maps page calls the repository on the extension origin.
+The future PDF reader can use a narrow file-blob repository path on the same origin.
 [Chrome storage](https://developer.chrome.com/docs/extensions/reference/api/storage), [extension storage ownership](https://developer.chrome.com/docs/extensions/develop/concepts/storage-and-cookies), [Dexie transactions](https://dexie.org/docs/Dexie/Dexie.transaction()).
 
 ## GitHub, devices, and backups
@@ -76,7 +83,8 @@ The editor should allow adding/removing members and labeling the relationship.
 
 IndexedDB calls these object stores.
 They are tables of structured records, with indexes; records can contain small typed arrays or objects.
-Use eight stores for V1 and add the ninth when V2 generation is implemented.
+The initial database declares eight stores for V1; add the ninth when V2 generation is implemented.
+The table below includes later planned fields; use the checked-in schemas for currently accepted values.
 Do not add separate tables per source provider, per graph, or per UI surface.
 
 All mutable durable records have creation/update timestamps.
@@ -251,15 +259,15 @@ Graph storage never grants access to a source.
 
 ## Implementation handoff and acceptance
 
-1. M1-C: Eddy reviews this proposal; agree the account/locator, relationship-members, and edit-command contracts, then add shared TypeScript types, validation, and small synthetic examples.
-   No dependency or manifest change is made by this design document.
-2. M2: Eddy implements the repository and migrations; Rajvansh builds the editor against the commands.
-   Prove a personal map with source/idea nodes, a two-member link, a three-member relationship, movement, and reopening.
-   Add the membership editor/junction renderer without a separate graph product.
-3. M3/M4/M5: extend the adapters, PDF Blob path, refresh merge, backup/import, and consistent save feedback.
+1. M1-C: Eddy reviews the implemented shared types and repository against the [response to his proposal](./M1C_HANDOFF.md).
+   The user explicitly assigned the initial storage implementation to Rajvansh; the exact contract still needs Eddy's integration review.
+2. M2: Rajvansh has implemented the manual workspace and repository; Eddy adds verified account context, the Drive adapter, and background command routing.
+   Two-member editing, group-junction rendering, layout, reopening, validated backups, and synthetic refresh reconciliation are implemented.
+   Real Google graph imports, user-created group membership controls, and second-laptop acceptance remain open.
+3. M3/M4/M5: extend the Docs/PDF adapters, PDF Blob path, unavailable-target handling, and consistent editing across surfaces.
 4. V2: add generationRuns and evidence/decision review through the same repository.
 
-Required implementation checks:
+Full design acceptance criteria, including later work:
 
 - Empty manual graph needs no Google account or source.
 - One node links to several others; one three-member relationship is saved once and rendered without implying extra pairs.
@@ -271,4 +279,6 @@ Required implementation checks:
 - Accept/edit/reject, regeneration, source-version changes, and removal of accepted AI content preserve user decisions.
 - Export/import validates references and preserves meaningful data while excluding tokens.
 
-These are acceptance criteria for future implementation, not passed tests.
+The entire list is not a passed-test claim.
+The current automated checks cover manual creation/editing, group storage/rendering, positions/view, database and browser reopening, failed-write rollback, stale-tab conflicts, fixture refresh/account separation, and backup validation.
+Collapsed state, worker storage commands, future schema upgrades, real Google graph navigation, PDF reattachment, and AI decisions still require their own implementation and checks.

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PageContext } from '../lib/page-context';
 import { GraphMark } from './GraphMark';
+import { GoogleConnection } from './GoogleConnection';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
@@ -81,11 +82,8 @@ export function ExtensionShell({ context }: { context: PageContext }) {
               <span className="empty-mark flex items-center justify-center"><GraphMark size={52} /></span>
               <h2>Your {context.kind === 'drive' ? 'folder' : 'document'} map starts here</h2>
               <p>Explore your {context.kind === 'drive' ? 'files and folders' : 'document tabs'} in a connected view.</p>
-              <div className="connection-notice">
-                <span className="status-dot" aria-hidden="true" />
-                Google data is not connected yet
-              </div>
-              <p className="next-step">This first version opens the workspace.<br />Your source map comes next.</p>
+              <GoogleConnection />
+              <p className="next-step">Your personal maps are ready.<br />Importing this source comes next.</p>
             </div>
           </div>
 
