@@ -13,7 +13,7 @@ The implementation examples below remain the original contract handoff; do not r
 
 I agree with the SourceGraph/PersonalOverlay separation in meaning: refresh must never regenerate personal work.
 I also agree with origin on nodes and connections, explicit account context, versioning, and preserving missing destinations.
-Use the implemented record contract in [lib/graph/types.ts](./lib/graph/types.ts) and [lib/storage/repository.ts](./lib/storage/repository.ts) rather than introducing a second database or aggregate snapshot format.
+Use the implemented record contract in [lib/graph/types.ts](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/lib/graph/types.ts) and [lib/storage/repository.ts](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/lib/storage/repository.ts) rather than introducing a second database or aggregate snapshot format.
 The storage checkpoint is `c7f1226`; subsequent commits add the workspace and auth-state UI.
 
 The differences from your proposed TypeScript are:
@@ -36,7 +36,7 @@ The differences from your proposed TypeScript are:
    Personal `web` locators permit an explicitly entered HTTPS destination without claiming a source integration.
 
 React Flow does not dictate the stored record shape.
-[GraphCanvas](./components/graph/GraphCanvas.tsx) converts our saved records to flat React Flow nodes and edges.
+[GraphCanvas](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/components/graph/GraphCanvas.tsx) converts our saved records to flat React Flow nodes and edges.
 For a multi-member relationship it creates a display junction and spokes; it never turns the group into every possible pair.
 The database stores graph coordinates separately from source destinations.
 
