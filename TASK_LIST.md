@@ -6,6 +6,7 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 | ID | Task | Status | Evidence |
 | --- | --- | --- | --- |
+| DOC-7 | Rajvansh | Publish shared planning documents to main | DOING | docs-only branch publish-mvp-plan; preserve PR #6 runtime and partner handoff; validate documentation before normal PR merge |
 | DOC-0 | Create private repo and initial workflow | DONE | Starter committed in `7139f9e` |
 | DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
 | DOC-2 | Specify GitHub checkpoints and larger-source requirements | DONE | AGENTS and BUILD_PLAN include push verification, incremental loading, and performance acceptance criteria |
