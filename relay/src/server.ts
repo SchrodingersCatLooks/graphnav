@@ -9,7 +9,7 @@ const config = {
   token,
   apiKey: process.env.PROVIDER_API_KEY || (provider === 'openai' ? process.env.OPENAI_API_KEY : process.env.GEMINI_API_KEY) || '',
   provider: provider as ProviderName,
-  model: process.env.PROVIDER_MODEL || (provider === 'openai' ? 'gpt-5-mini' : 'gemini-3-flash'),
+  model: process.env.PROVIDER_MODEL || (provider === 'openai' ? 'gpt-5-mini' : 'gemini-3.6-flash'),
   projectId: process.env.OPENAI_PROJECT_ID,
   organizationId: process.env.OPENAI_ORG_ID,
   maxRequests: Number(process.env.RELAY_MAX_REQUESTS ?? 20),

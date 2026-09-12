@@ -43,7 +43,7 @@ export type ProviderReply =
 
 const DEFAULT_MODEL: Record<ProviderName, string> = {
   openai: 'gpt-5-mini',
-  gemini: 'gemini-3-flash',
+  gemini: 'gemini-3.6-flash',
 };
 
 async function callOpenAi(call: ProviderCall): Promise<ProviderReply> {
@@ -99,6 +99,62 @@ async function callOpenAi(call: ProviderCall): Promise<ProviderReply> {
   return { kind: 'json', text };
 }
 
+/**
+ * Rewrites a JSON Schema into the subset Gemini's responseSchema accepts.
+ *
+ * Gemini takes an OpenAPI-flavoured subset, not full JSON Schema: it rejects
+ * `$schema`, `const`, `additionalProperties` and `$ref`, all of which a normal
+ * Zod export emits. OpenAI accepts them, so this translation is the only real
+ * difference between the two providers.
+ *
+ * The schema only shapes the model's output. Correctness is still decided by
+ * the extension revalidating the answer, so simplifying here loosens the hint,
+ * never the check.
+ */
+export function toGeminiSchema(schema: Record<string, unknown>, defs?: Record<string, unknown>): unknown {
+  const root = defs ?? (schema.$defs as Record<string, unknown> | undefined) ?? {};
+
+  const convert = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(convert);
+    if (!value || typeof value !== 'object') return value;
+    const node = value as Record<string, unknown>;
+
+    // Inline definitions: Gemini has no $ref.
+    if (typeof node.$ref === 'string') {
+      const name = node.$ref.replace('#/$defs/', '');
+      const target = root[name];
+      return target ? convert(target) : { type: 'string' };
+    }
+
+    const out: Record<string, unknown> = {};
+    for (const [key, child] of Object.entries(node)) {
+      // Gemini has no `const`, and its `enum` accepts strings only. A fixed
+      // string becomes a single-member enum; a fixed number or boolean can only
+      // be stated in the description, and is enforced when we revalidate.
+      if (key === 'const') {
+        if (typeof child === 'string') { out.enum = [child]; out.type = 'string'; }
+        else {
+          out.type = typeof child === 'boolean' ? 'boolean' : 'number';
+          out.description = `Must be exactly ${JSON.stringify(child)}.`;
+        }
+        continue;
+      }
+      // Keywords Gemini does not define.
+      // minItems/maxItems are documented but rejected in practice, and sizes are
+      // enforced when we revalidate, so they are dropped with the rest.
+      if (['$schema', '$defs', '$id', 'additionalProperties', 'pattern', 'minLength', 'maxLength',
+           'minItems', 'maxItems', 'exclusiveMinimum', 'exclusiveMaximum', 'minimum', 'maximum',
+           'default'].includes(key)) continue;
+      out[key] = convert(child);
+    }
+    // Gemini requires integers to be declared as numbers with a format.
+    if (out.type === 'integer') { out.type = 'number'; delete out.format; }
+    return out;
+  };
+
+  return convert({ ...schema, $defs: undefined });
+}
+
 async function callGemini(call: ProviderCall): Promise<ProviderReply> {
   const model = call.model || DEFAULT_MODEL.gemini;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
@@ -114,7 +170,7 @@ async function callGemini(call: ProviderCall): Promise<ProviderReply> {
       generationConfig: {
         maxOutputTokens: 8000,
         responseMimeType: 'application/json',
-        responseSchema: call.schema,
+        responseSchema: toGeminiSchema(call.schema),
       },
     }),
   });
