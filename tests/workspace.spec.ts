@@ -191,3 +191,18 @@ test('workspace controls fit a narrow screen and no personal data enters the hos
   await expect(host.getByRole('button', { name: 'Graph', exact: true })).toBeVisible();
   expect(await host.evaluate(async () => (await indexedDB.databases()).some((database) => database.name === 'graphnav'))).toBe(false);
 });
+
+test('switching between saved maps in My maps keeps direct dragging available', async ({ installed }) => {
+  const page = await open(installed.context);
+  await createMap(page, 'First map'); await addNode(page, 'Original idea');
+  const first = await page.getByLabel('Open a map', { exact: true }).inputValue();
+  await createMap(page, 'Second map'); await addNode(page, 'Different idea');
+  await page.getByLabel('Open a map', { exact: true }).selectOption(first);
+  await expect(page.getByRole('status')).toHaveText('Saved locally');
+  await expect(page.getByRole('heading', { name: 'First map', exact: true })).toBeVisible();
+  const node = page.locator('.react-flow__node').filter({ hasText: 'Original idea' });
+  const box = (await node.boundingBox())!;
+  await page.mouse.move(box.x + 70, box.y + 24); await page.mouse.down();
+  await page.mouse.move(box.x + 160, box.y + 110, { steps: 10 }); await page.mouse.up();
+  await expect.poll(async () => (await records(page, 'layoutItems')).filter((row) => row.graphId === first && row.pinned).length).toBe(1);
+});

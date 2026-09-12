@@ -22,6 +22,7 @@ const edgeTypes = { connection: ConnectionEdge };
 type FlowNode = Node<{ label: ReactNode; itemType: 'node' | 'relationship'; itemId: string }>;
 type Props = {
   fit?: boolean;
+  editable?: boolean;
   activeTabId?: string;
   focusId?: string | null; collapsedIds?: string[]; page?: number;
   snapshot: GraphSnapshot; query: string; busy: boolean;
@@ -33,7 +34,7 @@ type Props = {
   onPosition: (selection: Selection, point: { x: number; y: number }) => void;
   onView: (view: Viewport) => void;
 };
-export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onPosition, onView, fit = false, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
+export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onPosition, onView, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
   const { initialNodes, edges, total, shown } = useMemo(() => {
     const hidden = new Set(snapshot.itemEdits.filter((edit) => edit.hidden).map((edit) => edit.itemId));
@@ -91,7 +92,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       nodes={nodes} edges={edges} edgeTypes={edgeTypes} onNodesChange={changeNodes}
       onNodeClick={(_, node) => node.data.itemType === 'node' && onOpen ? onOpen(node.data.itemId) : onSelect({ itemType: node.data.itemType, itemId: node.data.itemId })}
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
-      onConnect={onConnect} nodesDraggable={!busy && !focusId} nodesConnectable={!busy}
+      onConnect={onConnect} nodesDraggable={editable && !busy && !focusId} nodesConnectable={editable && !busy}
       defaultViewport={snapshot.graph.view} minZoom={0.1} maxZoom={4}
       fitView={fit || (snapshot.graph.createdVia === 'import' && !snapshot.layoutItems.some((item) => item.pinned) && snapshot.graph.view.zoom === 1 && snapshot.graph.view.x === 0 && snapshot.graph.view.y === 0)}
       onMoveEnd={(_, view) => onView(view)}
@@ -100,7 +101,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       <Background color="#cfddd8" gap={24} />
       <Controls showInteractive={false} fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} />
     </ReactFlow>
-    {total === 0 && <div className="canvas-empty"><strong>{query ? 'No matching nodes' : 'Give your ideas a place.'}</strong><p>{query ? 'Try a different search.' : 'Add your first node, then connect it to another.'}</p></div>}
-    <div className="canvas-caption">{shown} of {total} matching nodes · {focusId ? 'Focus preview; saved positions unchanged' : 'Drag to arrange'} · Scroll to zoom{total > LIMITS.visibleNodes ? ' · Use page controls or search' : ''}</div>
+    {total === 0 && <div className="canvas-empty"><strong>{query ? 'No matching nodes' : 'Give your ideas a place.'}</strong><p>{query ? 'Try a different search.' : editable ? 'Add your first node, then connect it to another.' : 'Choose Edit graph to add ideas or existing source items.'}</p></div>}
+    <div className="canvas-caption">{shown} of {total} matching nodes · {focusId ? 'Focus preview; saved positions unchanged' : editable ? 'Drag to arrange' : 'Click a source to open'} · Scroll to zoom{total > LIMITS.visibleNodes ? ' · Use page controls or search' : ''}</div>
   </div>;
 }

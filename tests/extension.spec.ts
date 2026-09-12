@@ -1,4 +1,4 @@
-import { panelSettings, tools } from './ui-helpers';
+import { panelSettings } from './ui-helpers';
 import { test as base, expect, chromium, type BrowserContext } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -90,8 +90,8 @@ test('Docs shell uses document context and supports keyboard opening', async ({ 
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByText('Google Docs', { exact: true })).toBeVisible();
-  await tools(page, 'Sources');
-  await expect(page.getByRole('heading', { name: 'Add existing', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'With AI', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
   await page.getByRole('textbox').fill('Still editable');
