@@ -83,7 +83,7 @@ Suggested ownership: you own `components/graph/` and visible entrypoints; partne
 
 ## Steps 4 to 6 Reuse the graph with real sources
 
-**Drive:** start at one demo folder. Load children on demand, handle pagination, and give every file a real open action. Do not scan the whole Drive before showing anything.
+**Drive:** start at one demo folder, then add a My Drive overview showing top-level folders/files and a focused view for any folder. Load children on demand, handle pagination, and give every file a real open action. Do not scan the whole Drive before showing anything.
 
 **Docs:** request tabs with `includeTabsContent=true`, recurse through nested tabs, and retain tab IDs. Verify the exact tab opens inside Google Docs. [Docs tabs](https://developers.google.com/workspace/docs/api/how-tos/tabs).
 
@@ -98,6 +98,22 @@ Give each assistant one task ID from TASK_LIST and the relevant file ownership. 
 > Read AGENTS.md, IDEA.md, BUILD_PLAN.md, STATUS.md, and my task in TASK_LIST.md. I am [Rajvansh/partner], working on [task ID]. Implement only this task and coordinate shared files before editing them. Run the applicable checks, state anything unverified, and update the task status. Stop at the shared checkpoint and explain what we should click to test it.
 
 Before a task, claim its row and push the claim so the other person can see it. After a working slice, push code and task updates, open a short PR, and have the other person review and test. After merging, the person who merges updates STATUS with the new shared result. Bring current `main` into the other working branch before continuing. Small commits and 60–90 minute syncs keep the branches close.
+
+## Keep GitHub updated while building
+
+Each person starts from a clone connected to this repository. At every working checkpoint, the coding assistant updates the owner's task row, commits the intended code and documentation, pushes the branch, and returns the commit or PR link. The first push should establish branch tracking. If the tool cannot push, it must state the blocker and what is still only local.
+
+Merge reviewed slices into main and bring main into both working branches. Update shared STATUS after merging. Private user documents, graph caches, tokens, and PDFs stay outside GitHub. The code repository and each user's saved graph are different kinds of storage.
+
+## Prepare for larger graphs and future integrations
+
+- **More folders:** fetch children and subsequent pages only as needed; cap concurrent API requests and reuse cached results.
+- **More visible information:** set a configurable visible-node budget and provide Show more, collapse, and focus. Layout only the visible portion.
+- **More integrations:** keep one graph component, a shared graph contract, separate source adapters, and a storage interface. Another platform adds an adapter instead of requiring a new UI.
+- **More saved data:** use stable source IDs, account-scoped keys, and a schema version. Bound source caches and PDF storage; report save failures. Evict reconstructible source data separately from personal notes/layouts.
+- **Evidence:** during M6, use a labeled synthetic graph with 1,000 cached nodes and a configured visible limit such as 50. Check that focus, expansion, navigation, and reopening remain usable; record timings, request counts, and the tested limits. These are test inputs, not claims about supported capacity.
+
+These choices make the prototype easier to extend and test with larger sources. They do not establish performance for millions of items or many simultaneous cloud users. Cross-device graph sync and a production backend are separate later milestones, not part of tonight's GitHub connection.
 
 ## Finish and cut order
 

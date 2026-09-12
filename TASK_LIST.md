@@ -8,6 +8,7 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 | --- | --- | --- | --- |
 | DOC-0 | Create private repo and initial workflow | DONE | Starter committed in `7139f9e` |
 | DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
+| DOC-2 | Specify GitHub checkpoints and larger-source requirements | DONE | AGENTS and BUILD_PLAN include push verification, incremental loading, and performance acceptance criteria |
 
 ## Build queue
 
@@ -27,8 +28,8 @@ All application work is TODO. Hours are elapsed from the start of the proposed b
 | M4-B | 6–8h | Partner | PDF section extraction and destinations | TODO | At least three section jumps verified; fallback labeled |
 | M5-A | 8–10h | Rajvansh | Notes/connections, refresh status, creation form | TODO | Personal edits and one source-action control work |
 | M5-B | 8–10h | Partner | Save/refresh merge and real source creation | TODO | Reopening preserves edits; one authorized write and read-only behavior verified |
-| M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | All completed surfaces pass real navigation checks |
-| M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Type check/build and packaged extension verified |
+| M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | Real navigation verified; larger fixture remains usable within visible-node limit |
+| M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Build/package verified; pagination, bounded loading, storage, and measured limits recorded |
 | M7-A | 12–13h | Rajvansh | Draft deck and product story | TODO | Short deck matches working product |
 | M7-B | 12–13h | Partner | Demo setup and backup recording | TODO | Recording matches final commit |
 | M8 | 13–15h | Both | Rehearse pitch, demo, handoffs, and questions | TODO | Full run fits organizer's time limit |
