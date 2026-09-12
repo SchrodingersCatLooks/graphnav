@@ -38,3 +38,36 @@ This checkpoint integrates those files with preservation, not a rewrite or a sec
 Use the selected Docs fixture, authored PDF and isolated installed extension for exact selection, nested-tab exclusion, character/passages caps, stale response cancellation, text preview and preserved manual editing.
 Real generation and evidence usefulness remain open until the server-held credential and a real provider run are configured.
 A clean fixture test does not complete G2/G3/G4 or claim a model call.
+
+## Merged preview and active G2-A boundary
+
+PR #11 merged as 1453ec6, runtime 8f092f1.
+G1-A is complete for selected Doc/PDF preview; Eddy code through 179d98f is included.
+All five review fixes above were reproduced, corrected and regression-tested.
+The combined suite passed 94 tests; the last preview layout refinement passed typecheck/build and all four affected browser cases.
+
+Rajvansh now claims G2-A extension-side files: a loopback client in lib/generation/relay.ts, typed status/configure/generate/cancel messages, extension-owned pairing settings, and the existing GenerationPanel/DraftReview UI.
+wxt.config.ts needs only an additional http://127.0.0.1:8787/* host permission for that client; preserve the Google OAuth block.
+Eddy owns the separate relay package, actual provider adapter, startup docs and G3-B decision persistence.
+No runtime file for that relay client or pairing exists at this documentation checkpoint yet.
+
+The client/server contract for the next bounded integration is:
+
+- Base URL fixed to http://127.0.0.1:8787.
+  Use an exact chrome-extension://pidejkbkldalibjaehjfpjkcpjpcenpk origin allowlist and bind loopback only.
+- A random relay pairing code is a local bearer credential distinct from the provider API key.
+  The extension accepts it only on an extension-owned settings page and retains it in chrome.storage.session, never on a Google page or in graph backups.
+  The server holds its matching value privately; all health/draft requests require Authorization: Bearer <pairing-code>.
+- GET /health returns { protocol: 1, ready: boolean, model?: string } after authenticating.
+  Ready means the provider is configured, not that a model request has been proved.
+- POST /draft accepts a complete validated GenerationInput as its JSON body and returns the existing ProviderReply union: { kind: 'json', text: string } or { kind: 'refusal', reason: string }.
+  JSON text must match graphDraftSchema and contain the hash of the complete validated input, even for an empty draft.
+  Server builds instructions/input with the shared helpers; extension validates the response again with requestDraft.
+- Enforce 512 KiB request/response transport bounds, the shared 20,000-character/200-passage/40-node/80-relationship limits, one active request and 60-second timeout.
+  Do not log source text, pairing codes or provider credentials.
+  A disconnected/unauthenticated/unconfigured relay must fail visibly and leave manual editing usable.
+- The UI bridge owns request IDs and abort controllers; cancel is scoped to the requesting extension page/content-script sender.
+  Cancellation/timeout discards late output and never mutates live graphs.
+- G3-B persistence is a separate still-open boundary.
+  Do not apply proposal nodes through ordinary manual-edit commands and lose provenance or rejection decisions.
+  G2-A can display a validated draft without claiming accepted/rejected decisions survive until that store is integrated.

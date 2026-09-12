@@ -133,6 +133,21 @@ Opening a PDF makes no upload or AI request.
 Password-protected files and OCR are unsupported; pages without selectable text retain page navigation with an explanation.
 V2 generation controls and the final demo acceptance are still open in TASK_LIST.
 
+## Preview content for AI
+
+1. In a Doc graph panel or the PDF reader, choose **Select content for AI**.
+2. Choose the graph's purpose, then explicitly select document tabs or PDF pages.
+   Nested tabs are separate choices.
+3. Choose **Preview selected text** and inspect the complete passages shown.
+   The preview is limited to 20,000 characters and 200 passages, with visible truncation and empty-text explanations.
+   Changing the selection or purpose clears the old preview; **Cancel preview** ignores late results.
+
+Previewing sends nothing to a model and does not change the manual graph.
+**Generate with AI** is currently unavailable while the relay is being connected.
+API keys must remain on the relay server, not in the extension, GitHub or chat.
+The authored demo paper is available at [demo/GraphNav-demo-paper.pdf](./demo/GraphNav-demo-paper.pdf).
+It is demonstration content, not a published study.
+
 ## Development and automated checks
 
 ```bash
@@ -190,7 +205,9 @@ PR #9 adds graph browsing controls, panel preferences, and source-availability U
 PR #10 adds local PDF reading, editable section/page maps, and exact-file recovery.
 Its tested runtime e30ff42 passes typecheck/build/all 58 tests.
 The public manifest key and read scopes are already present on main.
-Eddy's new G1-B text/draft contract at `f412f9b` remains on partner-data; a temporary combined checkout passes typecheck, build, and all 63 tests.
+PR #11 merges Eddy work through 179d98f and the selected-text preview integration.
+The combined suite passes 94 tests; the final preview layout passed four focused installed-browser checks.
+Read GENERATION_HANDOFF for the active relay-client boundary; no model has been called.
 Read [EDITOR_HANDOFF.md](./EDITOR_HANDOFF.md) before changing shared messages or integrating generation.
 Bring current main into each working branch with a normal merge, preserving local changes.
 GitHub does not synchronize private maps, Google tokens, or PDF bytes.

@@ -1,14 +1,15 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #10 merged as `dc57282`.
+Last shared update: 2026-09-12, after runtime PR #11 merged as `1453ec6`.
 
 ## Working on main
 
 [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) merged the saved editor, Google integration, and on-page Drive/Docs graphs.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
 [PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
-The current main runtime matches tested checkpoint `e30ff42`.
-Eddy's application work through `4738cb2` is included through normal merges.
+[PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
+The current main runtime matches checkpoint 8f092f1.
+Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
 - Browse nested Drive folders into the current map, add personal ideas and labeled connections, edit notes/labels, and attach an existing source to a personal node.
@@ -30,9 +31,17 @@ Eddy's application work through `4738cb2` is included through normal merges.
   Bytes survive Chrome restarting; removing bytes retains maps, and exact-fingerprint reattachment restores destinations.
   Backups visibly explain that they exclude original PDF bytes.
 
+- Docs and PDF readers offer a shared selected-content panel, purpose choices and the complete bounded text preview.
+  Selection/purpose/map changes invalidate preview state, cancelled/late reads cannot replace newer choices, and preview sends nothing to a model.
+- Generation input validation binds text, character totals, passage IDs, account/source/locator/version and allowed map-node IDs.
+  Empty drafts require valid identity/schema; late output after timeout and caller cancellation are refused.
+  This is tested request infrastructure, not a live AI connection.
+- Eddy's authored six-page demo paper and generation/scale tests are now included on main.
+
 ## Verification and limits
 
-Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 58 tests passed for `e30ff42`.
+Node 22.23.2 / npm 10.9.9: typecheck, production build and all 94 combined tests passed for the PR #11 integration.
+The final preview-space/scroll refinement was rebuilt and rerun in all four affected installed Docs/PDF cases before committing 8f092f1.
 Installed Chromium tests use isolated profiles and synthetic Google API responses.
 They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
 Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
@@ -58,20 +67,19 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh claims G1-A: selected Doc-tab/PDF-page preview and the shared generation UI integration.
-The PDF manual loop is merged; generation controls and full M4 acceptance stay open.
-Eddy should bring main into partner-data and read GENERATION_HANDOFF, PDF_HANDOFF, and the current tracker.
-His latest observed checkpoint is 179d98f, containing the extraction/draft contract, authored demo paper, provider-agnostic request path, and scale tests.
-Those new files are still unmerged at this status update.
-Rajvansh will integrate that checkpoint and address the published input-validation/request-boundary review before connecting the UI.
-Eddy retains the relay/provider and proposal-persistence lane; the handoff records the exact new UI bridge and PDF selection-file ownership.
-No model has been called.
+G1-A is merged and verified for selected-content preview.
+Rajvansh claims G2-A for extension relay pairing, request/cancel handling and proposal UI.
+Eddy should bring main into partner-data and read GENERATION_HANDOFF before changing the same generation/type/request files.
+His work through 179d98f is now merged, including the authored paper and request/scale tests.
+The review fixes are implemented with reproductions and regression checks; Eddy retains server/provider startup and proposal-persistence/migrations.
+GENERATION_HANDOFF defines the extension client's bounded loopback contract so he can build the server independently.
+No model has been called, no accepted-AI persistence is implemented, and no complete V2 acceptance is claimed.
 
 The user is unsure who has an OpenAI API project/key.
 G0-A remains blocked on identifying the account owner and configuring a server-held credential and test-spend limit privately.
 Do not put a key in chat, GitHub, extension storage, or the browser bundle.
 This does not block manual/source-assisted maps or PDF reading.
-Eddy has committed an authored six-page demo PDF on partner-data; it is not yet merged here or claimed as an independent publication.
+Eddy's authored six-page demo PDF is now on main at demo/GraphNav-demo-paper.pdf; it is not an independent publication.
 Its content and the shared Doc still need the final evidence/usefulness check.
 
 V1 and V2 both remain in the requested target.
@@ -138,3 +146,7 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 - 2026-09-12: Merged M4-A manual PDF reader slice in PR #10 as dc57282.
   Typecheck/build/all 58 tests pass, including actual PDF rendering, restart, exact page/section jumps, notes/refresh, backups, quota/rollback, and missing-file recovery.
   M4-A stays REVIEW because generation reuse and final demo acceptance remain; G1-A is now claimed in GENERATION_HANDOFF.
+
+- 2026-09-12: Merged PR #11 as 1453ec6 with Eddy work through 179d98f and selected Doc/PDF preview.
+  Combined 94 tests passed; final preview layout rerun in four installed cases and screenshots inspected.
+  G1-A is DONE, G2-A is claimed, and server credentials/live generation/decision persistence remain open.
