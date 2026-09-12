@@ -21,8 +21,8 @@ Hours describe the original proposed schedule, not actual elapsed time or eviden
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | DOING | Both laptops build the scaffold; finish the shared folder/Doc/PDF choice and verify both-account access. Eddy is preparing the folder and tabbed Doc. |
 | M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DONE | PR #3 merged as `92a76ce`; both-laptop acceptance confirmed. Type-check, production build, and six synthetic browser tests passed. Eddy corrected the stale-script failure report and confirms the complete reloaded-browser checklist, including zoom. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | DOING | Demo folder and Doc read through the extension, or auth gate recorded |
-| M1-C | Before M2 | Both | Agree source/idea nodes, labeled relationships, and storage/edit contracts | DOING | Rajvansh drafts the requested database design; Eddy reviews before shared types/storage implementation. Cover manual/AI/imported graphs, multi-node relationships, stable targets, and saved layout. |
-| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | TODO | Add idea, connect/label/edit/remove personal items, and open real source |
+| M1-C | Before M2 | Both | Agree source/idea nodes, labeled relationships, and storage/edit contracts | DOING | User approved IndexedDB/Dexie and asked Rajvansh to implement the first storage slice. Shared types and repository are now claimed on rajvansh-ui; Eddy retains Google adapters and authentication. Integration review remains required. |
+| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | DOING | Add idea, connect/label/edit/remove personal items, and open real source |
 | M2-B | 2–4h | Partner | Drive adapter, edit commands, navigation, initial save | TODO | Real sources plus manual nodes/edges save and reopen with stable IDs |
 | M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
 | M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
@@ -53,7 +53,7 @@ Planned next stage. All tasks are TODO, not evidence of work in progress. Start 
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-C design / `rajvansh-ui` | M1-A remains DONE. [Storage proposal](./STORAGE_DESIGN.md) prepared in [draft PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6): extension-owned IndexedDB/Dexie, eight V1 stores, multi-member relationships, stable source locators, saved layouts, and a V2 draft store. Documentation checks and browser review of the explainer completed. | Database and shared graph types are not implemented; Eddy has not agreed the new design yet. | Eddy reviews the proposed account/locator, relationship-members, and command contracts; then agree and implement shared types before M2. No manifest, background, or dependency changes in this checkpoint. |
+| Rajvansh | M1-C + M2-A storage/editor slice / `rajvansh-ui` | User approved local IndexedDB/Dexie, no AWS. Integrated Eddy's stable-ID commit `82e846c` unchanged. Claiming `lib/graph/`, `lib/storage/`, package files, and a personal-map entrypoint in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6). | Implementation and acceptance in progress. Eddy's background worker remains on partner-data; no live Google read claimed here. | Implement transactional storage and manual create/connect/move/reopen/export/import, run checks, then hand the repository API to Eddy for Google integration. |
 | Partner | M1-B / `partner-data` | Eddy reports Google Cloud setup complete and full M1-A acceptance after correcting the stale-content-script reload. Public manifest configuration is in [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md). | Scaffold dependency cleared by PR #3. No real API read reported; demo sources and sharing are still being prepared. | Bring main into partner-data, apply the public key/Identity/OAuth/API manifest settings, implement the background Connect Google flow, and prove one real folder read and one Doc read. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
@@ -86,7 +86,7 @@ Eddy owns the public manifest key, Identity permission, OAuth client/scopes, req
 The exact public block remains in his GOOGLE_SETUP.md at `9f68af6`.
 After adding it, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Rajvansh retains the shell component and CSS; dependency changes remain coordinated.
-M1-C is DOING: Rajvansh has prepared the storage proposal; shared agreement and implementation remain outstanding.
+M1-C is DOING: the user approved local storage and asked Rajvansh to implement the first slice; Eddy retains Google integration. Shared implementation review remains outstanding.
 
 Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, and a Drive folder with ten subfolders including one nested level.
 M0 is DOING; source preparation is underway, but the links, required demo sources, and both-account access are not yet confirmed.
