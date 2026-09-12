@@ -75,8 +75,10 @@ The review fixes are implemented with reproductions and regression checks; Eddy 
 GENERATION_HANDOFF defines the extension client's bounded loopback contract so he can build the server independently.
 No model has been called, no accepted-AI persistence is implemented, and no complete V2 acceptance is claimed.
 
-The user is unsure who has an OpenAI API project/key.
-G0-A remains blocked on identifying the account owner and configuring a server-held credential and test-spend limit privately.
+The user supplied OpenAI project, organization and key metadata.
+These IDs do not authenticate model requests.
+A private ignored .env.relay.local file is prepared on Rajvansh’s laptop for the actual secret; it is not committed or bundled.
+G0-A remains blocked on the account owner saving the secret locally and verifying live access, funding and the test-spend limit.
 Do not put a key in chat, GitHub, extension storage, or the browser bundle.
 This does not block manual/source-assisted maps or PDF reading.
 Eddy's authored six-page demo PDF is now on main at demo/GraphNav-demo-paper.pdf; it is not an independent publication.
@@ -150,3 +152,6 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 - 2026-09-12: Merged PR #11 as 1453ec6 with Eddy work through 179d98f and selected Doc/PDF preview.
   Combined 94 tests passed; final preview layout rerun in four installed cases and screenshots inspected.
   G1-A is DONE, G2-A is claimed, and server credentials/live generation/decision persistence remain open.
+
+- 2026-09-12: G0-A now has project metadata and a private local setup path.
+  Actual credentials and live API access remain unverified; no model request or new runtime acceptance is claimed.

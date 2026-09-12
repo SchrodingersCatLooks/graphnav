@@ -71,3 +71,13 @@ The client/server contract for the next bounded integration is:
 - G3-B persistence is a separate still-open boundary.
   Do not apply proposal nodes through ordinary manual-edit commands and lose provenance or rejection decisions.
   G2-A can display a validated draft without claiming accepted/rejected decisions survive until that store is integrated.
+
+## Private configuration checkpoint
+
+The user supplied OpenAI project, organization and key IDs.
+A key ID is not a bearer credential.
+Rajvansh prepared an ignored .env.relay.local file at the local clone root and asked the account owner to enter OPENAI_API_KEY privately.
+The file and its values are not in GitHub and must not be imported into the WXT/browser build.
+The planned server can read OPENAI_API_KEY plus optional OPENAI_PROJECT_ID, OPENAI_ORG_ID and OPENAI_BASE_URL from its own process environment.
+A real model, billing/access and the demo spend cap remain unverified.
+Eddy still owns the relay package, provider adapter and startup command; the extension uses only its separate session pairing code.
