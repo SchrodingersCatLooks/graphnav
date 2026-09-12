@@ -26,11 +26,11 @@ ELK runs with the shared editor, outside database transactions; sources are comm
 Repository arrangement preserves user pins and revision checks.
 Same-document navigation and current-tab highlighting are implemented, not pending backend work.
 
-Eddy's next needed integration is G0-B/G1-B: a minimal relay and bounded selected-content/draft contract.
-API ownership is unresolved; the relay can be implemented and tested without committing a credential or claiming a live model call.
-Keep schema additions additive and publish the contract before Rajvansh wires generation review controls.
+Eddy's next integration is G3-B: persistent proposals and accept/edit/reject decisions, using the boundary in GENERATION_HANDOFF.
+Selected-content extraction, the local relay and one real OpenAI PDF generation are merged through PR #13.
+Keep schema additions additive and publish the typed proposal API before Rajvansh wires G3-A review controls.
 
-## PR #9 integration and G1-B review
+## Historical PR #9 integration and G1-B review
 
 PR #9 (`487b315`) adds focus/collapse, shared list/canvas pagination, bounded layout, saved panel preferences, and source-availability UI.
 The UI calls the existing CHECK_TARGETS handler; do not create another availability checker.
@@ -47,6 +47,18 @@ Before wiring the relay, Eddy should address these concrete review points in G1-
 - Describe the boundary precisely: the Docs API returns document tab content, while the extractor processes the selected tabs for preview/submission.
   Unsupported header/footer/footnote/image text must not be described as fully analyzed.
 
-G0-B implementation and mock-provider checks can proceed without a credential.
-Actual model acceptance remains blocked until the account owner configures a server-held key and spending limit privately.
-No real model call or completed generation UI is claimed.
+These earlier G1/G2 review points were addressed in the integration through PR #13.
+Its verified model call returned eight ideas and eight connections from two authored PDF pages; persistent review and full real-source acceptance remain open.
+See relay/README.md for private configuration, actual request limits and the verified provider result.
+
+## PR #15 project-map navigation
+
+PR #15 merged as e5dcb88, runtime bcfd0d7.
+The existing editor and PdfLibrary imports already support chosen Doc/PDF sources in one map; the new UI exposes target-map selection before adding items.
+OPEN_PDF_READER accepts an optional graphId and opens the private reader with that target map.
+NAVIGATE accepts optional graphId, carries it in the extension-owned PDF URL, and seeds the Doc panel/map before navigating a new or existing Doc tab.
+PANEL_STATE optionally reads/writes graphId through a separate panel-map session key so late map selection cannot reopen a closed panel.
+Map requests from Google content scripts keep the existing account ownership check.
+No Dexie schema, proposal store, acceptance methods or backup formats changed.
+Installed tests cover selected membership, a personal Doc/PDF edge, navigation both ways, separate refresh, independent maps and complete restart.
+Combined multi-source AI input is still open and must not be inferred from shared-map membership.

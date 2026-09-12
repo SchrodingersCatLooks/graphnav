@@ -2,17 +2,21 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #13](https://github.com/SchrodingersCatLooks/graphnav/pull/13).
+**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15).
 Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
 The local OpenAI relay now generates real suggestions with supporting text and source navigation inside the PDF reader.
 Persistent accept/edit/reject decisions remain the next G3 integration step.
 See [relay setup](./relay/README.md) for the private configuration and startup command.
 
 PR #14 adds movable/resizable floating panels, saved placement, docking and reset.
+PR #15 adds a visible project-map chooser, Add a PDF to this map, and map continuity when navigating between Docs and PDFs.
 **Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
 **Verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
+For PR #15, both typechecks/build and all 19 affected tests passed.
+The full suite passed 118/119; one browser-fixture startup timed out before the PDF preview test ran, with a worker-teardown timeout afterward.
+That test passed three isolated reruns; the startup flake remains recorded under M6-B.
 Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
 Separately, one actual OpenAI request returned eight ideas/eight connections from two authored PDF pages, with exact evidence navigation and unchanged saved graph.
 No fresh Google-account acceptance or full saved-review loop is implied.
@@ -140,6 +144,21 @@ Opening a PDF makes no upload or AI request.
 Password-protected files and OCR are unsupported; pages without selectable text retain page navigation with an explanation.
 V2 generation controls and the final demo acceptance are still open in TASK_LIST.
 
+## Combine a Doc and PDF in one map
+
+1. In the Doc graph, create or choose a map using **Open a map** above the source choices.
+2. Select the wanted Doc tabs and choose **Add selected**.
+3. Choose **Add a PDF to this map**, then open a file or choose one under **Saved PDFs**.
+   The reader shows the target map before any PDF nodes are added.
+4. Select the wanted PDF sections/pages and choose **Add selected**.
+5. Connect a Doc tab to a PDF section with a personal label.
+   Following either destination keeps the same map beside the correct Doc tab or PDF page.
+6. Refresh the Doc source and PDF outline separately, then reopen the reader to verify the connection remains.
+
+The map can combine manual ideas, a chosen Google account's sources and local PDF sections.
+Independent maps remain available in the chooser.
+AI still previews and generates from one selected Doc or PDF at a time; a combined multi-source AI request remains open under X2.
+
 ## Preview content for AI
 
 1. In a Doc graph panel or the PDF reader, choose **Select content for AI**.
@@ -153,7 +172,7 @@ Previewing sends nothing to a model and does not change the manual graph.
 After pairing the running local relay in **AI connection** settings, choose **Generate with AI** to request suggestions from the selected preview.
 Use **Cancel** while it runs, then inspect each suggestion's supporting text and open its evidence source.
 The current draft is a preview; persistent accept/edit/reject controls are still being implemented.
-API keys must remain on the relay server, not in the extension, GitHub or chat.
+API keys belong in private relay configuration or encrypted deployment secrets; never commit them or put them in the extension or chat.
 The authored demo paper is available at [demo/GraphNav-demo-paper.pdf](./demo/GraphNav-demo-paper.pdf).
 It is demonstration content, not a published study.
 
