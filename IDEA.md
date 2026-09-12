@@ -1,6 +1,10 @@
 # GraphNav product context
 
-GraphNav is a Chrome extension that lets people navigate and organize existing information through interactive graphs. Source nodes open real folders, files, document tabs, or paper sections; personal idea nodes capture the user's own concepts. Information stays in its original application.
+GraphNav is a Chrome extension that lets people create and edit interactive maps for navigation, planning, and organization.
+People can start their own map as they work or generate a map from existing information and then edit it.
+A source-backed node opens something real: a folder, file, document tab, or paper section.
+Personal idea and note nodes can exist before they have a source destination.
+Source information stays in its original application.
 
 This file preserves the useful product material from the attached **Graph navigation idea notes**, including its Applications and Caching screenshots, together with the team's clarifications in this conversation. Opposition sections and rebuttal discussions are omitted. The source document is unchanged. Implementation choices and tonight's limits are recorded separately below and in [BUILD_PLAN.md](./BUILD_PLAN.md).
 
@@ -34,6 +38,28 @@ V2 follows this sequence: select a bounded set of supported sources, extract con
 Start V2 with one selected text-based Doc or PDF before expanding to collections of selected files. Drive metadata alone cannot establish semantic relationships; selected documents need readable content and appropriate access. Independent graphs remain supported, and cross-source analysis is limited to what the user selects.
 
 ## One extension with three experiences
+
+### Two ways to start, one editable graph
+
+Both starting options are part of the intended product:
+
+1. **Create your own map:** start with an empty personal graph, add idea or note nodes, and connect them while planning or working on a project.
+   Add source destinations when there is something real to open.
+   Creating a personal map does not require existing Drive files or a PDF.
+2. **Generate from existing content:** choose an accessible Drive folder, Google Doc, or local PDF and let GraphNav create its starting nodes, structure, and navigation destinations.
+   Then rearrange the map and add personal notes, concept nodes, and connections.
+
+These are starting choices, not separate products or permanently locked modes.
+Both lead to the same editable graph controls and saved personal state.
+Explore and Build describe the controls currently shown, independently of how the graph was first created.
+
+Both manual creation and generated editable maps belong to the intended product.
+V1 may import source structure such as folders, tabs, and PDF section anchors while users create meaningful connections.
+V2 adds the content analysis and proposed concepts/relationships described above; structural imports alone do not fulfill that generation stage.
+
+The choices are specified here for implementation in the later milestones; the current M1-A shell does not implement them.
+
+### Supported source experiences
 
 | Surface | Explore existing content | Build and organize |
 | --- | --- | --- |
@@ -73,9 +99,10 @@ The scope boundary is practical: tab and folder creation can change the real sou
 
 ## How it becomes a lasting part of the user's workflow
 
-1. **First open:** read the current source through its API or PDF data and generate the initial graph.
+1. **Start:** create an empty personal map, or read the selected source through its API or PDF data and generate the initial graph.
 2. **Save:** cache the source structure plus personal layout, notes, and connections.
-3. **Reopen:** recognize the same source and restore the saved graph. Do not rebuild it from scratch on every click.
+3. **Reopen:** restore the saved graph by its stable graph ID and, for a generated map, its source and account context.
+   Do not rebuild it from scratch on every click.
 4. **Personal edit:** autosave changes to layout, labels, notes, and connections.
 5. **Refresh:** read the source again and update generated nodes while preserving personal edits for surviving source IDs. Mark missing destinations instead of silently reassigning them.
 

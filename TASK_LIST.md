@@ -13,13 +13,13 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## V1 manual build queue
 
-M1-A has an existing scaffold in [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) and is in REVIEW with unresolved partner-browser checks; other implementation tasks remain TODO. Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
+M1-A has an existing scaffold in [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) and is in REVIEW awaiting final partner-browser confirmation; M1-B is DOING on `partner-data`. Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Finish acceptance of existing extension shell in PR #3 | REVIEW | Resolve reported Docs clipping/side-rail overlap/zoom failures; verify exact build and full checklist on both laptops before merge |
-| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
+| M1-A | 0.5–2h | Rajvansh | Finish acceptance of existing extension shell in PR #3 | REVIEW | Reload reportedly resolves Eddy's UI; confirm the exact commit and full checklist, including 100% and increased browser zoom, then merge after review. Earlier failures remain recorded below. |
+| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | DOING | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree source/idea nodes, labeled edges, and edit commands | TODO | UI and adapters share stable IDs, targets, and origin fields |
 | M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | TODO | Add idea, connect/label/edit/remove personal items, and open real source |
 | M2-B | 2–4h | Partner | Drive adapter, edit commands, navigation, initial save | TODO | Real sources plus manual nodes/edges save and reopen with stable IDs |
@@ -52,7 +52,40 @@ Planned next stage. All tasks are TODO, not evidence of work in progress. Start 
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A, `rajvansh-ui`, [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) | PR reports scaffold/build/tests; this documentation update did not rerun them | Partner reports unresolved Docs clipping, overlap, and zoom acceptance | Preserve existing code; verify loaded build and fix/retest the reported browser failures |
-| Partner | M1-A acceptance support; M1-B console preparation | PR #3 contains the partner's browser report; Google access remains unverified | Exact loaded build and browser acceptance need confirmation | Retest the same production build with Rajvansh; prepare Google Console in parallel |
+| Rajvansh | M1-A / `rajvansh-ui`, [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) | Reconciled newer main planning documents; `npm run check` passed on Node 22.23.2/npm 10.9.9: type-check, build, six synthetic browser tests. Rajvansh reports Eddy's UI appears fixed after reload; runtime code is unchanged. | Full reloaded-browser checklist and exact tested build are not yet confirmed; M0 demo sources are unchosen. | Obtain the final browser result and complete the scaffold handoff. Eddy owns M1-B manifest/background changes after merge; Rajvansh retains the panel/CSS lane. |
+| Partner | M1-B / `partner-data` | Google Cloud setup done: `graphnav` project, Drive API and Docs API enabled, External/Testing consent screen, both test users, and a Chrome Extension OAuth client bound to extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`. Scopes `drive.metadata.readonly` and `documents.readonly` per BUILD_PLAN. Values recorded in [GOOGLE_SETUP.md](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md). Also ran the M1-A browser acceptance pass on this laptop against `c3ce042` and `c313a1d`; findings reported on PR #3. | No Google API call has been made yet. Manifest wiring and the background auth handler are blocked until the M1-A scaffold is reviewed and merged. M0 demo folder and Doc are still unchosen. | Apply the manifest block from GOOGLE_SETUP.md once M1-A merges, then implement the Connect Google handler and prove one Drive folder read and one Doc read. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
+
+## M1-A second-machine acceptance
+
+Eddy reports macOS 26.5.2, Chrome 152.0.7977.84, Node 26.8.2, and npm 11.19.1.
+His initial `npm ci`, `npm run typecheck`, and `npm run build` passed.
+Eddy subsequently reports a clean detached-worktree build on pinned Node 22.23.2 / npm 10.9.8 with the same browser failure report.
+Rajvansh later reports that reloading appears to have resolved Eddy's UI; the exact reloaded commit and full checklist results have not yet been supplied.
+Node 26 is an additional reported build result; Node 22 remains the pinned baseline.
+
+| Tested commit | Reported results |
+| --- | --- |
+| `c3ce042` | My Drive and folder labels, Graph/X toggle, Escape with focus restoration, Docs typing/scrolling, and absence on unrelated sites passed. Docs header/close clipping and zoom acceptance failed. |
+| `c313a1d` | Layout improved, but the Docs header/title/X remain partially clipped at 100% browser zoom, the side-panel icon rail overlaps the right edge, and zoom acceptance still fails. Other previously passing checks were not rerun on this commit. |
+
+The later `adc7729` changes planning documents only and has the same runtime as `c313a1d`.
+The partner's report mentions screenshots, but new screenshot attachments were not supplied with the forwarded report here.
+The report establishes failed acceptance, not a confirmed cause.
+Do not assume stale output, Node version, or top-layer ordering is responsible without evidence.
+
+Rajvansh's subsequent live inspection found one `.graphnav-shell[popover="manual"]` matching `:popover-open`, a panel top of 16 CSS pixels, and a close button fully inside the viewport.
+The title, close button, and sampled right edge hit-tested above Docs, and the full-page screenshot showed the complete header.
+This was one existing open Doc at its current browser settings; partner reproduction and the full zoom walkthrough remain outstanding.
+
+Next acceptance handoff: Eddy confirms the exact loaded commit and whether the complete header/X and right edge remain visible at 100% and increased browser zoom after reload.
+He should report the remaining README checklist results for that same build rather than carrying older passes forward.
+No additional CSS patch is justified solely by the earlier failure report while the reload outcome is being confirmed.
+The runtime diff from `c313a1d` through `fb2695d` is empty; those later checkpoints changed Markdown only.
+
+Eddy's M1-B task/handoff rows above are synchronized from his own `partner-data` commit `9f68af6`, not newly assigned or claimed by Rajvansh.
+His Google Console configuration is reported complete; no real Google API read is yet reported.
+After the scaffold merges, he owns the public key, Identity/OAuth/API manifest configuration and background worker.
+Rajvansh retains the shell component and CSS; both coordinate dependency changes and agree M1-C before graph implementation.
+M0 still requires an authorized shared demo folder and a Doc containing at least one nested tab.

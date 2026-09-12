@@ -12,6 +12,20 @@ This is a proposed 15-hour schedule measured from when you start: **12 hours bui
 
 Both spend the same blocks on the same milestone. For example, during Docs work you build the tab panel while your partner supplies the tab data and click action. During PDF work you build the reader while your partner supplies section anchors. Neither person builds a separate product. Rebalance a task whenever one person is blocked.
 
+## Two starting paths
+
+The user chooses **Create your own map** or **Generate from existing content**, then edits the resulting graph with the same controls.
+Creating a personal map starts empty and allows idea/note nodes without an existing source.
+Generating a map creates real nodes and navigation destinations from a Drive folder, Doc, or PDF, then allows personal edits and extra connections.
+Automatic generation is core; optional meaning-based suggestions are a separate feature.
+
+Keep M1-A scoped to its shell and M1-B to authorized reads.
+Agree support for both graph origins in M1-C before graph and storage code diverge.
+M2 starts the manual create/connect/edit/save cycle alongside Drive sources; M3 and M4 reuse it for Docs and PDFs.
+M5 completes editing and refresh across the implemented surfaces.
+During M6, verify both creating a personal map and editing a generated map, including reopening each without losing personal work.
+These are planned acceptance checks, not completed features.
+
 ## The schedule
 
 | Time from start | Shared result | You | Partner | Both verify before moving on |
@@ -73,13 +87,23 @@ If auth has no successful read by hour 2, stop spending both people's time on it
 
 Agree on this small data contract before writing adapters:
 
-- **Graph:** source kind, source ID, account key where relevant, refresh time, nodes, and edges.
-- **Node:** stable ID, title, type (`source`, `idea`, or `note` plus source subtype), and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page. Keep source titles separate from personal display labels; ideas/notes may have no external target.
-- **Edge:** stable ID, endpoints, relationship label, explanation, and origin (`imported`, `manual`, `ai-suggested`, `ai-accepted`). V2 may attach supporting source anchors and a draft ID. Preserve accepted user edits independently of later drafts.
-- **Personal state:** positions, collapsed nodes, notes, and custom edges, stored separately from the source graph.
-- **Adapter:** `load`, `refresh`, and `navigate`, with optional supported source actions. No token in graph data.
-- **Graph editing:** shared commands to add/update/remove personal nodes and edges and attach source destinations. Removing a personal graph item does not delete its original file.
-- **V2 generation boundary:** a separate module accepts selected source excerpts and returns draft nodes/edges plus evidence references. Keep the model call out of the graph UI; do not build this module until V1's manual cycle works.
+- **Graph:** stable graph ID, origin (`manual` or `generated`), optional source kind/source ID for a manual map, account key where relevant, refresh time when applicable, nodes, and edges.
+  A source-generated map must retain its source identity.
+  Personal maps must be creatable and reopenable before a source is attached.
+- **Node:** stable ID, title, type (`source`, `idea`, or `note` plus source subtype), and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page.
+  Keep source titles separate from personal display labels; ideas/notes may have no external target.
+- **Edge:** stable ID, endpoints, relationship type/label, explanation, and origin (`imported`, `manual`, `ai-suggested`, `ai-accepted`).
+  Distinguish source containment and explicit references from personal interpretations.
+  V2 may attach supporting source anchors and a draft ID.
+  Preserve accepted user edits independently of later drafts.
+- **Personal state:** positions, collapsed nodes, personal concept/note nodes, notes, and custom edges, stored separately from generated source data.
+  Refresh applies to source-generated data and preserves the person's additions.
+- **Adapter:** `load`, `refresh`, and `navigate`, with optional supported source actions.
+  No token in graph data.
+- **Graph editing:** shared commands to add/update/remove personal nodes and edges and attach source destinations.
+  Removing a personal graph item does not delete its original file.
+- **V2 generation boundary:** a separate module accepts selected source excerpts and returns draft nodes/edges plus evidence references.
+  Keep the model call out of the graph UI; do not build this module until V1's manual cycle works.
 
 Suggested ownership: you own `components/graph/` and visible entrypoints; partner owns `lib/adapters/`, `lib/storage/`, and the background worker. Agree together on `lib/graph/types.ts`. Only one person edits shared types, package files, or WXT configuration at a time; hand off changes explicitly.
 
@@ -107,6 +131,10 @@ V2 is the next product stage, not a requirement to finish tonight's V1. Start af
 Folder metadata is sufficient for a structural Drive view, but V2 needs actual content from supported selected files. Initially support one Doc or text PDF; do not silently read a whole Drive for semantic analysis. Send only selected content to the model with the user's authorization. Keep the provider API key on a server, outside the extension and GitHub. A development server can run locally for a prototype; deployment and multiuser authentication are separate work.
 
 Check the current official model API documentation when implementing G2. Record provenance and source excerpts; discard or flag proposals whose referenced passages or destinations cannot be validated. The graph editor, source integrations, navigation, and persistence remain independent of generation.
+
+**Personal authoring starts in M2 and is completed across surfaces in M5:** expose Create your own map, add personal nodes and connections, and save them without requiring Google access or a PDF.
+Use the same authoring controls to edit a generated map while keeping source destinations intact.
+Adding a personal node does not create a Google file or modify a PDF; real source creation remains a separate explicit action.
 
 ## How to use AI without getting out of sync
 
