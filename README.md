@@ -2,12 +2,16 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current opening flow (UX2-A, [PR #17](https://github.com/SchrodingersCatLooks/graphnav/pull/17)):** Graph opens the saved map for this page with **Edit graph** and **New graph**.
-If there is no saved map, it opens **New graph** with **Manually** and **With AI** choices.
-Creating a graph preserves the existing one; opening the chooser alone saves nothing.
+**Current opening flow (UX3-A, [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18)):** Clicking **Graph** opens a compact menu with **Manage Google connection**, **New Graph**, and **Use Existing Graph**.
+**New Graph** opens a separate **Manual / Automated** screen with **Back** at the top left.
+Google connection controls appear only inside the connection screen reached from the home menu.
+Choose a saved map or finish creating a named map to expand the editor.
+Opening or backing out of the chooser creates nothing, and creating another graph preserves existing maps.
+The expanded graph keeps its saved size and placement.
+Following a source destination or refreshing an already open graph resumes that graph when available.
 **Edit graph** reveals Sources, Add idea and Connect, and allows node dragging; **Done editing** returns to navigation.
 Click source titles to navigate, use **This page** to recover the source map, and find map selection/backups under **More**.
-Google account and panel settings remain separate menus.
+Use **Back** to return to the compact menu; **Panel settings** remains available inside the expanded graph.
 
 **Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15).
 Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
@@ -22,8 +26,9 @@ PR #15 adds a visible project-map chooser, Add a PDF to this map, and map contin
 **Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Latest verification:** extension and relay typechecks, production build and all 138 tests (1.3 minutes) passed for UX2-A using Node 22.23.2 / npm 10.9.9.
-Installed tests cover empty-source creation choices, saved-map reopening, separate manual/AI graphs, Drive-to-Doc text selection, account isolation before import, PDF/backup/AI regressions and normal host editing.
+**Latest verification:** extension and relay typechecks, production build and all 139 tests (1.1 minutes) passed for UX3-A using Node 22.23.2 / npm 10.9.9.
+Installed tests cover compact menus, Back and keyboard focus, a small viewport, unchanged floating placement, saved-map opening, manual/AI creation, account isolation, source navigation and PDF/backup/AI regressions.
+The startup account-loading race was reproduced and fixed before the complete suite; three repeated checks passed for both overview navigation and the compact launcher.
 The actual Google screens remain for the user to review after extension reload and tab refresh.
 
 **Earlier verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
@@ -94,15 +99,18 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    The public manifest key is already configured; see GOOGLE_SETUP for the OAuth handoff.
 5. Refresh open Drive/Docs tabs after every extension reload.
    Otherwise those tabs can retain an old content script even when Chrome shows the new extension build.
-6. Open [Drive Home](https://drive.google.com/drive/home), My Drive or a folder, click **Graph**, then **Connect Google** if needed.
+6. Open [Drive Home](https://drive.google.com/drive/home), My Drive or a folder, then click **Graph**.
+   Expect the compact menu: **Manage Google connection**, **New Graph**, and **Use Existing Graph**.
+   For sign-in, choose **Manage Google connection > Connect Google**, then **Back** after connecting.
    Sign-in and consent require your own account action.
-   A saved map for this location reopens in navigation mode.
-   If none exists, choose **Manually**, name the graph and **Create map**.
+   Choose **Use Existing Graph** and a saved map, or **New Graph > Manual**, name it and **Create map**.
+   **New Graph > Automated** leads to named graph creation and selected-content AI preview/generation.
+   New Graph has its own Back button and no Google account controls.
+   The panel expands after choosing or creating a map.
    Pick existing items using **Add selected**, or choose **Build baseline** to import the listed structure without GPT.
-   **With AI** is the other choice under **New graph**, not a separate top-level action.
-   Home shows your My Drive root, not Google's suggested or shared Home feed.
+   Drive Home uses your My Drive root, not Google's suggested or shared Home feed.
 7. Click a source node's title to open its destination.
-   A folder opens in the same browser tab with its saved graph or the New graph chooser; the overlay stays open.
+   A folder opens in the same browser tab with its saved graph or the compact launcher; the overlay stays open.
    **This page** returns to this source's cached map if another project map is selected.
    In a Doc, click a tab node to reach that exact tab in the same browser tab.
 8. Choose **Edit graph**, then click **Connect** on one node and **Connect** on another.
@@ -110,19 +118,19 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    Click a connection label to edit it later; click **Edit** on a node for its label, notes and destination details.
    **Add idea** creates a personal node, and **Arrange map** arranges unpinned nodes.
    Dragging only changes the saved layout, never the source files.
-   Choose **Done editing** or close and reopen the panel to return to navigation.
+   Choose **Done editing** to return to navigation, or **Back** for the compact menu.
 9. Under **Edit graph**, open **Sources** to choose additional files, folders or document tabs without typing their names or URLs.
    **Add selected** imports your choices; **Build baseline** adds the listed structure.
    Browse a folder's arrow to add its children into the current map.
-   **New graph > Manually** creates another map; its source chooser fills known names and destinations for you.
+   **New Graph > Manual** creates another map; its source chooser fills known names and destinations for you.
    **Refresh source** preserves personal edits and selected-only membership.
 10. Use **More** for saved-map selection, adding a PDF, and backup import/export.
     **Map options** contains focus, collapse, pagination and destination checks.
     **Panel settings** contains width, dock, float and reset controls.
     Float mode exposes Move and Resize controls with pointer and keyboard support; Escape cancels a placement drag or closes the panel.
-    **Google account** shows the connected account when available, with **Change Google account**, **Disconnect Google**, and **Check connection**.
+    Use **Back > Manage Google connection** for the available account label, **Change Google account**, **Disconnect Google**, and **Check connection**.
     Chrome controls which account sign-in offers; another Chrome profile may be needed to use a different Google account.
-    Close/reopen the panel, refresh the page and check that your notes, connections and dragged positions remain.
+    Close/reopen the panel, choose **Use Existing Graph**, select your map, then refresh the page and check that your notes, connections and dragged positions remain.
     Verify typing, scrolling and reachable close controls at normal and increased browser zoom.
 
 The shell recognizes Drive Home, My Drive, individual Drive folders and normal Docs document URLs, including numbered account paths.
@@ -142,7 +150,7 @@ See Chrome's [official unpacked-extension instructions](https://developer.chrome
 2. Choose a text PDF up to 20 MiB and 300 pages.
    Bookmarked sections or detected heading suggestions have names and page destinations already filled in.
    **All pages** provides page destinations if the outline is unsuitable.
-3. If the paper has no saved graph, choose **Manually**, name the graph and **Create map**.
+3. If the paper has no saved graph, choose **Manual**, name the graph and **Create map**.
    Use **Edit graph > Sources**, select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
    This works without GPT or an API key.
 4. Click a source node title to reach its page or section.
@@ -178,7 +186,7 @@ AI still previews and generates from one selected Doc or PDF at a time; a combin
 
 ## Preview content for AI
 
-1. Choose **New graph > With AI**, give the new graph a name and choose **Continue with AI**.
+1. Choose **New Graph > Automated**, give the new graph a name and choose **Continue with AI**.
    In Drive, choose one Google Doc listed in the current folder; in Docs or the PDF reader, the current source supplies the choices.
    The named map is saved separately, while generated suggestions remain draft previews until G3-A is integrated.
 2. Choose the graph's purpose, then explicitly select document tabs or PDF pages.

@@ -104,10 +104,13 @@ The shared chooser starts with Drive; step 4 supplies Docs and step 9 supplies P
 
 1. Rajvansh extracts reusable editor controls from `entrypoints/workspace/main.tsx` and mounts them in the existing popover panel.
    Keep the optional workspace working and preserve the tested top-layer/viewport behavior.
-2. Open the saved graph for the page in navigation mode with Edit graph and New graph.
-   If none exists, open New graph with Manually and With AI choices; opening the chooser alone does not create or regenerate a graph.
-   Manually creates a named map with ready-to-add source items and an explicit Build baseline action.
-   With AI creates a separate named map, then opens content selection and preview before generation.
+2. Open a compact launcher with Manage Google connection, New Graph and Use Existing Graph.
+   New Graph opens a separate Manual/Automated screen with Back and no account controls.
+   Keep naming and saved-map selection compact; expand only after opening or creating a map.
+   Returning through Back preserves maps and their stored layout and panel placement.
+   Manual creates a named map with ready-to-add source items and an explicit Build baseline action.
+   Automated creates a separate named map, then opens content selection and preview before generation.
+   Use Existing Graph opens the chosen saved map in navigation mode; ordinary source navigation and page reload restore the ongoing graph when available.
    Edit graph reveals Sources, Add idea and Connect and enables dragging; Done editing returns to navigation.
    Drive Home uses the My Drive root, and This page returns from a chosen project map.
    Sources preserves the explicit selected-only workflow and offers Build baseline for the listed scope.

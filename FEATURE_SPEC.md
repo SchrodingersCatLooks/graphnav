@@ -29,12 +29,14 @@ The user explicitly requires source suggestions and autofill before GPT integrat
 Existing Drive folders/files, Doc tabs/sub-tabs, and parsed PDF sections/pages are ready-to-add node candidates.
 Manual means the user chooses nodes and connections; it must not mean retyping known titles or copying URLs.
 
-1. Opening Graph on a supported page restores the saved map for that page in navigation mode with Edit graph and New graph.
-   If none exists, open New graph with Manually and With AI sub-options.
-   Do not create a map merely by opening the panel or the chooser.
-   Manually creates a named map and offers current source items with labels and destinations prefilled; Build baseline is an explicit action.
-   With AI creates a separate named map and opens selected-content preview/generation; review persistence remains tracked under G3.
-   Drive Home opens the My Drive root graph; a specific folder or Doc has its own map.
+1. Clicking Graph on a supported Google page opens a compact menu with Manage Google connection, New Graph and Use Existing Graph.
+   New Graph opens a separate Manual/Automated choice screen with Back at the top left and no Google connection controls.
+   Keep naming and saved-map selection compact; choosing or creating a graph expands the editor and restores its saved placement.
+   Back returns through the steps without creating a graph; the home connection entry opens real sign-in/reconnect/disconnect controls.
+   Manual creates a named map and offers current source items with labels and destinations prefilled; Build baseline is an explicit action.
+   Automated creates a separate named map and opens selected-content preview/generation; review persistence remains tracked under G3.
+   Use Existing Graph opens a saved map in navigation mode and labels graphs bound to this page.
+   Drive Home uses the My Drive root; a specific folder or Doc has its own map.
    Preserve an explicitly selected project map, and offer This page to return to the cached source map.
    Edit graph reveals Sources, Add idea and Connect; Done editing returns to navigation.
    New graph preserves the currently saved map.
@@ -42,7 +44,7 @@ Manual means the user chooses nodes and connections; it must not mean retyping k
    Selecting a real item fills its label/type/destination from the source response.
 3. Build baseline previews the scope and imports its structure with one action, including names and real destinations.
    It uses source APIs or PDF parsing and works with the AI relay stopped.
-4. New graph > With AI analyzes selected text to propose meaningful concepts and connections for review.
+4. New Graph > Automated analyzes selected text to propose meaningful concepts and connections for review.
    After choosing it, select readable source content and preview it before the Generate with AI request.
    Drive currently offers recognized Google Docs at the current folder level; it does not infer meaning from folder names or crawl the entire Drive.
    One-action baseline import works without GPT; V2 adds content interpretation.
@@ -155,16 +157,17 @@ The panel must contain the actual editor, not only connection status or a button
 Use one controller for graph commands with two transports: direct extension-origin repository access for workspace/reader, and typed background messages for Google content scripts.
 Only the transport and source context differ between surfaces.
 
-- Keep the canvas primary and Close reachable.
-  The opening toolbar offers Edit graph, New graph and More.
-  Editing reveals Sources, Add idea and Connect; Manually and With AI are sub-options of New graph.
+- Keep the initial launcher compact and Close reachable at every step.
+  After opening or creating a graph, keep the canvas primary with Edit graph, New Graph and More.
+  Editing reveals Sources, Add idea and Connect; Manual and Automated are sub-options of New Graph.
+  Back returns from the graph to the launcher without changing saved maps or graph placement.
   Source import/refresh, map selection/backups and panel settings live in focused drawers or menus.
   This page visibly restores a saved source map or opens the creation chooser; search stays beside the canvas and Arrange map appears during editing.
 - Canvas: distinguish folders, documents, tabs, PDF sections, ideas, and relationship junctions using icons and labels, not color alone.
 - Source node titles navigate directly; Edit opens the inspector and two node Connect clicks create a relationship without dragging.
   Clicking a personal node edits it, and clicking a relationship label edits that connection.
   Dragging never opens or moves a source.
-  Folder navigation keeps the browser tab and the overlay open with the destination folder map or creation chooser; Doc tab navigation keeps the existing Doc browser tab.
+  Folder navigation keeps the browser tab and the overlay open with the destination folder map or compact launcher; Doc tab navigation keeps the existing Doc browser tab.
 - Inspector: editable personal label/notes; source title/type; destination; relationship explanation; evidence excerpt and provenance; hide versus remove with clear effects.
 - Explore: focus, expand, collapse, search, and open; Build: create/edit/connect controls, with source-write actions only when allowed.
 - Recovery: undo the last personal deletion where practical or offer an explicit confirmation; never imply that graph undo reverses a Google write.

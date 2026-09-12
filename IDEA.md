@@ -36,9 +36,12 @@ When opening a source graph, offer existing folders/files, tabs/sub-tabs, or PDF
 Users can add selected items, build a baseline from the source with one action, or create an original idea.
 Both source suggestions and baseline creation work without GPT.
 Using GPT is the user's choice; the V2 generation feature remains part of our release target and does not gate source import or editing.
-Previously saved maps reopen as saved, with Edit graph and New graph.
-If no saved graph exists, open New graph with Manually and With AI sub-options.
-Opening the chooser alone does not create a graph, and creating a new graph preserves the existing one.
+Clicking Graph opens a compact launcher with Manage Google connection, New Graph and Use Existing Graph.
+New Graph leads to a separate Manual/Automated screen with Back and no Google connection controls.
+Keep naming and saved-map selection compact, then expand to the graph after opening or creating one.
+Previously saved maps reopen as saved with Edit graph; opening or leaving a chooser creates nothing.
+Creating a new graph preserves the existing one, and returning to the menu preserves the graph's saved placement.
+Following a source destination or refreshing an open graph resumes the appropriate saved graph when available.
 
 A user can remove personal nodes/edges or hide source items from a view. Those actions never delete the original source. Source mutations such as creating a folder or renaming a Doc tab remain separate explicit actions with permission checks.
 

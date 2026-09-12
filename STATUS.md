@@ -1,19 +1,27 @@
 # Current project status
 
-Last shared update: 2026-09-12, UX2 saved-graph opening and manual/AI creation choices.
+Last shared update: 2026-09-12, UX3 compact launcher and functional step navigation.
 
 ## Working on main
 
-[PR #17](https://github.com/SchrodingersCatLooks/graphnav/pull/17) (381dc82, runtime 685fdb2) implements the requested opening hierarchy.
-Graph opens the saved map for the page with Edit graph and New graph; an empty source opens New graph with Manually and With AI choices.
-Opening the chooser alone creates no graph; each completed creation saves a separate named map.
-Edit graph reveals source autofill, ideas, connections and dragging; Done editing or reopening returns to navigation.
-Drive's AI path selects one recognized Google Doc at the current folder level and previews only selected tab text in the overlay.
-It does not crawl the Drive or infer content from folder names.
+[PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) (8aa97c0, runtime fa2c58c) implements the user's compact launcher mockups.
+Clicking Graph opens Manage Google connection, New Graph and Use Existing Graph in a compact panel.
+New Graph opens a separate Manual/Automated screen with Back at the top left and no Google controls.
+Naming and saved-map selection stay compact; choosing or creating a map expands the real editor with its saved placement.
+Back returns through the steps, and backing out of creation saves no unwanted graph.
+The connection screen uses real sign-in, reconnect and disconnect actions; account initialization completes before enabling the menu.
+That sequencing fixes a reproduced startup click race when entering a folder from a Drive overview.
+An open graph still resumes through source navigation and page refresh when its saved map is available.
+UX3 supersedes UX2's immediate full-size saved-map opening on an explicit Graph click.
+Edit graph reveals source autofill, ideas, connections and dragging; Done editing returns to navigation.
+Drive's Automated path selects one recognized Google Doc at the current folder level and previews only selected tab text in the overlay.
+It does not crawl Drive or infer content from folder names.
 The graph container is saved, while generated suggestions remain unsaved previews until G3-A.
 Connected Google-context maps are account scoped before their first source import.
-Both typechecks, production build and all 138 tests (1.3 minutes) passed on Node 22.23.2 / npm 10.9.9.
-Installed tests used synthetic Google API responses, authored PDFs and a local test AI provider; opening/creation screenshots were inspected.
+Both typechecks, production build and all 139 tests (1.1 minutes) passed on Node 22.23.2 / npm 10.9.9.
+Before the full suite, overview navigation and compact-launcher checks each passed three repeated runs after the startup fix.
+Installed tests used synthetic Google API responses, authored PDFs and a local test AI provider; compact home, creation and small-viewport screenshots were inspected.
+The existing local relay was restored after testing and its authenticated health check returned 200/ready.
 No new live Google acceptance or paid model call is claimed.
 
 [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc) fixes Drive Home entry, stale injected-route panel errors, source-map selection and graph interaction.
@@ -21,7 +29,7 @@ UX2 supersedes UX1 automatic first-open baseline creation; baseline import remai
 This page returns from another chosen project map; page preferences persist per account and source across Chrome restarting.
 Folder navigation keeps the same browser tab and open overlay, including after arriving from an overview through Drive's same-page navigation.
 Source node titles navigate directly; two node Connect clicks create an editable personal relationship.
-The graph fills the panel; focused drawers contain editing, new graph creation and saved-map actions.
+Once opened, the graph fills the expanded panel; focused drawers contain editing and advanced map actions.
 Backup, advanced graph tools, panel placement and account settings are moved out of the default graph view.
 New personal nodes are placed clear of existing nodes; ordinary containment labels no longer crowd the canvas, and parallel connections have separate paths.
 Google account settings show the available account label and support reconnect/disconnect while preserving stored maps.
@@ -34,7 +42,7 @@ Chrome remains responsible for the account offered by sign-in.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
 [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
-The current main runtime includes UX2 at 685fdb2 and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
+The current main runtime includes UX3 at fa2c58c and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -114,17 +122,12 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh claims UX3-A for the user's supplied compact launcher mockups.
-The initial menu has Manage Google connection, New Graph and Use Existing Graph.
-New Graph opens a separate Manual/Automated choice screen with Back and no Google controls.
-This new request supersedes UX2's immediate full-size saved-map opening; normal source navigation and saved placement must remain intact.
-
-UX2-A is merged in [PR #17](https://github.com/SchrodingersCatLooks/graphnav/pull/17) and remains REVIEW for user feedback on the actual Google screens.
+UX3-A is merged in [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) and remains REVIEW for user feedback on the actual Google screens.
 Reload GraphNav on chrome://extensions and refresh open Drive/Docs tabs before following REVIEW_WALKTHROUGH.
 The previously reported stale-content-script problem makes both steps necessary.
 Rajvansh next addresses concrete usability feedback and connects G3-A proposal review controls to PROPOSAL_STORE_HANDOFF.
 Eddy retains proposal storage and decision-backup integration.
-UX2 changes no schema, manifest, provider settings or proposal contracts.
+UX3 changes no schema, adapters, manifest, provider settings or proposal contracts.
 The existing openPageMap API remains available, but the opening UI no longer calls it to create graphs automatically.
 
 G1 selected-content preview and G2 relay generation/evidence display are merged through PR #13.
@@ -262,3 +265,8 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
   Implemented saved-map navigation and New graph with Manually/With AI sub-options, explicit first creation, Drive Doc text choice, and account scope before import.
   Both typechecks, production build and all 138 tests (1.3 minutes) passed; installed screenshots were inspected.
   User reload/refresh feedback remains open; G3 review persistence is the next integration task.
+
+- 2026-09-12: UX3-A merged in [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) as 8aa97c0, runtime fa2c58c.
+  Implemented the compact launcher, real saved-map/account actions, separate Manual/Automated naming steps and Back navigation with preserved graph placement.
+  Fixed the reproduced startup account-loading race; both typechecks, production build and all 139 tests (1.1 minutes) passed.
+  Compact and small-viewport screenshots inspected; real Google reload feedback and G3 persistent review remain open.
