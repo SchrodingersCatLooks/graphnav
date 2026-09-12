@@ -13,6 +13,8 @@ test('valid requests parse, including a locator-carrying navigate', () => {
   expect(accepts({ type: 'IMPORT_DOC_TABS', documentId: 'doc-1' })).toBe(true);
   expect(accepts({ type: 'NAVIGATE', locator: { kind: 'docs', documentId: 'doc-1', tabId: 't.nested' } })).toBe(true);
   expect(accepts({ type: 'NAVIGATE', locator: { kind: 'drive', fileId: 'file-1' } })).toBe(true);
+  expect(accepts({ type: 'NAVIGATE', locator: { kind: 'docs', documentId: 'doc-1' }, graphId: 'project-1' })).toBe(true);
+  expect(accepts({ type: 'OPEN_PDF_READER', graphId: 'project-1' })).toBe(true);
 });
 
 test('malformed requests are rejected before any handler runs', () => {
@@ -29,6 +31,8 @@ test('malformed requests are rejected before any handler runs', () => {
   expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'drive', placement: { mode: 'floating', rect: { x: 50, y: 50, width: -5, height: 640 } } })).toBe(false);
   expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'drive', placement: { mode: 'floating' } })).toBe(false);
   expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'docs', placement: { mode: 'floating', rect: { x: Infinity, y: 0, width: 400, height: 400 } } })).toBe(false);
+  expect(accepts({ type: 'OPEN_PDF_READER', graphId: '' })).toBe(false);
+  expect(accepts({ type: 'NAVIGATE', locator: { kind: 'docs', documentId: 'doc-1' }, graphId: { id: 'other' } })).toBe(false);
 });
 
 test('a personal web locator must be https', () => {

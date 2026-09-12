@@ -11,7 +11,7 @@ import { GraphRepository, storageError } from '../lib/storage/repository';
 import { pdfReaderPath } from '../lib/pdf/navigation';
 import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/requests';
-import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
+import type { ImportResult, PanelState, Request, Response, ScopedImport } from '../lib/messages';
 import { EditorService } from '../lib/editor/service';
 import { getPageContext } from '../lib/page-context';
 import { RelayClient } from '../lib/generation/relay';
@@ -84,6 +84,10 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
 
   const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
   const owner = `${sender.documentId ?? sender.tab?.id ?? ''}:${sender.url ?? ''}`;
+  async function checkMap(graphId: string) {
+    const graph = (await repository.readGraph(graphId)).graph;
+    if (!ownPage && graph.accountScope && graph.accountScope !== await getAccountKey()) throw new Error('Connect the Google account that owns this map.');
+  }
   switch (request.type) {
     case 'AI_STATUS': return { ok: true, data: await relay.status() };
     case 'OPEN_AI_SETTINGS': await browser.tabs.create({ url: browser.runtime.getURL('/options.html') }); return { ok: true, data: null };
@@ -119,11 +123,18 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
     case 'PANEL_STATE': {
       const context = sender.url ? getPageContext(sender.url) : null;
       if (!context || sender.tab?.id === undefined || !request.source.startsWith(`${context.kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };
-      const key = `panel:${sender.tab.id}`;
+      const key = `panel:${sender.tab.id}`, mapKey = `panel-map:${sender.tab.id}`;
       // sender.url may retain the URL from content-script injection during SPA navigation.
+      // Separate keys prevent a late map selection from reopening a closed panel.
+      if (request.graphId) { await checkMap(request.graphId); await browser.storage.session.set({ [mapKey]: { source: request.source, graphId: request.graphId } }); }
       if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
-      const value = (await browser.storage.session.get(key))[key];
-      return { ok: true, data: { open: !!value && typeof value === 'object' && 'source' in value && 'open' in value && value.source === request.source && value.open === true } };
+      const stored = await browser.storage.session.get([key, mapKey]);
+      const value = stored[key], map = stored[mapKey];
+      const same = !!value && typeof value === 'object' && 'source' in value && value.source === request.source;
+      const state: PanelState = { open: same && 'open' in value && value.open === true,
+        ...(map && typeof map === 'object' && 'source' in map && map.source === request.source && 'graphId' in map && typeof map.graphId === 'string' ? { graphId: map.graphId } : {}),
+      };
+      return { ok: true, data: state };
     }
     case 'PANEL_PLACEMENT': {
       const key = `panel-placement:v1:${request.kind}`;
@@ -171,15 +182,32 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
         },
       };
     }
+    case 'OPEN_PDF_READER': {
+      if (request.graphId) await checkMap(request.graphId);
+      const url = new URL(browser.runtime.getURL('/reader.html'));
+      if (request.graphId) url.searchParams.set('map', request.graphId);
+      await browser.tabs.create({ url: url.href });
+      return { ok: true, data: null };
+    }
     case 'NAVIGATE': {
+      if (request.graphId) await checkMap(request.graphId);
       // The locator is the node's stored destination, so navigation does not
       // depend on layout or on re-reading the source.
-      const url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
+      const url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator, request.graphId), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
       if (!url) return { ok: false, error: 'This destination is not supported.' };
       // Content scripts cannot open tabs themselves, so the worker does it.
       const context = sender.url ? getPageContext(sender.url) : null;
-      if (request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined) {
-        await browser.tabs.update(sender.tab.id, { url });
+      const sameDoc = request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined;
+      const destination = getPageContext(url);
+      if (request.graphId && destination) {
+        // Publish map context before injection, including for a newly opened Doc.
+        const tabId = sameDoc ? sender.tab!.id : (await browser.tabs.create({ url: 'about:blank', active: true })).id;
+        if (tabId === undefined) throw new Error('The source tab could not be opened.');
+        const source = `${destination.kind}:${destination.sourceId}`;
+        await browser.storage.session.set({ [`panel:${tabId}`]: { source, open: true }, [`panel-map:${tabId}`]: { source, graphId: request.graphId } });
+        await browser.tabs.update(tabId, { url });
+      } else if (sameDoc) {
+        await browser.tabs.update(sender.tab!.id!, { url });
       } else await browser.tabs.create({ url, active: true });
       return { ok: true, data: { url } };
     }
@@ -187,7 +215,7 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
 }
 
 export default defineBackground(() => {
-  browser.tabs.onRemoved.addListener((tabId) => { void browser.storage.session.remove(`panel:${tabId}`); });
+  browser.tabs.onRemoved.addListener((tabId) => { void browser.storage.session.remove([`panel:${tabId}`, `panel-map:${tabId}`]); });
   // Registered synchronously so Chrome can revive the worker to serve a message.
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (!isTrustedSender(sender, browser.runtime.id)) {

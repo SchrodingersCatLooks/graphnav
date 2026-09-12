@@ -24,6 +24,7 @@ function Reader() {
   const [savedPdfs, setSavedPdfs] = useState<Awaited<ReturnType<PdfLibrary['list']>>>([]);
   const [loading, setLoading] = useState(false), [graphBusy, setGraphBusy] = useState(false), [error, setError] = useState('');
   const [missing, setMissing] = useState<string | null>(null), [target, setTarget] = useState<PdfLocator | null>(null), [zoom, setZoom] = useState(1);
+  const [targetMapTitle, setTargetMapTitle] = useState('');
   const targetRef = useRef<PdfLocator | null>(null), mapRef = useRef<string | undefined>(undefined);
   const params = useRef(new URLSearchParams(location.search));
   const generationSource = useMemo<GenerationSource | undefined>(() => loaded ? {
@@ -53,6 +54,7 @@ function Reader() {
       extraction.sections = extraction.sections.filter((section) => section.pageIndex >= 0 && section.pageIndex < pdf.numPages).map((section) => ({ ...section, title: section.title.slice(0, 200) }));
       if (save) await library.save(bytes, name, expected);
       const initialGraphId = mapId ?? await library.findMap(fingerprint) ?? null;
+      if (mapId) await library.repository.readGraph(mapId);
       await refreshLibrary();
       const old = currentDocument.current; currentDocument.current = pdf;
       setLoaded({ key: ++loadSequence.current, document: pdf, extraction, title: name, initialGraphId }); setMissing(null); setZoom(1);
@@ -72,6 +74,8 @@ function Reader() {
   }
   useEffect(() => {
     void refreshLibrary().catch((reason) => setError(storageError(reason)));
+    const map = params.current.get('map');
+    if (map) void library.repository.readGraph(map).then((snapshot) => setTargetMapTitle(snapshot.graph.title)).catch((reason) => setError(storageError(reason)));
     const fingerprint = params.current.get('fingerprint');
     if (fingerprint) {
       const x = params.current.get('x'), y = params.current.get('y');
@@ -86,7 +90,9 @@ function Reader() {
     try {
       if (file.size > PDF_LIMITS.bytes) throw new Error('Choose a PDF up to 20 MiB.');
       const requested = missing ? targetRef.current ?? undefined : undefined;
-      await prepare(new Uint8Array(await file.arrayBuffer()), file.name.slice(0, 200), true, missing ?? undefined, requested, missing ? mapRef.current : undefined);
+      const chosenMap = missing ? mapRef.current : !loaded ? params.current.get('map') ?? undefined : undefined;
+      if (chosenMap) await library.repository.readGraph(chosenMap);
+      await prepare(new Uint8Array(await file.arrayBuffer()), file.name.slice(0, 200), true, missing ?? undefined, requested, chosenMap);
     } catch (reason) { setError(storageError(reason)); }
     finally { setLoading(false); }
   }
@@ -99,7 +105,7 @@ function Reader() {
   return <div className="reader-app">
     <header className="reader-header"><a className="reader-brand" href="reader.html"><GraphMark size={28} />GraphNav<span>PDF reader</span></a>
       <span className="reader-title">{loaded?.title ?? 'Your papers, connected.'}</span>
-      <label className="library-select">Saved PDFs<select aria-label="Saved PDFs" value={loaded?.extraction.fingerprint ?? ''} disabled={loading || graphBusy} onChange={(event) => { if (event.target.value) void openSaved(event.target.value); }}><option value="">Choose a PDF</option>{savedPdfs.map((pdf) => <option key={pdf.fingerprint} value={pdf.fingerprint}>{pdf.name}</option>)}</select></label>
+      <label className="library-select">Saved PDFs<select aria-label="Saved PDFs" value={loaded?.extraction.fingerprint ?? ''} disabled={loading || graphBusy} onChange={(event) => { if (event.target.value) void openSaved(event.target.value, undefined, !loaded ? params.current.get('map') ?? undefined : undefined); }}><option value="">Choose a PDF</option>{savedPdfs.map((pdf) => <option key={pdf.fingerprint} value={pdf.fingerprint}>{pdf.name}</option>)}</select></label>
       <button disabled={loading || graphBusy} onClick={() => input.current?.click()}>{missing ? 'Reattach original PDF' : 'Open a PDF'}</button>
       <input className="hidden-file" ref={input} type="file" accept="application/pdf,.pdf" aria-label="Choose PDF file" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void choose(file); }} />
       <a className="reader-map-link" href="workspace.html" target="_blank" rel="noreferrer">My maps ↗</a>
@@ -112,7 +118,7 @@ function Reader() {
         <PdfPage document={loaded.document} target={target} zoom={zoom} />
         <footer className="reader-footer"><span>Original PDF saved in this Chrome profile. JSON graph backups exclude PDF bytes.</span><button disabled={loading || graphBusy} onClick={() => { if (confirm('Remove the saved PDF bytes from this Chrome profile? Your graph and notes will remain. You will need the original PDF to read it again.')) void library.remove(loaded.extraction.fingerprint).then(async () => { setLoaded(null); setTarget(null); setMissing(loaded.extraction.fingerprint); await loaded.document.loadingTask.destroy(); await refreshLibrary(); }).catch((reason) => setError(storageError(reason))); }}>Remove saved PDF</button></footer>
       </section>
-    </main> : <main className="reader-welcome"><GraphMark size={62} /><h1>{missing ? 'Bring this paper back.' : 'Read the paper. Connect the ideas.'}</h1><p>{missing ? 'This graph has PDF destinations, but the original file is missing from this installation. Choose the exact original PDF to restore them.' : 'Open a local PDF, add bookmarked sections or pages to your graph, then connect your own ideas while you read.'}</p><button disabled={loading} onClick={() => input.current?.click()}>{missing ? 'Reattach original PDF' : 'Choose a PDF'}</button>{missing && <a href="reader.html">Open a different PDF instead</a>}<p className="reader-limits">Up to 20 MiB and 300 pages per PDF. Files stay in this Chrome profile; no AI request or upload is made by opening a paper.</p></main>}
+    </main> : <main className="reader-welcome"><GraphMark size={62} /><h1>{missing ? 'Bring this paper back.' : 'Read the paper. Connect the ideas.'}</h1><p>{missing ? 'This graph has PDF destinations, but the original file is missing from this installation. Choose the exact original PDF to restore them.' : 'Open a local PDF, add bookmarked sections or pages to your graph, then connect your own ideas while you read.'}</p>{targetMapTitle && <p>Adding sources to <strong>{targetMapTitle}</strong>. Choose a file or a saved PDF, then select its sections.</p>}<button disabled={loading} onClick={() => input.current?.click()}>{missing ? 'Reattach original PDF' : 'Choose a PDF'}</button>{missing && <a href="reader.html">Open a different PDF instead</a>}<p className="reader-limits">Up to 20 MiB and 300 pages per PDF. Files stay in this Chrome profile; no AI request or upload is made by opening a paper.</p></main>}
   </div>;
 }
 createRoot(document.getElementById('root')!).render(<Reader />);
