@@ -7,6 +7,19 @@
 }
 
 .graphnav-shell {
+  position: fixed;
+  inset: auto;
+  left: var(--graphnav-left, 0px);
+  top: var(--graphnav-top, 0px);
+  width: var(--graphnav-width, 100vw);
+  height: var(--graphnav-height, 100dvh);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  pointer-events: none;
+  container-type: size;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -15,14 +28,17 @@
   text-align: left;
 }
 
+.graphnav-shell::backdrop { background: transparent; pointer-events: none; }
+
 .graphnav-shell * { box-sizing: border-box; }
 .graphnav-shell button { font: inherit; cursor: pointer; }
 .graphnav-shell button:focus-visible { outline: 3px solid #20a392; outline-offset: 4px; }
 
 .graph-trigger {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  pointer-events: auto;
   min-height: 48px;
   padding: 0 20px;
   border: 1px solid #154e49;
@@ -35,19 +51,20 @@
 .graph-trigger:hover { background: #103f3b; }
 
 .graphnav-panel {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  bottom: 88px;
-  width: min(420px, calc(100vw - 48px));
-  max-height: 760px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 80px;
+  width: min(400px, calc(100% - 32px));
+  max-height: 600px;
+  pointer-events: auto;
   overflow: hidden;
   border: 1px solid #dbe4e6;
   border-radius: 20px;
   background: #fff;
   box-shadow: 0 12px 48px #162d3b29;
 }
-.panel-header { padding: 20px; border-bottom: 1px solid #e8eded; flex-shrink: 0; }
+.panel-header { padding: 16px 20px; border-bottom: 1px solid #e8eded; flex-shrink: 0; }
 .brand-mark { width: 42px; height: 42px; border-radius: 12px; background: #e6f2ef; color: #174e49; }
 .panel-header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
 .source-label { margin: 0; color: #5d707b; font-size: 12px; }
@@ -56,18 +73,24 @@
 .panel-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; background-image: radial-gradient(#cbd8d8 0.7px, transparent 0.7px); background-size: 20px 20px; }
 .eyebrow { color: #526b74; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; }
 .preview-badge { border: 1px solid #d8e5e2; border-radius: 20px; padding: 4px 9px; color: #406359; background: #f0f7f4; font-size: 11px; white-space: nowrap; }
-.empty-state { flex: 1; min-height: 340px; padding: 30px 0; text-align: center; }
-.empty-mark { width: 96px; height: 96px; flex-shrink: 0; margin-bottom: 24px; border: 1px solid #d6e9e3; border-radius: 30px; color: #467c6d; background: #edf6f1; transform: rotate(-5deg); }
+.empty-state { flex: 1 0 auto; padding: 24px 0 12px; text-align: center; }
+.empty-mark { width: 72px; height: 72px; flex-shrink: 0; margin-bottom: 20px; border: 1px solid #d6e9e3; border-radius: 22px; color: #467c6d; background: #edf6f1; transform: rotate(-5deg); }
 .empty-state h2 { max-width: 280px; margin: 0 0 10px; font-size: 24px; font-weight: 650; line-height: 1.25; letter-spacing: -0.7px; }
 .empty-state p { max-width: 260px; margin: 0; color: #5d707b; line-height: 1.65; }
-.connection-notice { display: flex; align-items: center; gap: 7px; margin-top: 28px; padding: 9px 12px; border: 1px solid #e2e8e6; border-radius: 9px; background: #fff; font-size: 12px; }
+.connection-notice { display: flex; align-items: center; gap: 7px; margin-top: 20px; padding: 9px 12px; border: 1px solid #e2e8e6; border-radius: 9px; background: #fff; font-size: 12px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #b17d25; }
 .empty-state .next-step { margin-top: 12px; font-size: 12px; }
 .panel-footer { padding: 15px 20px; border-top: 1px solid #e8eded; color: #5d707b; font-size: 11px; flex-shrink: 0; }
 .panel-footer kbd { padding: 2px 6px; border: 1px solid #dce4e4; border-radius: 5px; font: inherit; }
 
 @media (max-width: 480px) {
-  .graphnav-panel { top: 12px; right: 12px; bottom: 80px; width: calc(100vw - 24px); }
+  .graphnav-panel { top: 12px; right: 12px; bottom: 80px; width: calc(100% - 24px); }
   .graph-trigger { right: 12px; bottom: 16px; }
   .panel-content { padding: 20px; }
+}
+
+@container (max-height: 650px) {
+  .empty-mark { display: none; }
+  .empty-state { padding-top: 16px; }
+  .empty-state h2 { font-size: 21px; }
 }

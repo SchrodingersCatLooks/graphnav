@@ -139,3 +139,49 @@ test('Panel and close controls fit a small viewport', async ({ page }, testInfo)
   await page.getByRole('button', { name: 'Close graph panel' }).click();
   await expect(panel).toHaveCount(0);
 });
+
+test('Docs controls stay above host toolbars and inside the visible viewport', async ({ page }, testInfo) => {
+  await page.goto('https://docs.google.com/document/d/fixture-doc/edit');
+  // Reproduce the installed Docs toolbar overlap without reading a private Doc.
+  await page.evaluate(() => {
+    const toolbar = document.createElement('div');
+    toolbar.textContent = 'Synthetic fixed toolbar';
+    toolbar.style.cssText = 'position:fixed;inset:0 0 auto;height:120px;z-index:999999;background:#e9eef6';
+    document.body.append(toolbar);
+  });
+  const trigger = page.getByRole('button', { name: 'Graph', exact: true });
+  await trigger.click();
+  const heading = page.getByRole('heading', { name: 'GraphNav', exact: true });
+  const close = page.getByRole('button', { name: 'Close graph panel' });
+  // Visible bounds alone miss toolbar overlap. Hit-testing must reach our UI.
+  await expect.poll(() => heading.evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.tagName;
+  })).toBe('GRAPHNAV-UI');
+  await close.click({ trial: true });
+
+  // Transformed host containers must not push fixed extension controls off-screen.
+  await page.evaluate(() => {
+    document.body.style.transform = 'translateZ(0)';
+    document.body.style.height = '1800px';
+    document.body.style.overflow = 'hidden';
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.5 });
+  const notice = page.getByText('Google data is not connected yet');
+  for (const control of [heading, close, trigger, notice]) {
+    await expect.poll(() => control.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      const viewport = window.visualViewport!;
+      return box.x >= viewport.offsetLeft && box.y >= viewport.offsetTop &&
+        box.right <= viewport.offsetLeft + viewport.width + 1 &&
+        box.bottom <= viewport.offsetTop + viewport.height + 1;
+    })).toBe(true);
+  }
+  await expect(notice).toBeInViewport({ ratio: 1 });
+  await page.screenshot({ path: testInfo.outputPath('docs-layer-and-zoom.png') });
+  await close.click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+  await cdp.detach();
+});

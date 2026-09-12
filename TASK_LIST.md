@@ -18,7 +18,7 @@ Hours are elapsed from the start of the proposed build session.
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DOING | Fix the panel overlap reported in the installed Docs shell; then repeat layout checks and return to REVIEW. Both-laptop acceptance and reviewed merge remain required. |
+| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | REVIEW | Installed Docs toolbar overlap reproduced and fixed in the build; type-check, production build, and six browser tests pass, including toolbar hit-testing and 150% zoom. Live recheck after extension reload, both-laptop acceptance, and reviewed merge remain required. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
@@ -41,7 +41,7 @@ M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both row
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A / `rajvansh-ui` | Installed Docs screenshot confirms shell injection but exposes toolbar overlap; live layout inspection confirms the host reset removes positioning/z-index. Existing five fixture tests passed before this report. [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3). | Panel layering and viewport fit need correction; complete both-laptop acceptance remains pending. | Own UI components/styles and focused tests for the fix; reproduce overlap before editing, verify compact/zoomed layouts, rebuild, and push. Eddy can prepare M1-B account setup and review the corrected shell. |
+| Rajvansh | M1-A / `rajvansh-ui` | Installed Docs overlap reproduced with a failing test; fixed using a non-modal top-layer panel, visual viewport positioning, and compact content. `npm run check` passes all six tests; desktop, small, and 150% zoom screenshots inspected. Chrome 114 minimum declared; package dependencies unchanged. [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3). | Live fix recheck needs the user to reload the extension; browser automation cannot open internal Chrome settings. Full both-laptop acceptance and normal Google editor checks remain pending. | Reload GraphNav, refresh Drive/Docs, and verify the complete header and controls. Eddy builds and tests this shell before integrating M1-B code; Google Console setup can proceed now. Merge after review, then update STATUS and agree M1-C. |
 | Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.

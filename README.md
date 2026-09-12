@@ -19,7 +19,7 @@ Google data, interactive source graphs, sign-in, PDFs, and saved state are not i
 
 ## Install and build
 
-You need Git, desktop Chrome, Node.js 22 (at least 22.12), npm, and access to this private repository.
+You need Git, desktop Chrome 114 or newer, Node.js 22 (at least 22.12), npm, and access to this private repository.
 The clean-install check used Node 22.23.2 and npm 10.9.9 on macOS.
 If you use nvm, run `nvm install` and `nvm use` inside the clone; `.nvmrc` selects Node 22.
 Otherwise install Node 22 and confirm `node --version` before continuing.
@@ -63,7 +63,7 @@ No GraphNav OAuth setup is needed to test this empty shell.
 8. Open an existing Google Doc at a URL containing `/document/d/` or `/document/u/0/d/` and refresh it.
    Open Graph and expect **Google Docs** and **Your document map starts here**.
    Close the panel and verify ordinary typing, selection, and scrolling in an authorized test Doc.
-9. Narrow the window or increase Chrome zoom and confirm the close button remains reachable and panel content scrolls.
+9. Narrow the window or increase Chrome zoom and confirm the panel header stays above Google's toolbar, the Graph and close buttons remain fully visible, and panel content scrolls when needed.
    Open an unrelated website and confirm it has no Graph button.
 10. Both teammates should report the commit tested, Chrome version, Drive/Docs results, and any errors in the PR before M1-A is marked DONE.
 
@@ -95,7 +95,7 @@ Use the production build for teammate acceptance testing.
 # One-time browser download for automated testing:
 npx playwright install chromium
 
-# Type-check, production build, and all five browser tests:
+# Type-check, production build, and all six browser tests:
 npm run check
 
 # Or run individual checks:
@@ -110,6 +110,7 @@ npm run zip
 `npm test` loads the existing production output, so rebuild after source changes or use `npm run check`.
 Tests install the production extension into a temporary Chromium profile and serve clearly labeled synthetic pages at the matching URLs.
 They verify panel opening/closing, focus and Escape, normal host editing and style isolation, Docs context, Drive navigation without reloads, unsupported pages, and a small viewport.
+The layout regression also checks hit-testing above a fixed host toolbar, transformed page containers, and a 150% visual viewport scale.
 They do not verify real Google editor behavior, account access, API reads, or OAuth.
 Screenshots and failure traces are written under ignored `test-results/`.
 The temporary test profile is separate from your personal browser profile.
@@ -123,6 +124,7 @@ Confirm the partner accepted the repository invitation before treating M0 as com
 
 - `entrypoints/graphnav.content.tsx` mounts and cleans up the isolated React panel.
 - `components/` and `assets/shell.css` own visible shell UI.
+  The shell uses a non-modal manual popover and tracks the visual viewport to keep controls above page toolbars and within the visible window.
 - `lib/page-context.ts` reads the URL only; it does not scrape Google content.
 - `entrypoints/popup/` explains how to find the Graph button.
 - `wxt.config.ts`, `package.json`, and `package-lock.json` are shared configuration owned by Rajvansh during M1-A.

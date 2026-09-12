@@ -1,11 +1,35 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PageContext } from '../lib/page-context';
 import { GraphMark } from './GraphMark';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
+  const surface = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+
+  useLayoutEffect(() => {
+    const element = surface.current!;
+    const viewport = window.visualViewport;
+    function fitViewport() {
+      element.style.setProperty('--graphnav-left', `${viewport?.offsetLeft ?? 0}px`);
+      element.style.setProperty('--graphnav-top', `${viewport?.offsetTop ?? 0}px`);
+      element.style.setProperty('--graphnav-width', `${viewport?.width ?? innerWidth}px`);
+      element.style.setProperty('--graphnav-height', `${viewport?.height ?? innerHeight}px`);
+    }
+    fitViewport();
+    // A manual popover sits above host toolbars without blocking the page.
+    element.showPopover();
+    viewport?.addEventListener('resize', fitViewport);
+    viewport?.addEventListener('scroll', fitViewport);
+    window.addEventListener('resize', fitViewport);
+    return () => {
+      viewport?.removeEventListener('resize', fitViewport);
+      viewport?.removeEventListener('scroll', fitViewport);
+      window.removeEventListener('resize', fitViewport);
+      if (element.matches(':popover-open')) element.hidePopover();
+    };
+  }, []);
 
   useEffect(() => {
     if (open) closeButton.current?.focus();
@@ -17,7 +41,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   }
 
   return (
-    <div className="graphnav-shell">
+    <div ref={surface} className="graphnav-shell" popover="manual">
       {open && (
         <section
           id="graphnav-panel"

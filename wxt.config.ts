@@ -8,6 +8,7 @@ export default defineConfig({
   webExt: { disabled: true },
   manifest: {
     name: 'GraphNav',
+    minimum_chrome_version: '114',
     description: 'A graph navigation workspace for Google Drive, Google Docs, and papers. Interface preview.',
     // Google Identity, OAuth, and API access belong to M1-B.
   },

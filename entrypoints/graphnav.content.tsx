@@ -19,9 +19,9 @@ export default defineContentScript({
 
     const ui = await createShadowRootUi(ctx, {
       name: 'graphnav-ui',
-      position: 'overlay',
+      // React's manual popover handles viewport positioning in the top layer.
+      position: 'inline',
       anchor: 'body',
-      zIndex: 2147483647,
       isolateEvents: ['keydown', 'keyup', 'keypress', 'click', 'dblclick', 'pointerdown', 'pointerup'],
       onMount(container) {
         const app = document.createElement('div');
