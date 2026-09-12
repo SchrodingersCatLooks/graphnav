@@ -1,6 +1,6 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #14 merged as `373369f`.
+Last shared update: 2026-09-12, after runtime PR #15 merged as `e5dcb88`.
 
 ## Working on main
 
@@ -9,7 +9,8 @@ Last shared update: 2026-09-12, after runtime PR #14 merged as `373369f`.
 [PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
-The current main runtime matches checkpoint 24e6a2e.
+[PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
+The current main runtime matches checkpoint bcfd0d7.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -28,6 +29,9 @@ Eddy's application work through 179d98f is included through normal merges.
   Selected-only refresh retains the selected membership and personal edits; baselines and expanded folders have separate scope bindings.
 - Maps, annotations, positions, viewport, and JSON backups survive reopening.
   Google source identity includes the verified account key.
+- Choose a target map above source choices and add a PDF directly from a Drive/Docs map.
+  A Doc tab and PDF section can share a personal connection; navigation preserves the chosen map beside the exact destination.
+  Separate source refresh and independent maps remain intact in the installed fixture test.
 - Eddy's direct target-availability checker and PDF section extractor are merged foundations.
   The extension-owned PDF reader now uses that extractor, with a local library, section/page suggestions, selected imports or a baseline, and the shared graph beside the paper.
 - PDF nodes open exact pages and section anchors, including separate sections on the same page.
@@ -46,6 +50,9 @@ Eddy's application work through 179d98f is included through normal merges.
 
 Node 22.23.2 / npm 10.9.9: extension/relay typechecks, production build and all 118 combined tests passed for the PR #14 integration.
 Floating controls passed installed pointer/keyboard, cancellation, restart, dock/reset, narrow-window/zoom, top-layer and host-editing checks.
+PR #15 passed both typechecks, production build and all 19 affected tests.
+Its full suite passed 118/119, with one timeout during browser-fixture setup before PDF preview code ran and a worker-teardown timeout afterward.
+The same PDF preview test passed three isolated reruns; the browser-startup cause remains unestablished and is tracked under M6-B.
 Installed Chromium tests use isolated profiles and synthetic Google API responses.
 They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
 Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
@@ -75,16 +82,21 @@ G1 selected-content preview and G2 relay generation/evidence display are merged 
 Eddy should bring main into partner-data and read GENERATION_HANDOFF before editing shared generation/type/request files.
 His relay work through a8325dc is merged and reconciled with the extension client.
 Eddy owns G3-B proposal persistence, decisions, additive migration and atomic acceptance/backup methods.
-Rajvansh owns the G3-A review UI and is building X2-A project-map selection/navigation while the typed proposal API is prepared.
+Rajvansh owns the G3-A review UI; X2-A's manual project-map selection/navigation is now merged.
+G3-A awaits Eddy's typed proposal-store/decision handoff, which is not present at the latest fetched partner-data checkpoint 91572ba.
+Combined multi-source AI input, group membership controls and source-authoring/heading actions remain open.
 Persistent accepted/edited/rejected AI decisions remain open; no complete V2 acceptance is claimed.
 
 The replacement private key authenticated successfully and completed one real gpt-5-mini-2025-08-07 request in 24,973 ms, using 757 input and 1,552 output tokens.
 Its private ignored .env.relay.local file is not committed or bundled; Chrome stores only a separate relay pairing code.
 The relay defaults to one active request, five starts per minute and twenty starts per launch.
 No account-wide monetary budget was configured.
-The exposed chat credential should be rotated before final use; do not put replacement keys in chat, GitHub, extension storage or the browser bundle.
+The exposed chat credential should be rotated before final use; do not put replacement keys in chat, tracked GitHub files, extension storage or the browser bundle.
 Startup and authenticated health were verified; the relay process was stopped after that check.
 Use relay/README.md to start it for the demo, then pair from the extension settings.
+At the user's request, the current key is also stored as the encrypted repository Actions secret OPENAI_API_KEY and its presence was verified.
+GitHub's secret UI does not reveal its value, and cloning the repository does not provide a local relay key to Eddy.
+Each laptop needs private local configuration; the user must share a credential securely with Eddy or grant project access so he can create his own key.
 Eddy's authored six-page demo PDF is now on main at demo/GraphNav-demo-paper.pdf; it is not an independent publication.
 Its content and the shared Doc still need the final evidence/usefulness check.
 
@@ -102,6 +114,11 @@ The assistants must fetch/read current main and the published handoffs; a commit
 Google files remain read only in the current UI; changing a graph never renames or moves source files.
 
 ## Completed action log
+
+- 2026-09-12: Merged X2-A manual workflow PR #15 as e5dcb88 and pulled main into rajvansh-ui again.
+  A Doc-tab/PDF-section project map, personal connection, both navigation directions, independent refresh and restart passed installed fixture testing.
+  Recorded the full-suite browser-startup flake and its three passing isolated reruns without claiming a fix.
+  Stored OPENAI_API_KEY as an encrypted GitHub Actions repository secret on explicit request; no credential entered a tracked file, commit or extension bundle.
 
 - 2026-09-12: Pulled current main before implementing X4-A, merged PR #14 as 373369f, then pulled main again.
   The 24e6a2e runtime passes both typechecks, production build and all 118 tests.
