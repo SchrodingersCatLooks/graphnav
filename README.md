@@ -2,6 +2,43 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
+## Install
+
+GraphNav is distributed as an unpacked extension, not through the Chrome Web Store.
+Its Google scopes (`drive.metadata.readonly`, `documents.readonly`) are sensitive scopes, so public distribution needs Google's OAuth verification; until that completes, Drive and Docs work only for accounts added as testers on the Cloud project.
+
+**From a release**
+
+1. Download `graphnav-<version>-chrome.zip` from [Releases](https://github.com/SchrodingersCatLooks/graphnav/releases) and unzip it.
+2. Open `chrome://extensions` and turn on **Developer mode** (top right).
+3. Click **Load unpacked** and choose the unzipped folder.
+
+**From source** — Node 22 (`.nvmrc` pins it):
+
+```
+npm install
+npm run build
+```
+
+Then load unpacked from `.output/chrome-mv3`.
+
+The extension ID is pinned by a public key in the manifest, so it is the same for every install and the registered OAuth client keeps working.
+
+### What works without signing in
+
+Opening a PDF, reading it beside its graph, adding sections and pages as nodes, writing your own ideas and connections, arranging the map, undo, and exporting or importing a backup. Everything is stored in your own Chrome profile; nothing is uploaded.
+
+Click the toolbar icon and choose **Open a PDF**, or open `reader.html` from the extension. `demo/GraphNav-demo-paper.pdf` in this repository is an authored six-page paper with a three-level bookmark outline, provided so the reader can be tried without supplying your own file.
+
+### Drive and Docs
+
+Visit a Drive folder or a Google Doc and click **Graph** on the page. Connecting a Google account requires that account to be an approved tester while verification is pending.
+
+### AI suggestions (optional)
+
+Suggestions come from a relay you run yourself, so your model key stays on your machine and is never held by the extension. Nothing is sent anywhere until you select content and ask for a draft. See [relay setup](./relay/README.md). With no relay running, every feature above still works.
+
+
 **Current opening flow (UX3-A, [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18)):** Clicking **Graph** opens a compact menu with **Manage Google connection**, **New Graph**, and **Use Existing Graph**.
 **New Graph** opens a separate **Manual / Automated** screen with **Back** at the top left.
 Google connection controls appear only inside the connection screen reached from the home menu.
