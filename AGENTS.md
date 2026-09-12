@@ -1,10 +1,11 @@
 # Instructions for AI coding assistants
 
 Follow the user's current explicit task. Keep both teammates working toward the same shared milestone. Do not expand product scope without a user decision.
+FEATURE_SPEC traces existing use cases to implementation; its Completion rows are not approved removals, and its Expansion rows do not authorize new integrations.
 
 ## Before editing
 
-1. Read README, IDEA, BUILD_PLAN, STATUS, and the relevant TASK_LIST row. These are linked from README.
+1. Read README, IDEA, FEATURE_SPEC, BUILD_PLAN, STATUS, and the relevant TASK_LIST row. These are linked from README.
 2. Inspect branch, git status, and existing implementation. Preserve unrelated and uncommitted teammate work.
 3. Identify the human owner and task ID. Claim the row, record branch and next action, and make the claim visible before overlapping work begins.
 4. Coordinate shared types, configuration, dependencies, and ownership before editing files another active task uses. Work on one bounded task with a visible completion check.

@@ -5,6 +5,14 @@ The target now includes a real V2 AI workflow in this build session.
 V2 is no longer an optional after-hackathon item.
 This plan describes intended work; [TASK_LIST.md](./TASK_LIST.md) is the only task-status list, and [STATUS.md](./STATUS.md) distinguishes merged progress from branch work.
 
+## Read the feature contract with this schedule
+
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) defines 16 user workflows, exact tools/APIs, reusable controls, extraction and AI contracts, storage changes, and acceptance stories.
+It is the feature-level companion to this execution sequence.
+The earlier schedule omitted explicit implementation for some original authoring and connection requirements; the new X tasks preserve those requirements without claiming a delivery decision was already made.
+Core is the currently targeted navigation MVP; Completion is the rest of the described experience needing a reconciled delivery slot; Expansion is a separately scoped provider/public-release track.
+No coverage label is an implementation status or user-approved scope reduction.
+
 ## Finish line
 
 Build one Chrome extension that works alongside the user's existing information.
@@ -32,6 +40,8 @@ Use the laptop's Eastern clock, including daylight saving, rather than assuming 
 The table below budgets approximately 4 hours 40 minutes from 1:20 AM to 6:00 AM with both people working concurrently.
 These are aggressive timeboxes, not estimates proving that every item fits or guarantees of completion.
 Live Google behavior, the first real model request, and PDF integration are the largest uncertainties.
+The 1:20-based slots are the original budget; by the feature audit around 2 AM, the early slots have elapsed without newly verified runtime gates.
+Start the next implementation checkpoint with the actual clock and results; do not pretend elapsed slots or newly documented completion work fit automatically.
 Reassess at each gate using actual results; never mark a failed gate complete to match the clock.
 
 **Protect the Drive + Docs + real AI + saved editing loop first.**
@@ -98,9 +108,11 @@ Record these separately to avoid misreporting a successful import as an extra-it
 
 React Flow is the renderer; ELK is the planned automatic layout for new visible structure, not a database format.
 Keep manually positioned nodes pinned and layout only the visible graph.
+M2-A owns the shared toolbar/inspector, node/edge distinctions, cycle-safe focus/collapse/search, outline fallback, and accessible connection controls specified in FEATURE_SPEC.
+Use application logic to preserve manual coordinates around an ELK result; library installation alone does not provide these interactions.
 The current initial grid must not be described as ELK already working.
 Retain the tested popover/visualViewport behavior while adding left docking and a bounded resizable panel.
-Save panel width/dock preference separately from graph coordinates; free-floating panel placement is after the MVP.
+Save panel width/dock preference separately from graph coordinates; optional floating panel placement is tracked in X4-A/X4-B with viewport-clamped persistence; its delivery slot remains explicit.
 
 The extension-owned workspace/reader may access the shared repository directly.
 Drive/Docs content scripts use a typed client through Eddy's single background dispatcher; they do not open IndexedDB on Google's origin.
@@ -219,9 +231,21 @@ Use synthetic fixtures for deterministic edge cases and actual authorized source
 - At 6:00: freeze the verified build and record any incomplete capabilities honestly.
   Do not let unfinished features consume the reserved sleep/meals/presentation blocks by default.
 
-Deferred from this MVP: graph-driven Google file/tab creation or moves, destructive source edits, OCR, arbitrary remote PDFs, automatic whole-Drive semantic discovery, shared cloud graph sync, public Web Store release, multiple themes, free-floating panels, and group-member editing controls.
-Multiple ordinary connections per node remain core; the existing member-list format/junction renderer leaves room for group controls later.
-The complete longer-term product can add these after the MVP without replacing its graph/storage contracts.
+## Original requirements needing an explicit delivery slot
+
+Do not repeat the earlier blanket deferral as though the user approved it.
+X1 covers group editing, X2 selected multi-source project maps, X3 real folder/tab authoring, X4 floating panel placement, and X7 heading/bookmark navigation.
+FEATURE_SPEC identifies their UI, APIs, data changes, account actions, and acceptance; TASK_LIST assigns both lanes.
+These remain intended-product completion requirements whose delivery must be reconciled with the 6 AM target.
+If all are required by code freeze as well as the core, explicitly revise the deadline or scope against demonstrated progress rather than promise unsupported completion.
+
+Keep destructive source restructuring, arbitrary remote PDF loading, OCR, automatic whole-Drive discovery, additional management platforms, cloud sync, and public Web Store release in the separately scoped expansion track X5/X6.
+An expansion is not automatically selected merely because the architecture can support it.
+Multiple ordinary connections per node remain core, and a group-capable schema alone does not satisfy the group editing use case.
+
+The immediate implementation handoff is M1-C contract/integration review followed by M2-A/M2-B on-page editing, while G0-A resolves API access in parallel.
+Then finish same-tab Docs navigation and selected text, prove a real reviewed AI loop, reuse it in the PDF reader, and pass the release matrix.
+Use FEATURE_SPEC's five end-to-end stories at each relevant gate.
 
 ## After code freeze: rest, pitch, and submission
 
@@ -255,7 +279,7 @@ The merger updates STATUS with actual shared progress.
 GitHub shares code and plans, not private graph databases, Google content, PDFs, or credentials.
 
 For either coding assistant, use: “Work in SchrodingersCatLooks/graphnav on my assigned branch.
-Read AGENTS.md, README.md, IDEA.md, BUILD_PLAN.md, TASK_LIST.md, and STATUS.md.
+Read AGENTS.md, README.md, IDEA.md, FEATURE_SPEC.md, BUILD_PLAN.md, TASK_LIST.md, and STATUS.md.
 I am [Rajvansh/Eddy], implementing [one task ID].
 Inspect the latest remote checkpoint and preserve existing work.
 Use the current shared contract and coordinate shared-file changes.

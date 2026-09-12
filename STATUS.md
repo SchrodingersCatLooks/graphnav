@@ -69,6 +69,10 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - Code and task updates must be committed and pushed at working checkpoints, with a returned GitHub commit or PR link. Users' graph data remains separate.
 - Larger-source design requires incremental loading, a bounded visible graph, separate adapters/storage, and versioned personal state. Performance remains untested until implementation.
 
+- Feature coverage audit: FEATURE_SPEC now traces manual planning, on-page Drive/Docs, content-aware AI, PDF reading, many/group connections, selected source combinations, author actions, placement, persistence, and expansion boundaries.
+  Original completion requirements have explicit X tasks; the earlier blanket deferral is not treated as a user-approved scope reduction.
+  The deadline needs actual checkpoint reassessment, and the account owner must approve any Google write grant before real authoring actions.
+
 ## Completed action log
 
 - 2026-09-12: Added the initial repository workflow starter.
@@ -88,5 +92,8 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 
 - 2026-09-12: DOC-4 records the user's full V1 + V2 target, on-page/left-Docs experience, individual task ownership, and deadline with protected rest/presentation time.
   Updated the plan using the observed `88a4d00` UI and `c6e6b5e` partner checkpoints; no runtime change, merge, live source acceptance, or new passing application test is claimed.
+
+- 2026-09-12: DOC-5 publishes the feature/use-case specification after auditing IDEA history, runtime contracts, and official integration documentation.
+  Added paired completion/expansion tasks and removed contradictory blanket scope deferrals; main/runtime remain unchanged and no new acceptance is claimed.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.

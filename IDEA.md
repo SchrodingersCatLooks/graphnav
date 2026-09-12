@@ -127,7 +127,8 @@ The complete hackathon MVP now includes V1 and V2: one installed extension with 
 First prove the full manual cycle on the Google surfaces: import or attach a source, add an idea, connect and label it, edit/remove personal items, follow a destination, save, reopen, and refresh without losing edits.
 Then prove selected-Doc generation with inspectable evidence, accept/edit/reject, and preserved decisions; reuse that path for PDF text.
 PDF remains in the complete target, but an explicit user-approved scope reduction can prioritize a working Drive/Docs/AI demo if the deadline is missed.
-Real source creation actions remain a later extension of the MVP.
+Real source creation remains an intended authoring requirement, now explicitly tracked under X3.
+The earlier plan postponed it without a resolved delivery decision; FEATURE_SPEC separates this completion work from the core navigation target so the tradeoff stays visible.
 
 For PDF extraction, embedded bookmarks are the first choice. Otherwise extract text with page positions, propose heading anchors, and allow correction. A manually corrected section is not an automatically understood argument. Full argument extraction, citation discovery, and arbitrary scanned PDFs are later work.
 
@@ -146,6 +147,8 @@ Do not silently defer V2 or describe an unimplemented generator as working.
 | Author organization | Start with folder creation and Doc tab actions; defer drag-to-move, deletion, and broad restructuring |
 | Manual meaningful connections | Core V1, including editable labels, idea nodes, and source attachments |
 | GPT-assisted concepts and relationships | Required in the current MVP target, with source evidence, review, and preserved edits; implementation remains open |
-| Cross-source links | Supported as a future selected-scope option; no forced universal graph |
+| Cross-source links | Intended selected-source project-map workflow tracked as X2; independent maps remain supported; no forced universal graph |
+
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) maps these use cases to concrete features, tools, contracts, owners, and tests, including original requirements left without a delivery slot by the earlier schedule.
 
 The concept-map pictures are visual inspiration. Their example subject matter is not part of the product requirements.
