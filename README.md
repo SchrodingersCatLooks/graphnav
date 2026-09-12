@@ -22,6 +22,8 @@ See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
 The code-freeze target is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan includes rest and pitch preparation.
 Publishing these documents does not merge the application features they describe.
+**Documentation workflow:** keep planning, task claims, progress, and status directly updated on main at each checkpoint.
+Use the [shared-documentation procedure](./AGENTS.md#shared-documentation-lives-on-main) so both assistants see current information while feature code remains on its working branch.
 
 ## Start here
 

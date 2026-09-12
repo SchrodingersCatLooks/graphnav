@@ -79,6 +79,9 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
   BUILD_PLAN supplies 15 dependency-ordered steps, and N1 assigns the shared chooser/contract before Drive, Docs, PDF, and AI integration.
   Current runtime/main acceptance is unchanged by this planning clarification.
 
+- Standing workflow decision: shared planning/tracking/reference documents are updated directly on main at claims and checkpoints from a clean main-based checkout.
+  Both assistants must preserve concurrent teammate edits; runtime code continues on feature branches and reaches main through its separate review/acceptance process.
+
 ## Completed action log
 
 - 2026-09-12: Added the initial repository workflow starter.
@@ -108,5 +111,8 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - 2026-09-12: DOC-7 merged PR #7 as `19e23fd`, publishing nine shared planning/reference Markdown files to main.
   Verified the main diff is documentation only, relative links/anchors resolve, all 52 task IDs are unique, and Eddy's handoff is preserved.
   DOC-4 through DOC-7 are DONE for documentation publication; runtime tasks keep their prior statuses and PR #6 remains open.
+
+- 2026-09-12: DOC-8 records the user's standing direct-main documentation instruction in AGENTS and the shared entrypoints.
+  Verified documentation links/diff and preserved existing application statuses and partner handoff; no runtime changes.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.

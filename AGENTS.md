@@ -40,6 +40,23 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
 - Test Google integration in the installed extension. Verify exact destinations. For persistence, check reopen and Refresh; for source writes, check both read-only behavior and an authorized demo write.
 - Never report checks, features, or API connections as working without evidence. If a check requires the teammate's browser, mark REVIEW or BLOCKED and give the exact click-through they must perform.
 
+## Shared documentation lives on main
+
+The user's standing instruction is to update the shared documentation directly on `main`.
+This applies to TASK_LIST, BUILD_PLAN, FEATURE_SPEC, STATUS, IDEA, README, these instructions, and shared reference/handoff documents.
+Publish task claims, progress, blockers, decisions, and checkpoint results to main during the work; do not leave the only current copy on a feature branch or wait for a runtime PR to merge.
+
+1. Fetch origin and start from the latest `origin/main` in a clean documentation checkout/worktree, preserving the active feature checkout and all local changes.
+2. Edit the relevant owner's rows and required shared prose in that current copy; preserve teammate updates and distinguish reported branch results from verified merged runtime.
+3. Check the diff and links, commit only the intended documentation, and push directly to main with a normal fast-forward push.
+4. If main advances, fetch and reconcile the specific documentation edits with the newer version before retrying; never force-push or replace a tracker with a stale feature-branch copy.
+5. Verify the remote update and return main links; bring current main back into the working branch without overwriting feature work.
+
+Application code stays on `rajvansh-ui` and `partner-data` with the existing review/merge workflow.
+Never push a feature branch's runtime commits to main merely to publish its documentation.
+If branch protection prevents a direct documentation push, use a focused documentation PR and merge through the permitted path, reporting any blocker instead of silently leaving main stale.
+The rule is recorded here for both assistants; it does not create an autonomous background updater.
+
 ## Keep the team context current
 
 - TASK_LIST is the only task-status list. Update the owner's task and handoff row when claiming, blocking, handing over for review, or finishing. Include checks and a PR link when available.
@@ -51,7 +68,8 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
 ## GitHub checkpoints
 
 - Before coding, verify the local repository's origin points to `SchrodingersCatLooks/graphnav`, confirm the active branch, and preserve existing changes. Each teammate uses their own clone.
-- After each completed task or working checkpoint, update the relevant tracking files, commit only intended files, and push to the owner's branch. Saving locally does not update GitHub.
+- Push application checkpoints to the owner's feature branch; publish the corresponding tracking and planning updates directly to main using the shared-documentation workflow above.
+  Saving locally or updating only a feature branch does not update the shared tracker.
 - Report the pushed branch and commit or PR link. If push fails, say exactly what remains local and record the blocker; do not report GitHub as updated.
 - Merge reviewed working slices into main, then bring main into both working branches. GitHub stores project code and planning documents; it does not synchronize users' private graphs, Google documents, PDFs, or tokens.
 
@@ -66,7 +84,8 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
 ## Team workflow
 
 - Rajvansh owns UI; partner owns data/actions within the same milestones. Suggested branches are `rajvansh-ui` and `partner-data`. Coordinate when rebalancing tasks.
-- Keep commits small; push and merge working slices through a short PR. Do not reset, force-push, or overwrite teammate work.
+- Keep application commits small and merge them through a short PR; shared documentation uses the direct-main workflow above.
+  Do not reset, force-push, or overwrite teammate work.
 - Bring current main into each working branch at shared checkpoints. Review and test each other's slice before proceeding.
 - Finish with a concise handoff: task ID, what works, files touched, checks actually run, blockers, and next shared checkpoint.
 - Preserve the sleep, meal, presentation, and submission-buffer blocks in BUILD_PLAN.
