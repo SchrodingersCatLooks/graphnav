@@ -12,13 +12,13 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## Build queue
 
-M1-A is claimed on `rajvansh-ui`; other application work is unclaimed.
+M1-A is implemented for review on `rajvansh-ui`; other application work is unclaimed.
 Hours are elapsed from the start of the proposed build session.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DOING | Same installed shell on both laptops; scripts and lockfile committed |
+| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | REVIEW | Scripts and lockfile committed; clean install, type-check, production build, and five installed-extension fixture tests pass. Both-laptop real Drive/Docs walkthrough and reviewed merge still required. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
@@ -41,7 +41,7 @@ M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both row
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A / `rajvansh-ui` | Read all six project documents; clean clone of `2370f24`; origin and GitHub access verified. Owns package files, WXT configuration, and visible entrypoints for this scaffold. | Partner access, demo sources, and both-laptop checks remain unverified under M0; do not block the independent shell. | Scaffold WXT/React/TypeScript/Tailwind, add reversible Drive/Docs panel, run checks. Hand shared configuration back at review; M1-C types remain for joint agreement. |
+| Rajvansh | M1-A / `rajvansh-ui` | WXT/React/TypeScript/Tailwind shell, isolated Drive/Docs panel, keyboard controls, route updates, and toolbar instructions. `npm ci` and `npm run check` pass on Node 22.23.2/npm 10.9.9; five Chromium fixture tests pass; desktop/small screenshots inspected; `npm run dev` starts and writes `.output/chrome-mv3-dev`. Review link follows in the next checkpoint. | Real Google pages, normal editor behavior, partner access, and installation on both laptops remain unverified. Google APIs/OAuth are M1-B; shared graph contract is M1-C. | Both teammates follow README's Chrome walkthrough, review and merge the scaffold, then the merger updates STATUS. Hand package files/WXT configuration to M1-B after merge and agree M1-C before M2. |
 | Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.

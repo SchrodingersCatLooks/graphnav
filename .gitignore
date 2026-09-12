@@ -3,6 +3,8 @@ node_modules/
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
 .wxt/
 .output/
 .vite/
@@ -23,5 +25,6 @@ tmp/
 *.log
 .DS_Store
 .idea/
+web-ext.config.ts
 
 # Commit package-lock.json and share intentional editor settings separately.
