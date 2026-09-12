@@ -6,7 +6,7 @@
   "description": "Local AI relay for GraphNav. Holds the model key so the extension does not.",
   "engines": { "node": ">=22.12.0" },
   "scripts": {
-    "start": "node --experimental-strip-types src/server.ts",
+    "start": "node --env-file-if-exists=../.env.relay.local --env-file-if-exists=.env --experimental-strip-types src/server.ts",
     "typecheck": "tsc --noEmit"
   }
 }

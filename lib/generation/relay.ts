@@ -12,6 +12,10 @@ export type RelayStatus = { configured: boolean; ready: boolean; model?: string;
 async function boundedJson(response: Response): Promise<unknown> {
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) throw new Error('The relay pairing code was refused. Pair this Chrome session again.');
+    if (response.status === 409) throw new Error('Another AI request is running. Wait for it to finish or cancel it in its tab.');
+    if (response.status === 429) throw new Error('The local generation limit has been reached. Wait a minute before retrying. If the launch limit is reached, review usage before restarting the relay.');
+    if (response.status === 413) throw new Error('The selected content is too large. Preview fewer tabs or pages and retry.');
+    if (response.status === 504) throw new Error('Generation took too long. Retry with fewer tabs or pages.');
     throw new Error(`The AI relay could not complete the request (${response.status}). Check that its provider is configured.`);
   }
   if (Number(response.headers.get('content-length') ?? 0) > RELAY_BYTES) { await response.body?.cancel(); throw new Error('The relay response exceeds the size limit.'); }
