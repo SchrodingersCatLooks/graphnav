@@ -36,6 +36,10 @@ Historical passes and unverified account-specific behavior remain labeled accura
 
 ## Implementation in execution order
 
+| Task | Owner | Order | Work | Status | Evidence and next action |
+| --- | --- | --- | --- | --- | --- |
+| UX1-A | Rajvansh | Now | Repair contextual overlay and simplify graph interaction | DOING | User screenshots show missing Drive Home entry, stale sender URL panel-state error, unrelated selected map, crowded controls and difficult connection editing. On rajvansh-ui: reproduce Home-to-folder navigation; restore a cached current-page graph; make the canvas primary; add click-based connect/edit/open actions and Google reconnection controls. Preserve Eddy's proposal/storage work and existing personal maps. |
+
 Each person claims one bounded task at a time and pushes the contract before the other lane integrates it.
 N1 covers the reusable chooser/contract and its Drive gate; M3 and M4 own the subsequent Docs/PDF integration gates.
 Task IDs are preserved for existing handoffs even where the numbered order changes.

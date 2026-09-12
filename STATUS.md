@@ -85,6 +85,11 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
+Rajvansh is addressing the user's screenshot-based UX1-A feedback before continuing G3-A.
+The claim covers Drive Home entry and SPA panel state, cached current-page maps, a graph-first overlay, click-based connections/editing/navigation, and Google connection controls.
+Shared changes are limited to panel/navigation/auth messages and editor source-map selection; Eddy retains proposal storage and backup integration.
+No screenshot defect is marked fixed until the reproduction and changed user path pass.
+
 G1 selected-content preview and G2 relay generation/evidence display are merged through PR #13.
 Eddy should bring main into partner-data and read GENERATION_HANDOFF before editing shared generation/type/request files.
 His relay work through a8325dc is merged and reconciled with the extension client.
