@@ -330,6 +330,26 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
         {snapshot ? <GraphCanvas key={`${snapshot.graph.id}:${canvasVersion}:${focusId}:${collapsedIds.join(',')}:${graphPage}:${query}`} focusId={focusId} collapsedIds={collapsedIds} page={graphPage} activeTabId={activeTabId} fit={canvasVersion > 0 || !!query || !!focusId || collapsedIds.length > 0 || graphPage > 0} snapshot={snapshot} query={query} busy={busy || dirty} editable={editing} focusRequest={focusRequest} connectionEditor={selection?.itemType === 'relationship' && snapshot.relationships.find((item) => item.id === selection.itemId)?.members.length === 2 ? { id: selection.itemId, busy, onSave: saveConnection, onRemove: () => perform(async (data) => { if (data && selection) await repository.removeItem({ graphId: data.graph.id, ...selection }, data.graph.contentRevision); }), onCancel: closeConnection, draft: connectionDraft, onChange: (draft) => { setConnectionDraft(draft); setDirty(true); } } : undefined} connectingFrom={connectionStart}
           onOpen={openNode} onChooseConnection={editing ? chooseConnection : undefined}
           onSelect={select} onConnect={(connection) => connect(connection.source, connection.target, '')}
+          onCreateAt={(position) => { void perform(async (data) => {
+            if (!data) return;
+            const id = crypto.randomUUID();
+            // Created untitled and immediately selected, so the next thing the
+            // user does is name it rather than fill in a form beforehand.
+            await repository.addNode(data.graph.id, data.graph.contentRevision, { id, label: 'New idea', position });
+            setSelection({ itemType: 'node', itemId: id });
+          }); }}
+          onRename={(itemId, label) => { void perform(async (data) => {
+            if (!data) return;
+            const node = data.nodes.find((item) => item.id === itemId);
+            if (!node) return;
+            // A source node's own title belongs to the source, so a rename is
+            // kept as a personal display label instead of overwriting it.
+            if (node.origin === 'manual') {
+              await repository.editNode(data.graph.id, data.graph.contentRevision, itemId, { label, body: node.body, url: node.locator?.kind === 'web' ? node.locator.url : undefined });
+            } else {
+              await repository.setPersonalEdit({ graphId: data.graph.id, itemType: 'node', itemId }, data.graph.contentRevision, { displayLabel: label });
+            }
+          }); }}
           onPosition={(item, point) => { void perform(async (data) => { if (data?.graph.id === snapshot.graph.id) await repository.savePosition({ ...item, graphId: data.graph.id }, point); }); }}
           onView={(view) => { if (query || focusId || collapsedIds.length > 0 || graphPage > 0) return; void perform(async (data) => { if (data?.graph.id === snapshot.graph.id) await repository.saveView(data.graph.id, view); }); }}
         /> : <div className="welcome"><GraphMark size={66} /><h2>Make room for connections.</h2><p>{busy ? 'Opening your saved page map…' : 'Create a graph manually or with AI.'}</p>{embedded && <div className="welcome-actions"><button onClick={startNewGraph}>Create a map</button></div>}</div>}

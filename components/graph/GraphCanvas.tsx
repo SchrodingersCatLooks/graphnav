@@ -35,20 +35,69 @@ function ConnectionEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition
     {data?.editor && <ConnectionControls key={id} id={id} x={x} y={y} data={data} />}
   </>;
 }
-type CardData = { label: string; kind?: string; itemType: 'node' | 'relationship'; itemId: string; editable?: boolean; busy?: boolean; dense?: boolean; unavailable?: boolean; onResize?: (point: Geometry) => void; onOpen?: () => void; onEdit?: () => void; onConnect?: () => void; connectingFrom?: string | null };
+type CardData = { label: string; kind?: string; itemType: 'node' | 'relationship'; itemId: string; editable?: boolean; busy?: boolean; dense?: boolean; unavailable?: boolean; onResize?: (point: Geometry) => void; onOpen?: () => void; onEdit?: () => void; onConnect?: () => void; onRename?: (label: string) => void; connectingFrom?: string | null };
 type FlowNode = Node<CardData>;
 function GraphCard({ id, data, selected }: NodeProps<FlowNode>) {
   const connection = useConnection(), clickStart = useStore((state) => state.connectionClickStartHandle?.nodeId);
   const start = connection.inProgress ? connection.fromNode.id : clickStart ?? data.connectingFrom;
   const eligible = !!start && start !== id && !data.busy;
-  return <div className={`graph-card${data.dense ? ' dense-card' : ''}${eligible ? ' connection-target' : ''}`}>
+  // Rename in place on double-click. Opening a panel to change a word is the
+  // step every comparable canvas tool removed years ago.
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const renameInput = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (renaming !== null) renameInput.current?.select(); }, [renaming]);
+  const commitRename = () => {
+    const value = (renaming ?? '').trim();
+    if (value && value !== data.label) data.onRename?.(value);
+    setRenaming(null);
+  };
+  return <div className={`graph-card${data.dense ? ' dense-card' : ''}${eligible ? ' connection-target' : ''}`}
+    onDoubleClick={(event) => { if (data.onRename && !data.busy) { event.stopPropagation(); setRenaming(data.label); } }}>
     <NodeResizer isVisible={selected && !!data.editable && !data.busy} minWidth={120} minHeight={64} maxWidth={1000} maxHeight={800} handleClassName="card-resize-handle" lineClassName="card-resize-line" onResizeEnd={(_, point) => data.onResize?.({ x: point.x, y: point.y, width: point.width, height: point.height })} />
     {[Position.Left, Position.Top, Position.Right, Position.Bottom].map((position) => <Handle key={position} id={position} type="source" position={position} className="card-handle" isConnectable={!!data.editable && !data.busy} />)}
-    <div className="card-copy"><span className="node-kind">{data.kind}</span><span className="card-title" title={data.label}>{data.label}</span>{data.unavailable && <span className="source-warning">Unavailable</span>}</div>
+    <div className="card-copy"><span className="node-kind">{data.kind}</span>
+      {renaming !== null
+        ? <input ref={renameInput} className="card-rename nodrag nopan" value={renaming} maxLength={200}
+            aria-label={`Rename ${data.label}`}
+            onChange={(event) => setRenaming(event.target.value)}
+            onBlur={commitRename}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Enter') commitRename();
+              if (event.key === 'Escape') setRenaming(null);
+            }} />
+        : <span className="card-title" title={data.label}>{data.label}</span>}
+      {data.unavailable && <span className="source-warning">Unavailable</span>}</div>
     {data.onOpen && <button className="card-open nodrag nopan" aria-label={`Open ${data.label}`} title="Open original source" disabled={data.busy} onClick={(event) => { event.stopPropagation(); data.onOpen?.(); }}>↗</button>}
     {data.editable && <div className="node-actions"><button className="nodrag nopan" disabled={data.busy} aria-label={`Edit ${data.label}`} onClick={(event) => { event.stopPropagation(); data.onEdit?.(); }}>Edit</button><button className="nodrag nopan" disabled={data.busy} aria-label={`Connect ${data.label}`} onClick={(event) => { event.stopPropagation(); data.onConnect?.(); }}>Connect</button></div>}
   </div>;
 }
+/**
+ * Double-click empty canvas to create a node where the pointer is.
+ *
+ * This is the default gesture in Miro, FigJam, tldraw and Obsidian Canvas, and
+ * the reason none of them make you fill in a form to add a box. The panel form
+ * still exists for anyone who prefers it.
+ */
+function CreateOnDoubleClick({ onCreateAt }: { onCreateAt?: (position: { x: number; y: number }) => void }) {
+  const flow = useReactFlow();
+  useEffect(() => {
+    if (!onCreateAt) return;
+    const pane = document.querySelector('.canvas .react-flow__pane');
+    if (!pane) return;
+    const handler = (event: Event) => {
+      const mouse = event as MouseEvent;
+      // Only the empty pane: a double-click on a card renames it instead.
+      if (mouse.target !== pane) return;
+      onCreateAt(flow.screenToFlowPosition({ x: mouse.clientX, y: mouse.clientY }));
+    };
+    pane.addEventListener('dblclick', handler);
+    return () => pane.removeEventListener('dblclick', handler);
+  }, [flow, onCreateAt]);
+  return null;
+}
+
 function FocusNode({ request }: { request?: { id: string; nonce: number } }) {
   const flow = useReactFlow();
   useEffect(() => { if (request) { const frame = requestAnimationFrame(() => void flow.fitView({ nodes: [{ id: request.id }], padding: .8, minZoom: .5, maxZoom: 1, duration: 200 })); return () => cancelAnimationFrame(frame); } }, [request, flow]);
@@ -63,10 +112,13 @@ type Props = {
   onSelect: (selection: Selection) => void; onOpen?: (nodeId: string) => void;
   onChooseConnection?: (nodeId: string) => void; connectingFrom?: string | null;
   onConnect: (connection: Connection) => void;
+  /** Double-click on empty canvas creates a node exactly where the user pointed. */
+  onCreateAt?: (position: { x: number; y: number }) => void;
+  onRename?: (itemId: string, label: string) => void;
   onPosition: (selection: Selection, point: Geometry) => void;
   onView: (view: Viewport) => void;
 };
-export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
+export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onCreateAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
   const resizing = useRef(false);
   const { initialNodes, edges, total, shown } = useMemo(() => {
@@ -88,6 +140,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
         onResize: (point) => { resizing.current = false; onPosition({ itemType: 'node', itemId: node.id }, point); },
         onOpen: onOpen && node.locator ? () => onOpen(node.id) : undefined,
         onEdit: () => onSelect({ itemType: 'node', itemId: node.id }), onConnect: () => onChooseConnection?.(node.id),
+        onRename: onRename ? (label: string) => onRename(node.id, label) : undefined,
       },
       className: `${node.origin === 'imported' ? 'source-node' : 'personal-node'}${connectingFrom === node.id ? ' connecting-node' : ''}${snapshot.sources.some((source) => source.id === node.sourceId && source.availability === 'unavailable') ? ' unavailable-node' : ''}${node.locator?.kind === 'docs' && node.locator.tabId && node.locator.tabId === activeTabId ? ' current-node' : ''}`,
       ariaLabel: `Node: ${effectiveLabel(node, snapshot.itemEdits)}`,
@@ -143,9 +196,9 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       fitView={fit || (snapshot.graph.createdVia === 'import' && !snapshot.layoutItems.some((item) => item.pinned) && snapshot.graph.view.zoom === 1 && snapshot.graph.view.x === 0 && snapshot.graph.view.y === 0)}
       onMoveEnd={(_, view) => onView(view)} deleteKeyCode={null} multiSelectionKeyCode={null} selectionOnDrag={false}
     >
-      <FocusNode request={focusRequest} /><Background color="#cfddd8" gap={24} /><Controls showInteractive={false} fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} />
+      <FocusNode request={focusRequest} /><CreateOnDoubleClick onCreateAt={editable && !busy ? onCreateAt : undefined} /><Background color="#cfddd8" gap={24} /><Controls showInteractive={false} fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} />
     </ReactFlow>
-    {total === 0 && <div className="canvas-empty"><strong>{query ? 'No matching nodes' : 'Give your ideas a place.'}</strong><p>{query ? 'Try a different search.' : 'Use Add to choose source items or create an idea.'}</p></div>}
+    {total === 0 && <div className="canvas-empty"><strong>{query ? 'No matching nodes' : 'Give your ideas a place.'}</strong><p>{query ? 'Try a different search.' : 'Double-click anywhere to add an idea, or use Add to choose source items.'}</p></div>}
     <div className="canvas-caption">{shown} of {total} matching nodes · {focusId ? 'Focus preview; saved positions unchanged' : editable ? 'Drag to arrange' : 'Select a node; use ↗ to open'} · Scroll to zoom{total > LIMITS.visibleNodes ? ' · Use page controls or search' : ''}</div>
   </div>;
 }

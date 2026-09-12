@@ -290,3 +290,20 @@
 .graphnav-editor .connection-popup .connection-endpoints { margin: 10px 0 14px; font-size: 13px; }
 .graphnav-editor .connection-popup label { margin-bottom: 10px; }
 .graphnav-editor .connection-popup .connection-directions { margin-top: 12px; padding-top: 10px; }
+
+/* Node actions appear on hover, focus or selection rather than sitting on every
+   card. Permanent buttons on a canvas compete with the graph itself; Miro,
+   FigJam and Obsidian Canvas all reveal them on approach. */
+.graphnav-editor .graph-card .node-actions { opacity: 0; transition: opacity .12s ease; }
+.graphnav-editor .graph-card:hover .node-actions,
+.graphnav-editor .graph-card:focus-within .node-actions,
+.graphnav-editor .react-flow__node.selected .node-actions { opacity: 1; }
+/* Keyboard users must never lose the control they are on. */
+.graphnav-editor .graph-card .node-actions button:focus-visible { opacity: 1; }
+
+/* Renaming happens in the card, so the field has to sit exactly where the
+   title was rather than shifting the layout under the pointer. */
+.graphnav-editor .card-rename {
+  width: 100%; font: inherit; font-weight: 650; color: #1d303b;
+  border: 1px solid #6e9b88; border-radius: 6px; padding: 2px 6px; background: #fff;
+}
