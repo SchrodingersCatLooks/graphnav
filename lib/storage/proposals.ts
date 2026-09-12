@@ -321,10 +321,16 @@ export async function applyProposals(
   });
 
   // Positioning is personal state and belongs outside the acceptance transaction.
+  //
+  // Cards are roughly 220px wide and connection labels sit at the midpoint
+  // between two nodes, so spacing must leave room for a label or the label
+  // lands on top of the next card's title. Three per row keeps the block
+  // readable rather than stretching it off-screen.
+  const COLUMNS = 3, COLUMN_WIDTH = 340, ROW_HEIGHT = 190;
   for (const [index, id] of result.acceptedNodeIds.entries()) {
     await repository.savePosition(
       { graphId: request.graphId, itemType: 'node', itemId: id },
-      { x: 80 + (index % 4) * 220, y: 320 + Math.floor(index / 4) * 140 },
+      { x: 80 + (index % COLUMNS) * COLUMN_WIDTH, y: 320 + Math.floor(index / COLUMNS) * ROW_HEIGHT },
     );
   }
 
