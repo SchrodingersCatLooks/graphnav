@@ -19,7 +19,7 @@ Use **Back** to return to the compact menu; **Panel settings** remains available
 **Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15).
 Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
 The local OpenAI relay now generates real suggestions with supporting text and source navigation inside the PDF reader.
-Persistent accept/edit/reject decisions remain the next G3 integration step.
+Suggestions can be added to the map, renamed on the way in, or dismissed, and those decisions persist: regenerating reports what you already decided instead of offering it again.
 See [relay setup](./relay/README.md) for the private configuration and startup command.
 For the current product check-in, follow [the browser review walkthrough](./REVIEW_WALKTHROUGH.md).
 Eddy's proposal-store backend is now on main at c6d700f; the UI still displays unsaved AI drafts until G3-A is connected.
@@ -200,7 +200,7 @@ AI still previews and generates from one selected Doc or PDF at a time; a combin
 
 1. Choose **New Graph > Automated**, give the new graph a name and choose **Continue with AI**.
    In Drive, choose one Google Doc listed in the current folder; in Docs or the PDF reader, the current source supplies the choices.
-   The named map is saved separately, while generated suggestions remain draft previews until G3-A is integrated.
+   The named map is saved separately, and generated suggestions stay drafts until you save your review.
 2. Choose the graph's purpose, then explicitly select document tabs or PDF pages.
    Nested tabs are separate choices.
 3. Choose **Preview selected text** and inspect the complete passages shown.
@@ -210,7 +210,14 @@ AI still previews and generates from one selected Doc or PDF at a time; a combin
 Previewing sends nothing to a model and does not change the manual graph.
 After pairing the running local relay in **AI connection** settings, choose **Generate with AI** to request suggestions from the selected preview.
 Use **Cancel** while it runs, then inspect each suggestion's supporting text and open its evidence source.
-The current draft is a preview; persistent accept/edit/reject controls are still being implemented.
+
+Review each suggestion with **Add to map** or **Dismiss**. Accepting reveals an editable label, so the wording you keep is what gets stored.
+A connection can only be added when the suggested ideas it joins are added too; the panel says so before you save.
+Choose **Save decisions** to apply them. Nothing reaches the map until then.
+
+Added items are recorded as AI suggestions rather than as your own writing, and keep the passage they came from, so you can always see what a suggestion was based on and open it.
+Dismissed suggestions are remembered: generating again reports what you already decided rather than offering it a second time, and re-accepting something already added does not duplicate it.
+Decisions travel with **Export backup** and come back on import.
 API keys belong in private relay configuration or encrypted deployment secrets; never commit them or put them in the extension or chat.
 The authored demo paper is available at [demo/GraphNav-demo-paper.pdf](./demo/GraphNav-demo-paper.pdf).
 It is demonstration content, not a published study.
