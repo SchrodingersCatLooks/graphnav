@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyEdgeChanges, applyNodeChanges, type EdgeProps, type NodeProps, type ReactFlowInstance, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
+import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyNodeChanges, type EdgeProps, type NodeProps, type ReactFlowInstance, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { directedMembers, effectiveConnection, effectiveLabel, LIMITS, type ConnectionValues, type GraphSnapshot, type ItemKey } from '../../lib/graph/types';
 import { projectGraph } from '../../lib/graph/view';
@@ -153,9 +153,17 @@ type Props = {
 };
 export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onDelete, onChooseConnection, connectingFrom, onConnect, onCreateAt, onCreateConnectedAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  /**
+   * Which connections exist is derived from stored data; the only thing this
+   * canvas owns about them is which one is picked. Holding the whole edge list
+   * in state meant keeping a copy in sync with the data behind it, and any
+   * moment the copy was stale — a frame after a new connection, or a removal
+   * React Flow emitted for an edge it had not measured — the connection and
+   * its editor vanished. One id cannot go stale.
+   */
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const selectEdge = useCallback((edgeId: string) => {
-    setEdges((previous) => previous.map((edge) => ({ ...edge, selected: edge.id === edgeId })));
+    setSelectedEdgeId(edgeId);
     setNodes((previous) => previous.map((node) => node.selected ? { ...node, selected: false } : node));
   }, []);
   const resizing = useRef(false);
@@ -214,12 +222,9 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onDelete,
       return { ...old, ...node, selected: old?.selected ?? false };
     }));
   }, [initialNodes]);
-  useEffect(() => {
-    setEdges((previous) => initialEdges.map((edge) => {
-      const old = previous.find((value) => value.id === edge.id);
-      return { ...edge, selected: old?.selected ?? false };
-    }));
-  }, [initialEdges]);
+  const edges = useMemo(
+    () => initialEdges.map((edge) => edge.id === selectedEdgeId ? { ...edge, selected: true } : edge),
+    [initialEdges, selectedEdgeId]);
   useEffect(() => { if (focusRequest) setNodes((previous) => previous.map((node) => ({ ...node, selected: node.id === focusRequest.id }))); }, [focusRequest]);
   function changeNodes(changes: NodeChange<FlowNode>[]) {
     if (changes.some((change) => change.type === 'dimensions' && change.resizing)) resizing.current = true;
@@ -233,14 +238,14 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onDelete,
   return <div className="canvas" aria-label="Graph canvas">
     <ReactFlow<FlowNode>
       onInit={(instance) => { flowRef.current = instance; }}
-      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes} onEdgesChange={(changes) => setEdges((previous) =>
-        // Which connections exist is decided by stored data, never by the view.
-        // React Flow drops an edge whose endpoints it has not measured yet and
-        // emits a remove for it; while edges were a plain prop the next render
-        // put them back, but now that this state is the source of truth such a
-        // removal would stick and take the connection with it. Selection is the
-        // one thing the canvas legitimately owns.
-        applyEdgeChanges(changes.filter((change) => change.type === 'select'), previous))}
+      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes} onEdgesChange={(changes) => {
+        // Selection is the only edge change worth keeping; removal belongs to
+        // the repository, which reloads the map when it succeeds.
+        const selections = changes.filter((change) => change.type === 'select');
+        const picked = selections.find((change) => change.selected);
+        if (picked) setSelectedEdgeId(picked.id);
+        else if (selections.length) setSelectedEdgeId(null);
+      }}
       onNodeClick={(_, node) => { if (node.data.itemType === 'relationship') onSelect({ itemType: 'relationship', itemId: node.data.itemId }); else if (connectingFrom) onChooseConnection?.(node.id); }}
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
       onConnect={onConnect} connectionMode={ConnectionMode.Loose} connectOnClick connectionRadius={40} isValidConnection={(connection) => connection.source !== connection.target}
