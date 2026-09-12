@@ -31,10 +31,14 @@ No implementation has been attempted, so no runtime blocker is established. Acco
 - Rajvansh and partner now work on UI and data within each common milestone. This replaces the earlier split that assigned the whole PDF experience to one person.
 - Manual Refresh and local personal state are the prototype persistence model.
 - Product AI and additional platforms remain optional. Last 3 hours are reserved for presentation preparation.
+- Code and task updates must be committed and pushed at working checkpoints, with a returned GitHub commit or PR link. Users' graph data remains separate.
+- Larger-source design requires incremental loading, a bounded visible graph, separate adapters/storage, and versioned personal state. Performance remains untested until implementation.
 
 ## Completed action log
 
 - 2026-09-12: Added the initial repository workflow starter.
 - 2026-09-12: Added useful idea-note context, shared nightly milestones, and task/status update instructions. No application features were implemented by this documentation change.
+
+- 2026-09-12: Added explicit GitHub push verification and larger-source design/acceptance criteria (DOC-2). Documentation only; no scalability or runtime checks have been executed.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.

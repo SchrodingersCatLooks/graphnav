@@ -37,6 +37,21 @@ Follow the user's current explicit task. Keep both teammates working toward the 
 - README is the entrypoint and home for actual run commands once they exist. CLAUDE points to these same instructions; do not create competing rule sets.
 - These files are maintained during work; they are not an autonomous background tracking system. Do not fabricate completed tasks or silently mark proposed features DONE.
 
+## GitHub checkpoints
+
+- Before coding, verify the local repository's origin points to `SchrodingersCatLooks/graphnav`, confirm the active branch, and preserve existing changes. Each teammate uses their own clone.
+- After each completed task or working checkpoint, update the relevant tracking files, commit only intended files, and push to the owner's branch. Saving locally does not update GitHub.
+- Report the pushed branch and commit or PR link. If push fails, say exactly what remains local and record the blocker; do not report GitHub as updated.
+- Merge reviewed working slices into main, then bring main into both working branches. GitHub stores project code and planning documents; it does not synchronize users' private graphs, Google documents, PDFs, or tokens.
+
+## Designing for larger sources
+
+- Load folder children on demand, follow pagination, and bound concurrent requests. Reuse cached reads and offer Refresh; never require a full Drive crawl before opening the interface.
+- Keep the rendered graph bounded using focus, collapse, and Show more. Loading more data does not require rendering or laying out every cached node.
+- Keep graph UI, source adapters, and storage behind separate interfaces. Use stable provider IDs and a schema version for saved state so future migrations are possible.
+- Set cache limits, keep PDF bytes separate, and preserve personal edits when evicting reconstructible source cache. Handle storage failures visibly.
+- Validate larger-source behavior during the existing integration milestone with a labeled synthetic dataset and a visible-node limit; record actual timings and limits. Do not claim production-scale readiness from architecture alone.
+
 ## Team workflow
 
 - Rajvansh owns UI; partner owns data/actions within the same milestones. Suggested branches are `rajvansh-ui` and `partner-data`. Coordinate when rebalancing tasks.
