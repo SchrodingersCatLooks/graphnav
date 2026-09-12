@@ -2,7 +2,9 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** documentation and team workflow are ready. The application has not been built. [STATUS.md](./STATUS.md) is the source of truth for what works now.
+**Current state:** main contains project documentation. An extension shell exists on `rajvansh-ui` in [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3), awaiting resolution of partner-browser acceptance failures. The manual graph editor and GPT generation are not implemented. Read [STATUS.md](./STATUS.md) before choosing work; do not recreate the existing scaffold.
+
+**Release order:** V1 lets users manually create/edit idea nodes and meaningful connections, attach and navigate real sources, and save their work. APIs/PDF parsing may import source structure. V2 adds GPT-assisted graph drafts with evidence and accept/edit/reject controls. V2 is planned; generation must not be required for the V1 editor.
 
 ## Start here
 
@@ -18,7 +20,7 @@ A Chrome extension for navigating and organizing Drive folders, Google Docs tabs
 
 1. Confirm your partner accepted the repository invitation. The owner can invite them in Settings → Collaborators → Add people.
 2. Both clone the repository and read IDEA, BUILD_PLAN, STATUS, and their task row.
-3. Rajvansh scaffolds the extension while the partner configures Google access. Merge the scaffold before both modify application files.
+3. Resume the existing M1-A shell in PR #3 and resolve its recorded browser acceptance failures. The partner can prepare Google Console access in parallel. Merge an accepted scaffold before the shared application handoff.
 
 ```bash
 git clone https://github.com/SchrodingersCatLooks/graphnav.git
@@ -29,7 +31,7 @@ Suggested branches: `rajvansh-ui` and `partner-data`. Each person edits their ow
 
 The selected stack is WXT, React, TypeScript, Tailwind, React Flow, ELK, Google Drive/Docs APIs, Chrome Identity, PDF.js, extension local storage, and IndexedDB. Setup and official implementation references are in BUILD_PLAN. Local extension development comes first; no hosted website is required for the demo.
 
-Install, development, type-check, build, and output-directory instructions must be added here once the actual package scripts exist. No runnable application commands are available yet.
+The main branch has no package scripts yet. PR #3 contains the scaffold's package scripts and installation walkthrough; read that branch's README when running it. Preserve those verified setup instructions when merging these planning changes into the implementation branch.
 
 ## Provenance
 
