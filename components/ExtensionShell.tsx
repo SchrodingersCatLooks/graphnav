@@ -2,12 +2,24 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PageContext } from '../lib/page-context';
 import { GraphMark } from './GraphMark';
 import { GoogleConnection } from './GoogleConnection';
+import { GraphEditor } from './editor/GraphEditor';
+import { sendToBackground } from '../lib/messages';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
+  const [visited, setVisited] = useState(false);
+  const [connected, setConnected] = useState(false);
   const surface = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const interacted = useRef(false);
+  useEffect(() => {
+    let alive = true;
+    void sendToBackground<{ open: boolean }>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }).then((result) => {
+      if (alive && !interacted.current && result.ok && result.data.open) { setVisited(true); setOpen(true); }
+    }).catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
 
   useLayoutEffect(() => {
     const element = surface.current!;
@@ -37,16 +49,19 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   }, [open]);
 
   function close() {
+    interacted.current = true;
     setOpen(false);
+    void sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, open: false }).catch(() => undefined);
     trigger.current?.focus();
   }
 
   return (
     <div ref={surface} className="graphnav-shell" popover="manual">
-      {open && (
+      {visited && (
         <section
           id="graphnav-panel"
-          className="graphnav-panel flex flex-col"
+          className={`graphnav-panel editor-panel ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
+          style={open ? undefined : { display: 'none' }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="graphnav-title"
@@ -73,22 +88,11 @@ export function ExtensionShell({ context }: { context: PageContext }) {
             </button>
           </header>
 
-          <div className="panel-content flex flex-col">
-            <div className="flex items-center justify-between gap-3">
-              <span className="eyebrow">YOUR WORKSPACE</span>
-              <span className="preview-badge">Interface preview</span>
-            </div>
-            <div className="empty-state flex flex-col items-center justify-center">
-              <span className="empty-mark flex items-center justify-center"><GraphMark size={52} /></span>
-              <h2>Your {context.kind === 'drive' ? 'folder' : 'document'} map starts here</h2>
-              <p>Explore your {context.kind === 'drive' ? 'files and folders' : 'document tabs'} in a connected view.</p>
-              <GoogleConnection />
-              <p className="next-step">Your personal maps are ready.<br />Importing this source comes next.</p>
-            </div>
-          </div>
+          <div className="panel-auth"><GoogleConnection onConnected={setConnected} /></div>
+          <GraphEditor context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
 
           <footer className="panel-footer flex items-center justify-between gap-3">
-            <span>Close the panel to return to your page.</span>
+            <span>Your Google files stay unchanged. Close to return to your page.</span>
             <kbd>Esc</kbd>
           </footer>
         </section>
@@ -101,7 +105,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
         aria-expanded={open}
         aria-controls={open ? 'graphnav-panel' : undefined}
         aria-haspopup="dialog"
-        onClick={() => open ? close() : setOpen(true)}
+        onClick={() => { interacted.current = true; if (open) close(); else { setVisited(true); setOpen(true); void sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, open: true }).catch(() => undefined); } }}
       >
         <GraphMark size={22} />
         Graph

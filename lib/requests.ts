@@ -20,6 +20,7 @@ export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('ACCOUNT_KEY') }).strict(),
   z.object({ type: z.literal('LIST_FOLDER'), folderId: id }).strict(),
   z.object({ type: z.literal('GET_DOC_TABS'), documentId: id }).strict(),
+  z.object({ type: z.literal('PANEL_STATE'), source: z.string().regex(/^(drive|docs):[A-Za-z0-9_-]{1,200}$/), open: z.boolean().optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DRIVE_FOLDER'), folderId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DOC_TABS'), documentId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('LIST_GRAPHS') }).strict(),
@@ -42,7 +43,9 @@ export function isTrustedSender(sender: unknown): boolean {
   // An extension page has no tab and an extension-scheme URL.
   const source = from.origin ?? from.url;
   if (!source) return false;
-  if (source.startsWith(`chrome-extension://${browser.runtime.id}`)) return true;
-
-  return ALLOWED_PAGE_ORIGINS.some((origin) => source.startsWith(origin));
+  try {
+    const url = new URL(source);
+    if (url.protocol === 'chrome-extension:') return url.hostname === browser.runtime.id;
+    return ALLOWED_PAGE_ORIGINS.includes(url.origin);
+  } catch { return false; }
 }

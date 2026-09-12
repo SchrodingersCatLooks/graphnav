@@ -3,7 +3,7 @@ import { GraphDatabase } from './database';
 import {
   LIMITS, backupSchema, graphSchema, snapshotSchema, itemKeySchema, editValuesSchema,
   newNodeSchema, newRelationshipSchema, pointSchema, viewSchema, membersSchema,
-  sourceInputSchema, locatorSchema, sourceKey, locatorKey,
+  sourceInputSchema, locatorSchema, sourceKey, locatorKey, bindingSelectionSchema,
   type Graph, type GraphNode, type GraphSnapshot, type ItemKey,
   type Locator, type Relationship, type Source, type SourceInput,
 } from '../graph/types';
@@ -18,7 +18,7 @@ function requireValue<T>(value: T | undefined, message: string): T {
 const stamp = () => ({ createdAt: Date.now(), updatedAt: Date.now() });
 const itemTuple = (key: ItemKey): [string, string, string] => [key.graphId, key.itemType, key.itemId];
 const importItemSchema = z.object({ source: sourceInputSchema, locator: locatorSchema, title: z.string().trim().min(1).max(200), parentKey: z.string().max(1500).optional() }).strict();
-const refreshSchema = z.object({ scopeKey: z.string().min(1).max(300), accountKey: z.string().min(1).max(300), complete: z.boolean(), items: z.array(importItemSchema).max(LIMITS.nodes) }).strict();
+const refreshSchema = z.object({ scopeKey: z.string().min(1).max(300), accountKey: z.string().min(1).max(300), complete: z.boolean(), items: z.array(importItemSchema).max(LIMITS.nodes), selection: bindingSelectionSchema.optional() }).strict();
 export type ImportedItem = z.infer<typeof importItemSchema>;
 export function importedKey(item: Pick<ImportedItem, 'source' | 'locator'>): string {
   return JSON.stringify([sourceKey(item.source), locatorKey(item.locator)]);
@@ -210,6 +210,38 @@ export class GraphRepository {
     });
   }
 
+  async attachSource(graphId: string, revision: number, nodeId: string, input: ImportedItem) {
+    const item = importItemSchema.parse(input);
+    validateLocatorSource(item.locator, item.source);
+    return this.mutate(graphId, revision, async (graph) => {
+      const node = await this.nodeInGraph(graphId, nodeId);
+      if (node.origin !== 'manual') throw new Error('Attach destinations to personal nodes; imported source destinations are fixed.');
+      if (item.source.accountKey !== 'local') {
+        if (graph.accountScope && graph.accountScope !== item.source.accountKey) throw new Error('This map belongs to a different Google account.');
+        graph.accountScope = item.source.accountKey;
+      }
+      const identity = sourceKey(item.source), previous = await this.db.sources.where('sourceKey').equals(identity).first();
+      const source: Source = { ...item.source, id: previous?.id ?? crypto.randomUUID(), sourceKey: identity, availability: 'available', ...stamp(), createdAt: previous?.createdAt ?? Date.now() };
+      await this.db.sources.put(source);
+      await this.db.nodes.put({ ...node, sourceId: source.id, locator: item.locator, updatedAt: Date.now() });
+    });
+  }
+
+  async arrange(graphId: string, revision: number, positions: { itemId: string; itemType: 'node' | 'relationship'; x: number; y: number }[], newOnly = false) {
+    await this.db.transaction('rw', this.tables(), async () => {
+      const graph = await this.graph(graphId);
+      if (graph.contentRevision !== revision) throw new ConflictError();
+      for (const position of positions) {
+        const key = itemKeySchema.parse({ graphId, itemId: position.itemId, itemType: position.itemType });
+        const point = pointSchema.parse({ x: position.x, y: position.y });
+        await this.itemExists(key);
+        const old = await this.db.layoutItems.get(itemTuple(key));
+        if (old && (old.pinned || newOnly)) continue;
+        await this.db.layoutItems.put({ ...key, ...point, pinned: false, ...stamp(), createdAt: old?.createdAt ?? Date.now() });
+      }
+    });
+  }
+
   // Eddy calls this only after authorized reads. No fetch/model call occurs
   // inside a transaction. A partial page can upsert, but cannot remove links.
   async refreshScope(graphId: string, revision: number, input: z.infer<typeof refreshSchema>) {
@@ -252,7 +284,8 @@ export class GraphRepository {
         if (!retained.has(relation.id)) await this.deleteRelation(relation);
       }
       if (await this.db.relationships.where('graphId').equals(graphId).count() > LIMITS.relationships) throw new Error('Import exceeds this prototype’s relationship limit.');
-      const binding = { key: request.scopeKey, complete: request.complete, refreshedAt: Date.now() };
+      const oldBinding = graph.sourceBindings.find((s) => s.key === request.scopeKey);
+      const binding = { ...oldBinding, key: request.scopeKey, complete: request.complete, refreshedAt: Date.now(), ...request.selection };
       graph.sourceBindings = [...graph.sourceBindings.filter((s) => s.key !== request.scopeKey), binding];
       graphSchema.parse(graph);
       // Missing children may have moved. Keep their nodes and personal links;

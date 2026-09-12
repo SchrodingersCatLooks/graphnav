@@ -45,6 +45,8 @@ test('only our own pages and our declared content scripts are trusted', () => {
 
 test('untrusted senders are refused', () => {
   expect(isTrustedSender({ id: EXTENSION_ID, origin: 'https://evil.example' })).toBe(false);
+  expect(isTrustedSender({ id: EXTENSION_ID, origin: 'https://drive.google.com.evil.example' })).toBe(false);
+  expect(isTrustedSender({ id: EXTENSION_ID, origin: `chrome-extension://${EXTENSION_ID}extra` })).toBe(false);
   // Another extension reusing our origin shape must not pass.
   expect(isTrustedSender({ id: 'some-other-extension', origin: 'https://drive.google.com' })).toBe(false);
   expect(isTrustedSender({ id: EXTENSION_ID, origin: 'chrome-extension://another-extension-id' })).toBe(false);
