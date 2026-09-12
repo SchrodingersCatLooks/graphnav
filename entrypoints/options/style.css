@@ -1,0 +1,29 @@
+:root { font-family: system-ui, sans-serif; color: #203c3a; background: #f3f7f6; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 720px; padding: 32px 20px; margin: auto; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+header strong { font-size: 24px; }
+header span { margin-left: auto; color: #627b75; font-size: 13px; }
+.connection-card { background: white; border: 1px solid #d9e6e1; border-radius: 22px; padding: clamp(20px, 4vw, 38px); box-shadow: 0 12px 36px #24473d08; }
+.eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #6c9185; }
+h1 { font-size: clamp(24px, 4vw, 32px); letter-spacing: -1px; margin: 12px 0; }
+p, li { line-height: 1.6; font-size: 14px; color: #526d65; }
+ol { padding-left: 24px; margin: 24px 0; }
+li + li { margin-top: 6px; }
+.connection-state { display: inline-flex; gap: 8px; align-items: center; background: #f0f2f1; border-radius: 20px; padding: 9px 14px; font-size: 13px; font-weight: 600; margin: 10px 0 0; }
+.connection-state span { width: 7px; height: 7px; border-radius: 50%; background: #99a6a1; }
+.connection-state.ready { background: #eaf6ee; color: #237449; }
+.connection-state.ready span { background: #32965b; }
+label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+input { width: 100%; border: 1px solid #cdded7; padding: 13px; border-radius: 9px; font: inherit; }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #94cbb9; outline-offset: 3px; }
+.detail { font-size: 12px; color: #73877f; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+button { font: inherit; font-size: 13px; padding: 11px 16px; border: 1px solid #cfdfd8; border-radius: 8px; background: white; color: #275d4f; cursor: pointer; }
+button.primary { background: #20594f; color: white; border-color: #20594f; }
+button:disabled { opacity: .5; cursor: default; }
+.text-button { border: 0; padding-left: 0; text-decoration: underline; }
+.notice { padding: 12px; background: #fff7e9; border: 1px solid #f0ddb5; border-radius: 8px; color: #85571e; overflow-wrap: anywhere; }
+footer { display: flex; justify-content: center; gap: 30px; padding: 24px; font-size: 12px; }
+a { color: #34675b; }

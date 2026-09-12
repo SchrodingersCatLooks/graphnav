@@ -30,7 +30,7 @@ export default defineConfig({
     // PDF.js uses bundled WebAssembly decoders; no remote scripts or eval.
     content_security_policy: { extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'" },
     // Drive API is on www.googleapis.com; the Docs API is on docs.googleapis.com.
-    host_permissions: ['https://www.googleapis.com/*', 'https://docs.googleapis.com/*'],
+    host_permissions: ['https://www.googleapis.com/*', 'https://docs.googleapis.com/*', 'http://127.0.0.1:8787/*'],
     oauth2: {
       client_id: '138105039840-5394rj79mfeq3jtipsg9g8fi5bneub02.apps.googleusercontent.com',
       scopes: [

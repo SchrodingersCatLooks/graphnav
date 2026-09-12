@@ -14,12 +14,19 @@ import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/r
 import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
 import { EditorService } from '../lib/editor/service';
 import { getPageContext } from '../lib/page-context';
+import { RelayClient } from '../lib/generation/relay';
+import { GenerationUiService } from '../lib/generation/ui-service';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
 // state worth losing. The database lives in the extension origin; content
 // scripts reach it only through these messages.
 const repository = new GraphRepository();
 const editor = new EditorService(repository);
+const relay = new RelayClient(
+  async () => { const value = (await browser.storage.session.get('relay-pairing:v1'))['relay-pairing:v1']; return typeof value === 'string' ? value : undefined; },
+  async (code) => { if (code) await browser.storage.session.set({ 'relay-pairing:v1': code }); else await browser.storage.session.remove('relay-pairing:v1'); },
+);
+const generation = new GenerationUiService(repository, relay);
 
 /**
  * Chooses the map this scope belongs to.
@@ -63,7 +70,7 @@ async function storeImport(scoped: ScopedImport, intoGraphId?: string): Promise<
   };
 }
 
-async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number } }): Promise<Response> {
+async function handle(raw: unknown, sender: { url?: string; documentId?: string; tab?: { id?: number } }): Promise<Response> {
   if (typeof raw === 'object' && raw !== null && 'type' in raw && raw.type === 'EDITOR') {
     const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
     return { ok: true, data: await editor.handle(raw, ownPage) };
@@ -74,7 +81,19 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
   if (!parsed.success) return { ok: false, error: 'Unsupported request.' };
   const request: Request = parsed.data;
 
+  const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
+  const owner = `${sender.documentId ?? sender.tab?.id ?? ''}:${sender.url ?? ''}`;
   switch (request.type) {
+    case 'AI_STATUS': return { ok: true, data: await relay.status() };
+    case 'OPEN_AI_SETTINGS': await browser.tabs.create({ url: browser.runtime.getURL('/options.html') }); return { ok: true, data: null };
+    case 'PAIR_RELAY':
+      if (!ownPage) return { ok: false, error: 'Pair the relay from GraphNav settings.' };
+      return { ok: true, data: await relay.pair(request.code) };
+    case 'FORGET_RELAY':
+      if (!ownPage) return { ok: false, error: 'Change pairing from GraphNav settings.' };
+      await relay.forget(); return { ok: true, data: null };
+    case 'GENERATE_DRAFT': return { ok: true, data: await generation.generate(request, owner, ownPage) };
+    case 'CANCEL_DRAFT': generation.cancel(request.requestId, owner); return { ok: true, data: null };
     case 'AUTH_STATUS':
       return { ok: true, data: { connected: await isConnected() } };
     case 'CONNECT':
