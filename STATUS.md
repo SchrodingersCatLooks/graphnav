@@ -1,8 +1,20 @@
 # Current project status
 
-Last shared update: 2026-09-12, reviewing main c6d700f for the user's product check-in.
+Last shared update: 2026-09-12, UX1 contextual overlay and graph interaction fixes.
 
 ## Working on main
+
+[PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc) fixes Drive Home entry, stale injected-route panel errors, source-map selection and graph interaction.
+Opening an authenticated Google source reuses its saved page map or creates one bounded structural baseline without GPT.
+This page returns from another chosen project map; page preferences persist per account and source across Chrome restarting.
+Folder navigation keeps the same browser tab and open overlay, including after arriving from an overview through Drive's same-page navigation.
+Source node titles navigate directly; two node Connect clicks create an editable personal relationship.
+The graph fills the panel while Sources, Add idea, AI and More open focused drawers.
+Backup, advanced graph tools, panel placement and account settings are moved out of the default graph view.
+New personal nodes are placed clear of existing nodes; ordinary containment labels no longer crowd the canvas, and parallel connections have separate paths.
+Google account settings show the available account label and support reconnect/disconnect while preserving stored maps.
+The editor refreshes its account scope even when disconnect/reconnect completes quickly, and blocks account changes while edits are unsaved.
+Chrome remains responsible for the account offered by sign-in.
 
 [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) merged the saved editor, Google integration, and on-page Drive/Docs graphs.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
@@ -10,7 +22,7 @@ Last shared update: 2026-09-12, reviewing main c6d700f for the user's product ch
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
 [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
-The current main runtime includes bcfd0d7's UI and Eddy's ddf566d proposal-store backend, merged as c6d700f.
+The current main runtime includes UX1 at 63de3fc and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -51,6 +63,11 @@ Eddy's application work through 179d98f is included through normal merges.
 
 ## Verification and limits
 
+Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds.
+Screenshots of the Drive, Docs and PDF layouts were inspected.
+The user still needs to reload the existing extension, refresh Google tabs and retest the reported live Google screens using REVIEW_WALKTHROUGH.
+No repeat partner-laptop gate or new live-account acceptance is claimed.
+
 For c6d700f, extension/relay typechecks, production build and 34 focused tests pass.
 The focused set covers proposals, storage, requests, installed on-page workflows and the PDF reader; a new full-suite or real-account pass is not claimed.
 REVIEW_WALKTHROUGH describes the requested user check-in and expected current behavior.
@@ -85,10 +102,11 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh is addressing the user's screenshot-based UX1-A feedback before continuing G3-A.
-The claim covers Drive Home entry and SPA panel state, cached current-page maps, a graph-first overlay, click-based connections/editing/navigation, and Google connection controls.
-Shared changes are limited to panel/navigation/auth messages and editor source-map selection; Eddy retains proposal storage and backup integration.
-No screenshot defect is marked fixed until the reproduction and changed user path pass.
+Rajvansh's UX1 runtime fixes are merged in [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc).
+The five user checks in REVIEW_WALKTHROUGH now match the compact interface; user feedback on the actual Google screens remains open.
+Rajvansh next addresses any concrete usability regression and continues G3-A review controls.
+Eddy retains proposal storage and decision-backup integration; UX1 does not change the database schema, provider configuration, manifest permissions or proposal contracts.
+The additive editor openPageMap operation reuses the existing source adapters and repository transaction to open or create a canonical source map.
 
 G1 selected-content preview and G2 relay generation/evidence display are merged through PR #13.
 Eddy should bring main into partner-data and read GENERATION_HANDOFF before editing shared generation/type/request files.
@@ -128,6 +146,11 @@ The assistants must fetch/read current main and the published handoffs; a commit
 Google files remain read only in the current UI; changing a graph never renames or moves source files.
 
 ## Completed action log
+
+- 2026-09-12: [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc) addresses the six screenshot-based complaints through contextual cached maps, a fixed graph-first overlay, direct node navigation, two-click connections and account controls.
+  Reproduced the missing Home entry and stale sender URL error before changing code.
+  Also corrected overlapping connection-label hit targets, quick account-switch refresh and overlapping new-node placement found during installed tests.
+  Published the revised README, feature/implementation guidance and browser review checklist directly to main.
 
 - 2026-09-12: Pulled c6d700f, rebuilt it and passed both typechecks plus 34 focused tests for the user's product review.
   Started the local relay and verified authenticated health without making a new paid request.

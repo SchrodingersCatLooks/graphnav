@@ -30,7 +30,10 @@ Existing Drive folders/files, Doc tabs/sub-tabs, and parsed PDF sections/pages a
 Manual means the user chooses nodes and connections; it must not mean retyping known titles or copying URLs.
 
 1. After authorization, opening Graph on a supported page restores the saved map and offers suggestions from the current source.
-   If no map exists, show Add existing items, Build baseline from this source, and Add an idea.
+   On an authenticated Google source with no saved map, create its bounded structural baseline automatically without GPT.
+   Drive Home opens the My Drive root graph; a specific folder or Doc has its own map.
+   Preserve an explicitly selected project map, and offer This page to return to the cached source map.
+   Sources offers a blank selected-only map when users want to choose every member themselves.
 2. Add existing items opens a reusable chooser with current items, parent/path context, search within the disclosed scope, multi-select, Add selected, and Already added indicators.
    Selecting a real item fills its label/type/destination from the source response.
 3. Build baseline previews the scope and imports its structure with one action, including names and real destinations.
@@ -146,10 +149,14 @@ The panel must contain the actual editor, not only connection status or a button
 Use one controller for graph commands with two transports: direct extension-origin repository access for workspace/reader, and typed background messages for Google content scripts.
 Only the transport and source context differ between surfaces.
 
-- Toolbar: source/map name, Add existing, Build baseline, Explore/Build, Add idea, Connect, Search, Refresh, Generate with AI, and reachable Close.
+- Keep the canvas primary and Close reachable.
+  The compact toolbar opens Sources, Add idea, Connect, AI and More; source import/refresh, map selection/backups and panel settings live in focused drawers or menus.
+  This page visibly restores the source map; search and Arrange map remain beside the canvas.
 - Canvas: distinguish folders, documents, tabs, PDF sections, ideas, and relationship junctions using icons and labels, not color alone.
-- Selection: click selects and previews; a visible Open action or keyboard command navigates; dragging never opens or moves a source.
-  A tab's explicit navigation action must keep the existing Doc browser tab.
+- Source node titles navigate directly; Edit opens the inspector and two node Connect clicks create a relationship without dragging.
+  Clicking a personal node edits it, and clicking a relationship label edits that connection.
+  Dragging never opens or moves a source.
+  Folder navigation keeps the browser tab and the overlay open with the destination folder map; Doc tab navigation keeps the existing Doc browser tab.
 - Inspector: editable personal label/notes; source title/type; destination; relationship explanation; evidence excerpt and provenance; hide versus remove with clear effects.
 - Explore: focus, expand, collapse, search, and open; Build: create/edit/connect controls, with source-write actions only when allowed.
 - Recovery: undo the last personal deletion where practical or offer an explicit confirmation; never imply that graph undo reverses a Google write.

@@ -104,8 +104,11 @@ The shared chooser starts with Drive; step 4 supplies Docs and step 9 supplies P
 
 1. Rajvansh extracts reusable editor controls from `entrypoints/workspace/main.tsx` and mounts them in the existing popover panel.
    Keep the optional workspace working and preserve the tested top-layer/viewport behavior.
-2. Offer Add existing, Add idea, and Build baseline from this folder.
-   Build baseline previews its bounded scope and fills in names, containment, and real destinations automatically.
+2. Keep the graph primary with focused Sources, Add idea, Connect and More controls.
+   On first opening an authenticated Google source, create its bounded baseline; otherwise reuse its cached map.
+   Drive Home uses the My Drive root, and This page returns from a chosen project map.
+   Sources preserves the explicit selected-only workflow and offers Build baseline for the listed scope.
+   Two node Connect clicks create a relationship; source titles navigate, Edit opens notes/labels, and connection labels remain editable.
 3. Eddy reuses IMPORT_DRIVE_FOLDER and paginated child reads, adds the selected-items path, and routes edits/view changes through the single background repository.
    Content scripts must not open IndexedDB on the Google origin.
 4. Rajvansh adds readable typed nodes, accessible connections, labels/notes, Open versus Expand, search/focus/collapse, a list fallback, and bounded automatic layout.

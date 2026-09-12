@@ -2,6 +2,10 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
+**Current usability update ([PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16)):** Drive Home has a Graph entry, opening a Google source restores its own cached map or creates a bounded baseline, and the canvas stays primary.
+Use **This page** to return from a project map, click source nodes to navigate, and use each node’s **Connect** button to link two nodes without dragging.
+**Sources**, **Add idea**, **AI**, and **More** open focused drawers; Google account changes and panel settings have separate menus.
+
 **Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15).
 Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
 The local OpenAI relay now generates real suggestions with supporting text and source navigation inside the PDF reader.
@@ -15,7 +19,11 @@ PR #15 adds a visible project-map chooser, Add a PDF to this map, and map contin
 **Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
+**Latest verification:** extension and relay typechecks, production build and all 134 tests passed for PR #16 using Node 22.23.2 / npm 10.9.9.
+Installed tests cover the reported Home/SPA defects, cached maps, two-click relationships, direct navigation, account changes, PDF/backup/AI regressions and normal host editing.
+The actual Google screens remain for the user to review after extension reload and tab refresh.
+
+**Earlier verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
 For PR #15, both typechecks/build and all 19 affected tests passed.
 The full suite passed 118/119; one browser-fixture startup timed out before the PDF preview test ran, with a worker-teardown timeout afterward.
 That test passed three isolated reruns; the startup flake remains recorded under M6-B.
@@ -83,39 +91,37 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    The public manifest key is already configured; see GOOGLE_SETUP for the OAuth handoff.
 5. Refresh open Drive/Docs tabs after every extension reload.
    Otherwise those tabs can retain an old content script even when Chrome shows the new extension build.
-6. Open [My Drive](https://drive.google.com/drive/my-drive) or a Drive folder, click **Graph**, then **Connect Google** if needed.
-   Sign-in/consent is an action on your account; use the expected GraphNav testing application and authorized account.
-7. Under **Add existing**, search or select sources, then use **Add selected**.
-   Names and destinations are filled in; duplicate names show parent paths.
-   **Build baseline** adds the listed structure automatically without GPT.
-   Browse a folder with its arrow to choose items inside it in the current map.
-8. Add a personal idea and a labeled connection, or select a personal idea and one source to **Attach destination**.
-   Use the inspector to edit labels/notes and open destinations.
-   **Arrange map** arranges unpinned nodes; dragging a node pins its position.
-   **Hide tools** gives the graph more room.
-   Use **Focus selected** for a compact neighborhood preview, **Collapse branch** for containment, and **Show whole map** to return.
-   Focus previews preserve saved positions; return to the whole map to drag nodes.
-   **Find a node** searches the loaded map, and **Previous 50 / Next 50** keep the list and canvas on the same page.
-   Choose **Panel width** and **Dock left/right** in the footer; these settings survive Chrome restarting.
-   **Float panel** enables **Move** in the header and **Resize** in the footer.
-   Drag those controls or focus one and use arrow keys; hold Shift for larger steps.
-   Escape cancels an active drag, otherwise it closes the panel.
-   **Dock panel** restores the docked layout, and **Reset position** returns to the default side and width.
-   Floating placement survives restarting Chrome and stays within the visible window after resizing or zooming.
-9. Use **Refresh source**, close/reopen the panel, and verify your personal edits remain.
-   A selected-only map must not suddenly add unselected siblings.
-   Export/import a backup through the toolbar or the optional My maps workspace.
-   **Check destinations** checks Google source availability and marks unavailable sources while preserving their notes.
-   A failed check is reported separately from a missing destination.
-10. Open a Doc, refresh it, and click **Graph**.
-    Select top-level/nested tabs or build a baseline; select a node and choose **Go to tab in this document**.
-    Confirm the original browser tab reaches the exact tab, the graph reopens on the left, and the current tab is highlighted.
-    Verify ordinary typing/scrolling and reachable close controls at your normal and increased browser zoom.
+6. Open [Drive Home](https://drive.google.com/drive/home), My Drive or a folder, click **Graph**, then **Connect Google** if needed.
+   Sign-in and consent require your own account action.
+   A saved map for this location reopens; on a new authenticated source GraphNav creates a bounded structural baseline without GPT.
+   Home shows your My Drive root, not Google's suggested or shared Home feed.
+7. Click a source node's title to open its destination.
+   A folder opens in the same browser tab with its own graph; the overlay stays open as you move between folders.
+   **This page** returns to this source's cached map if another project map is selected.
+   In a Doc, click a tab node to reach that exact tab in the same browser tab.
+8. Click **Connect** on one node, then **Connect** on another.
+   Edit the relationship label in the drawer and **Save changes**.
+   Click a connection label to edit it later; click **Edit** on a node for its label, notes and destination details.
+   **Add idea** creates a personal node, and **Arrange map** arranges unpinned nodes.
+   Dragging only changes the saved layout, never the source files.
+9. Open **Sources** to choose additional files, folders or document tabs without typing their names or URLs.
+   **Add selected** imports your choices; **Build baseline** adds the listed structure.
+   Browse a folder's arrow to add its children into the current map.
+   For a selected-only map, use **Start a blank map instead**, create it, then reopen Sources and select items.
+   **Refresh source** preserves personal edits and selected-only membership.
+10. Use **More** for saved-map selection, creating a map, adding a PDF, and backup import/export.
+    **Map options** contains focus, collapse, pagination and destination checks.
+    **Panel settings** contains width, dock, float and reset controls.
+    Float mode exposes Move and Resize controls with pointer and keyboard support; Escape cancels a placement drag or closes the panel.
+    **Google account** shows the connected account when available, with **Change Google account**, **Disconnect Google**, and **Check connection**.
+    Chrome controls which account sign-in offers; another Chrome profile may be needed to use a different Google account.
+    Close/reopen the panel, refresh the page and check that your notes, connections and dragged positions remain.
+    Verify typing, scrolling and reachable close controls at normal and increased browser zoom.
 
-The shell recognizes My Drive, individual Drive folders, and normal Docs document URLs, including numbered account paths.
-Drive Home, Recent, Shared drives overviews, Docs home, published Docs, Sheets, and Slides are outside this first shell's supported routes.
-Use **My Drive** or open a folder if Drive initially shows Home.
-The URL context is only a UI hint; it is not an authenticated Google account or the shared M1-C graph contract.
+The shell recognizes Drive Home, My Drive, individual Drive folders and normal Docs document URLs, including numbered account paths.
+Recent, Shared with me and Shared drives overview pages, Docs home, published Docs, Sheets and Slides are not separate graph sources.
+Open a specific folder from an overview to use its graph.
+Source titles and membership come from authorized APIs; page context is a location hint, not a Google account identity.
 
 After changing code, rerun `npm run build`, click GraphNav's **Reload** button in `chrome://extensions`, and refresh open Drive/Docs tabs.
 Disable or remove GraphNav and refresh the page to remove its button completely.
@@ -129,14 +135,15 @@ See Chrome's [official unpacked-extension instructions](https://developer.chrome
 2. Choose a text PDF up to 20 MiB and 300 pages.
    Bookmarked sections or detected heading suggestions have names and page destinations already filled in.
    **All pages** provides page destinations if the outline is unsuitable.
-3. Select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
+3. Open **Sources**, select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
    This works without GPT or an API key.
-4. Select a graph node, add notes, and choose **Go to page N**.
+4. Click a source node title to reach its page or section.
+   Use its **Edit** button to add notes or inspect the destination.
    Section destinations include a visible marker; two sections on one page can have different anchors.
-   **Hide tools** gives the graph more room; **Sources & edit** brings controls back.
+   Close the tool drawer to see the whole graph; **Sources** reopens the source chooser.
 5. Close/reopen the reader or restart Chrome, then choose the paper under **Saved PDFs**.
    The original file, graph and personal edits stay in this Chrome profile.
-6. Export/import a graph backup to keep a separate map copy.
+6. Open **More** to export/import a graph backup as a separate map copy.
    JSON backups exclude PDF bytes, so keep the original file yourself.
    If bytes are missing, **Reattach original PDF** requires the exact matching file and restores existing page/section destinations.
    **Remove saved PDF** deletes only the local bytes after confirmation; it retains maps and notes.
@@ -148,11 +155,11 @@ V2 generation controls and the final demo acceptance are still open in TASK_LIST
 
 ## Combine a Doc and PDF in one map
 
-1. In the Doc graph, create or choose a map using **Open a map** above the source choices.
-2. Select the wanted Doc tabs and choose **Add selected**.
-3. Choose **Add a PDF to this map**, then open a file or choose one under **Saved PDFs**.
+1. In the Doc graph, open **More** to create a map or choose one under **Open a map**.
+2. Open **Sources**, select the wanted Doc tabs and choose **Add selected**.
+3. Under **More**, choose **Add a PDF to this map**, then open a file or choose one under **Saved PDFs**.
    The reader shows the target map before any PDF nodes are added.
-4. Select the wanted PDF sections/pages and choose **Add selected**.
+4. Open **Sources**, select the wanted PDF sections/pages and choose **Add selected**.
 5. Connect a Doc tab to a PDF section with a personal label.
    Following either destination keeps the same map beside the correct Doc tab or PDF page.
 6. Refresh the Doc source and PDF outline separately, then reopen the reader to verify the connection remains.
@@ -163,7 +170,7 @@ AI still previews and generates from one selected Doc or PDF at a time; a combin
 
 ## Preview content for AI
 
-1. In a Doc graph panel or the PDF reader, choose **Select content for AI**.
+1. In a Doc graph panel or the PDF reader, open **AI**, then choose **Select content for AI**.
 2. Choose the graph's purpose, then explicitly select document tabs or PDF pages.
    Nested tabs are separate choices.
 3. Choose **Preview selected text** and inspect the complete passages shown.

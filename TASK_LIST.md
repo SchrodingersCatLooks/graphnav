@@ -38,7 +38,7 @@ Historical passes and unverified account-specific behavior remain labeled accura
 
 | Task | Owner | Order | Work | Status | Evidence and next action |
 | --- | --- | --- | --- | --- | --- |
-| UX1-A | Rajvansh | Now | Repair contextual overlay and simplify graph interaction | DOING | User screenshots show missing Drive Home entry, stale sender URL panel-state error, unrelated selected map, crowded controls and difficult connection editing. On rajvansh-ui: reproduce Home-to-folder navigation; restore a cached current-page graph; make the canvas primary; add click-based connect/edit/open actions and Google reconnection controls. Preserve Eddy's proposal/storage work and existing personal maps. |
+| UX1-A | Rajvansh | Now | Repair contextual overlay and simplify graph interaction | REVIEW | [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc) merges Drive Home entry, cached per-source/account maps, This page recovery, graph-first drawers, direct same-tab folder/Doc navigation, two-click connections and editable labels, non-overlapping new-node placement, plus Google reconnect/disconnect. Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds. User reload/refresh and live Google feedback remain open in REVIEW_WALKTHROUGH; no repeated partner-laptop gate. Eddy's proposal schema/storage is preserved. |
 
 Each person claims one bounded task at a time and pushes the contract before the other lane integrates it.
 N1 covers the reusable chooser/contract and its Drive gate; M3 and M4 own the subsequent Docs/PDF integration gates.
@@ -103,7 +103,7 @@ These remain future provider/public-release choices, not prerequisites for the b
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | User product check-in; G3-A next on `rajvansh-ui` | X4 floating panels and X2 manual project maps merged in PR #14/#15. Current main c6d700f rebuilt with both typechecks and 34 focused checks passing. | AI draft controls still do not call the new proposal API. | Use REVIEW_WALKTHROUGH to collect usability findings, then review PROPOSAL_STORE_HANDOFF and wire G3-A without duplicating storage. |
+| Rajvansh | UX1-A review; G3-A next on `rajvansh-ui` | [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc) merges the contextual graph-first overlay and connection/account fixes. Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds. | User feedback on the updated live Google screens; AI proposal controls remain unwired. | Follow REVIEW_WALKTHROUGH, fix concrete usability regressions, then connect G3-A to PROPOSAL_STORE_HANDOFF without duplicating storage. |
 | Partner | G3-B review on `partner-data` | ddf566d proposal store and typed handoff are on main c6d700f; proposal tests pass. | Decision backup export/import and complete browser integration remain open. | Reconcile the actual repository backup methods with the version 2 schema, add round-trip checks and coordinate any contract changes with G3-A. |
 
 Eddy's latest branch report is preserved above, including his reported intermittent workspace test.
