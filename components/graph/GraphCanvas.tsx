@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyNodeChanges, type EdgeProps, type NodeProps, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
+import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyNodeChanges, type EdgeProps, type NodeProps, type ReactFlowInstance, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { directedMembers, effectiveConnection, effectiveLabel, LIMITS, type ConnectionValues, type GraphSnapshot, type ItemKey } from '../../lib/graph/types';
 import { projectGraph } from '../../lib/graph/view';
@@ -114,11 +114,13 @@ type Props = {
   onConnect: (connection: Connection) => void;
   /** Double-click on empty canvas creates a node exactly where the user pointed. */
   onCreateAt?: (position: { x: number; y: number }) => void;
+  /** Dropping a connection on empty canvas creates the node it points at. */
+  onCreateConnectedAt?: (fromNodeId: string, position: { x: number; y: number }) => void;
   onRename?: (itemId: string, label: string) => void;
   onPosition: (selection: Selection, point: Geometry) => void;
   onView: (view: Viewport) => void;
 };
-export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onCreateAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
+export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onCreateAt, onCreateConnectedAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
   const resizing = useRef(false);
   const { initialNodes, edges, total, shown } = useMemo(() => {
@@ -185,12 +187,24 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       if (node) onPosition({ itemType: node.data.itemType, itemId: node.data.itemId }, change.position);
     }
   }
+  const flowRef = useRef<ReactFlowInstance<FlowNode> | null>(null);
   return <div className="canvas" aria-label="Graph canvas">
     <ReactFlow<FlowNode>
+      onInit={(instance) => { flowRef.current = instance; }}
       fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes}
       onNodeClick={(_, node) => { if (node.data.itemType === 'relationship') onSelect({ itemType: 'relationship', itemId: node.data.itemId }); else if (connectingFrom) onChooseConnection?.(node.id); }}
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
       onConnect={onConnect} connectionMode={ConnectionMode.Loose} connectOnClick connectionRadius={40} isValidConnection={(connection) => connection.source !== connection.target}
+      onConnectEnd={(event, state) => {
+        // Released over empty canvas rather than a node: make the node it was
+        // reaching for. Dragging out a new connected idea is the quickest way
+        // to build a graph, and is standard in Miro and Whimsical.
+        if (!onCreateConnectedAt || state.toNode || !state.fromNode || !editable || busy) return;
+        const point = 'changedTouches' in event ? event.changedTouches[0] : event as MouseEvent;
+        const flow = flowRef.current;
+        if (!point || !flow) return;
+        onCreateConnectedAt(state.fromNode.id, flow.screenToFlowPosition({ x: point.clientX, y: point.clientY }));
+      }}
       nodesDraggable={editable && !busy && !focusId} nodesConnectable={editable && !busy}
       defaultViewport={snapshot.graph.view} minZoom={0.1} maxZoom={4}
       fitView={fit || (snapshot.graph.createdVia === 'import' && !snapshot.layoutItems.some((item) => item.pinned) && snapshot.graph.view.zoom === 1 && snapshot.graph.view.x === 0 && snapshot.graph.view.y === 0)}

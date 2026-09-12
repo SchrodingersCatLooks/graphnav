@@ -238,6 +238,7 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
         {editing && <button disabled={busy || dirty || visibleNodes.length < 2} aria-pressed={connecting} onClick={() => { showTool(null); setConnecting(!connecting); setConnectionStart(null); }}>Connect</button>}
         <button hidden={!snapshot} className="edit-graph-button" disabled={busy || dirty || !snapshot} aria-pressed={editing} onClick={() => { showTool(null); setEditing(!editing); setSelection(null); }}>{editing ? 'Done editing' : 'Edit graph'}</button>
         <button disabled={busy || dirty} aria-pressed={tool === 'new'} onClick={startNewGraph}>New Graph</button>
+        {(aiSource || context?.kind === 'drive') && <button hidden={!snapshot} disabled={busy || dirty} aria-pressed={tool === 'ai'} onClick={() => showTool(tool === 'ai' ? null : 'ai')}>AI</button>}
         <button disabled={dirty} aria-pressed={tool === 'maps'} onClick={() => showTool(tool === 'maps' ? null : 'maps')}>More</button>
       </nav> : <><a className="source-link" href="reader.html" target="_blank" rel="noreferrer">Open a PDF ↗</a><button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button><button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button></>}
       <span className="save-state" role="status">{busy ? 'Saving…' : embedded && !snapshot && !error ? 'Choose how to start' : dirty ? 'Unsaved edits' : error ? 'Needs attention' : 'Saved locally'}</span>
@@ -336,6 +337,18 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
             // Created untitled and immediately selected, so the next thing the
             // user does is name it rather than fill in a form beforehand.
             await repository.addNode(data.graph.id, data.graph.contentRevision, { id, label: 'New idea', position });
+            setSelection({ itemType: 'node', itemId: id });
+          }); }}
+          onCreateConnectedAt={(fromNodeId, position) => { void perform(async (data) => {
+            if (!data) return;
+            const id = crypto.randomUUID();
+            await repository.addNode(data.graph.id, data.graph.contentRevision, { id, label: 'New idea', position });
+            // Re-read: adding the node advanced the revision.
+            const after = await repository.readGraph(data.graph.id);
+            await repository.connect(after.graph.id, after.graph.contentRevision, {
+              id: crypto.randomUUID(), label: 'relates to',
+              members: [{ nodeId: fromNodeId, role: 'from' }, { nodeId: id, role: 'to' }],
+            });
             setSelection({ itemType: 'node', itemId: id });
           }); }}
           onRename={(itemId, label) => { void perform(async (data) => {

@@ -15,7 +15,7 @@ import { resolve, join } from 'node:path';
 const extensionId = 'pidejkbkldalibjaehjfpjkcpjpcenpk';
 const workspaceUrl = `chrome-extension://${extensionId}/workspace.html`;
 
-test('double-click creates a node where the pointer is, and double-click renames it in place', async () => {
+test('direct canvas gestures: double-click creates, double-click renames, and dragging a connection out creates a connected node', async () => {
   test.setTimeout(90_000);
   const profile = await mkdtemp(join(tmpdir(), 'graphnav-canvas-'));
   const extension = resolve('.output/chrome-mv3');
@@ -74,6 +74,21 @@ test('double-click creates a node where the pointer is, and double-click renames
     await page.locator('.react-flow__node').first().dblclick();
     await page.keyboard.press('Escape');
     await expect(page.locator('.react-flow__node')).toHaveCount(1);
+
+    // Dragging a connection onto empty canvas creates the node it reached for,
+    // already connected, rather than silently doing nothing.
+    const source = page.locator('.react-flow__node').first();
+    const handle = source.locator('.react-flow__handle').last();
+    const handleBox = (await handle.boundingBox())!;
+    await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(handleBox.x + 320, handleBox.y + 200, { steps: 12 });
+    await page.mouse.up();
+
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+    await expect(page.locator('.react-flow__edge')).toHaveCount(1);
+    // The original keeps its name; the new one is the untitled idea.
+    await expect(page.locator('.react-flow__node')).toContainText(['Junction hypothesis', 'New idea']);
   } finally {
     await context.close();
     await rm(profile, { recursive: true, force: true });
