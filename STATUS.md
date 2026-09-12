@@ -114,6 +114,11 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
+Rajvansh claims UX3-A for the user's supplied compact launcher mockups.
+The initial menu has Manage Google connection, New Graph and Use Existing Graph.
+New Graph opens a separate Manual/Automated choice screen with Back and no Google controls.
+This new request supersedes UX2's immediate full-size saved-map opening; normal source navigation and saved placement must remain intact.
+
 UX2-A is merged in [PR #17](https://github.com/SchrodingersCatLooks/graphnav/pull/17) and remains REVIEW for user feedback on the actual Google screens.
 Reload GraphNav on chrome://extensions and refresh open Drive/Docs tabs before following REVIEW_WALKTHROUGH.
 The previously reported stale-content-script problem makes both steps necessary.

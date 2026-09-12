@@ -42,6 +42,8 @@ Historical passes and unverified account-specific behavior remain labeled accura
 
 | UX2-A | Rajvansh | Now | Open saved maps, or choose manual/AI under New graph | REVIEW | [PR #17](https://github.com/SchrodingersCatLooks/graphnav/pull/17) (381dc82, runtime 685fdb2) merges saved-map navigation, Edit graph/New graph, Manually/With AI sub-options, no automatic graph creation on empty sources, separate named maps, Drive Doc text selection, and Google account scope before import. Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 138 tests (1.3 minutes) passed. Installed opening/creation screenshots were inspected; live Google reload/refresh feedback remains open in REVIEW_WALKTHROUGH. G3 review persistence and Eddy's backup work remain separate. |
 
+| UX3-A | Rajvansh | Now | Compact launcher with step navigation | DOING | On rajvansh-ui: replace the initial large editor with a compact menu containing Manage Google connection, New Graph and Use Existing Graph. New Graph opens Manual/Automated choices with Back at top left and no Google controls. Keep creation and saved-map choice compact; expand only when opening/creating a graph, preserve stored maps and graph placement, and test navigation, account controls, focus and zoom. Existing adapters, persistence and Eddy's proposal contracts remain in their lanes. |
+
 Each person claims one bounded task at a time and pushes the contract before the other lane integrates it.
 N1 covers the reusable chooser/contract and its Drive gate; M3 and M4 own the subsequent Docs/PDF integration gates.
 Task IDs are preserved for existing handoffs even where the numbered order changes.
