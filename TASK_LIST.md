@@ -1,10 +1,12 @@
 # Shared task tracker
 
-This is the only task-status list.
+This is the only task-status list, and its authoritative copy is on `main`.
+Publish claims, progress, blockers, and handoffs directly to main using [AGENTS.md](./AGENTS.md#shared-documentation-lives-on-main); preserve other owners' updates.
 [BUILD_PLAN.md](./BUILD_PLAN.md#ordered-work-and-paired-ownership) defines the 15-step implementation order; each Order below points to its exact instructions, tools, dependencies, and exit gate.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) supplies use cases and contracts; [STATUS.md](./STATUS.md) records merged progress.
 Statuses are **TODO**, **DOING**, **BLOCKED**, **REVIEW**, and **DONE**.
-DONE means merged and verified; a scheduled step or published specification is not completion evidence.
+DONE means the task result is verified and published on main; application tasks also require their runtime merge and acceptance.
+A scheduled step or published specification is not evidence that an application feature is complete.
 A tasks belong to Rajvansh on `rajvansh-ui`; B tasks belong to Eddy on `partner-data`.
 
 The target remains 6 AM code freeze and 4 PM submission on September 12, local Eastern time.
@@ -25,7 +27,7 @@ Source suggestions, autofill, selected-item creation, and editable baselines wit
 | DOC-5 | Rajvansh | Audit all use cases and specify tools, behavior, data, owners, and acceptance | DONE | FEATURE_SPEC and supporting contracts published to main through PR #7; 16 use cases, exact tools/data/UI contracts, and acceptance references verified |
 | DOC-6 | Rajvansh | Order the implementation and make source-assisted manual creation mandatory | DONE | Ordered plan, N1 tasks, and mandatory source-assisted manual/baseline behavior published to main through PR #7; task IDs/owners/dependencies/links validated |
 | DOC-7 | Rajvansh | Publish shared planning documents to main | DONE | PR #7 merged as 19e23fd; nine Markdown files published; main runtime/config/dependencies/tests unchanged; PR #6 remains open for runtime review |
-| DOC-8 | Rajvansh | Keep shared planning and tracking updates directly on main | DOING | User requested a standing workflow rule; update shared instructions on a clean main-based checkout, preserve runtime and teammate evidence |
+| DOC-8 | Rajvansh | Keep shared planning and tracking updates directly on main | DONE | Standing rule recorded in AGENTS with tracker/plan/README/STATUS pointers; normal direct-main documentation push, conflict reconciliation, and separate runtime branches; documentation validation passed |
 | M1-A | Rajvansh | Scaffold extension and Graph panel | DONE | PR #3 merged as 92a76ce; both-laptop acceptance and original six browser tests passed; historical record below |
 
 ## Implementation in execution order

@@ -321,9 +321,11 @@ Eddy owns Google reads/actions, candidate extraction, background messages/valida
 He owns a separate relay package; coordinate root lockfile edits instead of both changing it independently.
 Do not create another scaffold, dispatcher, graph schema, or editor for each source.
 
-Before editing, each person fetches, preserves local work, claims the exact task row, and agrees any shared type changes.
-At each gate, commit/push a reviewable slice with actual checks and a short handoff: task ID, commit/PR, supported operations, limits, remaining laptop actions, and next owner task.
-Review and merge normally into main, then bring main into both branches; no force-push or reset.
+Before editing, each person fetches, preserves local work, publishes the exact task claim directly to main, and agrees any shared type changes.
+At each gate, push the application slice to the owner's branch and publish its evidence/handoff directly to the shared documents on main.
+Include task ID, commit/PR, supported operations, limits, remaining laptop actions, and next owner task.
+Use a clean checkout of current main for documentation-only commits and normal fast-forward pushes, preserving concurrent teammate updates as described in [AGENTS.md](./AGENTS.md#shared-documentation-lives-on-main).
+Application changes continue through review and merge; bring current main into the working branches without force-push or reset.
 TASK_LIST is the status record, not this ordered plan.
 GitHub shares code and documents, not private graphs, PDFs, Google content, or credentials.
 Use README's actual install/reload commands; the model relay instructions must be added when implemented.
