@@ -45,7 +45,7 @@ export type SourceInput = z.infer<typeof sourceInputSchema>;
 export const sourceSchema = sourceInputSchema.safeExtend({ id, sourceKey: z.string().max(1200), availability: z.enum(['available', 'unavailable']), ...stamps });
 export type Source = z.infer<typeof sourceSchema>;
 export const nodeSchema = z.object({
-  id, graphId: id, kind: z.enum(['idea', 'note', 'source']), origin: z.enum(['manual', 'imported']),
+  id, graphId: id, kind: z.enum(['idea', 'note', 'source']), origin: z.enum(['manual', 'imported', 'generated']),
   baseLabel: label, body: z.string().max(20_000), sourceId: id.optional(), locator: locatorSchema.optional(),
   importKey: z.string().max(1500).optional(), evidence: z.array(evidenceSchema).max(32),
   ...stamps,
@@ -59,10 +59,32 @@ export const membersSchema = z.array(z.object({ nodeId: id, role: z.enum(['from'
 export type Members = z.infer<typeof membersSchema>;
 export const relationshipSchema = z.object({
   id, graphId: id, members: membersSchema, memberNodeIds: z.array(id).max(LIMITS.members),
-  kind: z.enum(['contains', 'reference', 'personal']), origin: z.enum(['manual', 'imported']), baseLabel: label,
+  kind: z.enum(['contains', 'reference', 'personal']), origin: z.enum(['manual', 'imported', 'generated']), baseLabel: label,
   importKey: z.string().max(1500).optional(), scopeKey: id.optional(), evidence: z.array(evidenceSchema).max(32), ...stamps,
 }).strict();
 export type Relationship = z.infer<typeof relationshipSchema>;
+/**
+ * A decision the user made about one proposal.
+ *
+ * Keyed by proposalKey, which is derived from the proposal's content rather
+ * than its temporary draft ID, so regenerating recognises the same suggestion
+ * and never re-offers something already accepted or rejected.
+ */
+export const proposalDecisionSchema = z.object({
+  graphId: id,
+  proposalKey: id,
+  decision: z.enum(['accepted', 'rejected']),
+  /** Present when accepted: the record the proposal became. */
+  itemType: z.enum(['node', 'relationship']).optional(),
+  itemId: id.optional(),
+  /** The label the user kept, which may differ from what was proposed. */
+  acceptedLabel: label.optional(),
+  /** Ties the decision to the content it was made about. */
+  inputHash: z.string().regex(/^[a-f0-9]{64}$/),
+  ...stamps,
+}).strict();
+export type ProposalDecision = z.infer<typeof proposalDecisionSchema>;
+
 export const itemKeySchema = z.object({ graphId: id, itemType: z.enum(['node', 'relationship']), itemId: id }).strict();
 export type ItemKey = z.infer<typeof itemKeySchema>;
 export const editValuesSchema = z.object({ displayLabel: label.optional(), notes: z.string().max(20_000).optional(), hidden: z.boolean().optional() }).strict();
@@ -70,13 +92,17 @@ export const itemEditSchema = itemKeySchema.extend({ ...editValuesSchema.shape, 
 export type ItemEdit = z.infer<typeof itemEditSchema>;
 export const layoutSchema = itemKeySchema.extend({ ...pointSchema.shape, pinned: z.boolean(), ...stamps });
 export type LayoutItem = z.infer<typeof layoutSchema>;
-export type GraphSnapshot = { graph: Graph; sources: Source[]; nodes: GraphNode[]; relationships: Relationship[]; itemEdits: ItemEdit[]; layoutItems: LayoutItem[] };
+export type GraphSnapshot = { graph: Graph; sources: Source[]; nodes: GraphNode[]; relationships: Relationship[]; itemEdits: ItemEdit[]; layoutItems: LayoutItem[]; decisions?: ProposalDecision[] };
 export const snapshotSchema = z.object({
   graph: graphSchema, sources: z.array(sourceSchema).max(LIMITS.nodes), nodes: z.array(nodeSchema).max(LIMITS.nodes),
   relationships: z.array(relationshipSchema).max(LIMITS.relationships),
   itemEdits: z.array(itemEditSchema).max(LIMITS.nodes + LIMITS.relationships), layoutItems: z.array(layoutSchema).max(LIMITS.nodes + LIMITS.relationships),
+  // Optional so a version 1 backup, written before decisions existed, still loads.
+  decisions: z.array(proposalDecisionSchema).max(LIMITS.nodes + LIMITS.relationships).optional(),
 }).strict();
-export const backupSchema = z.object({ format: z.literal('graphnav'), version: z.literal(1), snapshot: snapshotSchema }).strict();
+/** Version 2 adds decisions. Version 1 backups still import: old files must keep working. */
+export const backupSchema = z.object({ format: z.literal('graphnav'), version: z.union([z.literal(1), z.literal(2)]), snapshot: snapshotSchema }).strict();
+export const BACKUP_VERSION = 2 as const;
 export type SourceCache = { id: string; sourceId: string; sourceVersion: string; chunkKey: string; payload: string; byteSize: number; lastAccessedAt: number };
 export type StoredBlob = { id: string; name?: string; blob: Blob; mimeType: string; byteSize: number; createdAt: number };
 export const newNodeSchema = z.object({ id, label, body: z.string().max(20_000).default(''), locator: locatorSchema.optional(), position: pointSchema });

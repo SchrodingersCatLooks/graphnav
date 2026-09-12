@@ -9,6 +9,7 @@
 import { browser } from 'wxt/browser';
 import type { Locator } from './graph/types';
 import type { ImportedItem } from './storage/repository';
+import type { GraphDraft, SourcePassage } from './generation/types';
 import type { GenerationRequest } from './generation/ui-service';
 import type { PanelPlacement } from './panel-placement';
 
@@ -61,7 +62,15 @@ export type Request =
   | { type: 'READ_GRAPH'; graphId: string }
   | { type: 'OPEN_PDF_READER'; graphId?: string }
   | { type: 'NAVIGATE'; locator: Locator; graphId?: string }
-  | { type: 'CHECK_TARGETS'; graphId: string };
+  | { type: 'CHECK_TARGETS'; graphId: string }
+  /** G3-B review outcomes. */
+  | { type: 'RECALL_DECISIONS'; graphId: string; draft: GraphDraft }
+  | { type: 'APPLY_PROPOSALS'; graphId: string; revision: number; draft: GraphDraft; inputHash: string;
+      passages: SourcePassage[]; sourceTitle: string;
+      acceptNodes: Array<{ tempId: string; label?: string }>;
+      acceptRelationships: Array<{ tempId: string; label?: string }>;
+      rejectNodeTempIds: string[]; rejectRelationshipTempIds: string[] }
+  | { type: 'LIST_DECISIONS'; graphId: string };
 
 export type Response<T = unknown> =
   | { ok: true; data: T }

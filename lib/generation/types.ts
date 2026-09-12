@@ -94,6 +94,10 @@ export const proposedRelationshipSchema = z.object({
   evidencePassageIds: z.array(id).min(1).max(8),
 }).strict();
 
+export type ProposedRef = z.infer<typeof proposedRefSchema>;
+export type ProposedNode = z.infer<typeof proposedNodeSchema>;
+export type ProposedRelationship = z.infer<typeof proposedRelationshipSchema>;
+
 export const graphDraftSchema = z.object({
   draftVersion: z.literal(1),
   /** Ties the draft to the exact input; a changed source invalidates it. */

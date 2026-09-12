@@ -9,7 +9,7 @@
 
 import { z } from 'zod';
 import { locatorSchema } from './graph/types';
-import { generationInputSchema } from './generation/types';
+import { generationInputSchema, graphDraftSchema, sourcePassageSchema } from './generation/types';
 import { pairingCodeSchema } from './generation/relay';
 import { panelPlacementSchema } from './panel-placement';
 
@@ -40,6 +40,25 @@ export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('OPEN_PDF_READER'), graphId: id.optional() }).strict(),
   z.object({ type: z.literal('NAVIGATE'), locator: locatorSchema, graphId: id.optional() }).strict(),
   z.object({ type: z.literal('CHECK_TARGETS'), graphId: id }).strict(),
+  // G3-B: review outcomes. The draft and its passages travel with the request
+  // so acceptance is checked against the exact content it was based on.
+  z.object({
+    type: z.literal('RECALL_DECISIONS'), graphId: id, draft: graphDraftSchema,
+  }).strict(),
+  z.object({
+    type: z.literal('APPLY_PROPOSALS'),
+    graphId: id,
+    revision: z.number().int().nonnegative(),
+    draft: graphDraftSchema,
+    inputHash: z.string().regex(/^[a-f0-9]{64}$/),
+    passages: z.array(sourcePassageSchema).min(1).max(200),
+    sourceTitle: z.string().trim().min(1).max(200),
+    acceptNodes: z.array(z.object({ tempId: id, label: z.string().trim().min(1).max(200).optional() }).strict()).max(40),
+    acceptRelationships: z.array(z.object({ tempId: id, label: z.string().trim().min(1).max(200).optional() }).strict()).max(80),
+    rejectNodeTempIds: z.array(id).max(40),
+    rejectRelationshipTempIds: z.array(id).max(80),
+  }).strict(),
+  z.object({ type: z.literal('LIST_DECISIONS'), graphId: id }).strict(),
 ]);
 
 /** Content scripts are declared for these origins only. */

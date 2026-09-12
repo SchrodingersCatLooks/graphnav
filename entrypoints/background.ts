@@ -8,6 +8,7 @@ import { getDocumentTabs } from '../lib/google/docs';
 import { extractSelectedTabs } from '../lib/google/docs-content';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository, storageError } from '../lib/storage/repository';
+import { applyProposals, listDecisions, recallDecisions } from '../lib/storage/proposals';
 import { pdfReaderPath } from '../lib/pdf/navigation';
 import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/requests';
@@ -156,6 +157,22 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':
       return { ok: true, data: await repository.readGraph(request.graphId) };
+    case 'RECALL_DECISIONS': {
+      // Lets the reviewer mark or hide repeats instead of presenting a
+      // regenerated draft as if nothing had been decided before.
+      const prior = await recallDecisions(repository.db, request.graphId, request.draft);
+      return {
+        ok: true,
+        data: {
+          nodes: Object.fromEntries(prior.nodes),
+          relationships: Object.fromEntries(prior.relationships),
+        },
+      };
+    }
+    case 'APPLY_PROPOSALS':
+      return { ok: true, data: await applyProposals(repository.db, request) };
+    case 'LIST_DECISIONS':
+      return { ok: true, data: await listDecisions(repository.db, request.graphId) };
     case 'CHECK_TARGETS': {
       const snapshot = await repository.readGraph(request.graphId);
       if (snapshot.graph.accountScope && snapshot.graph.accountScope !== await getAccountKey()) return { ok: false, error: 'Connect the Google account that owns this map before checking its targets.' };
