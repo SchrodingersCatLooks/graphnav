@@ -113,6 +113,7 @@ test('account mismatch and missing imported parents roll back the entire refresh
   await repo.refreshScope(graph.id, 0, refresh());
   await expect(repo.refreshScope(graph.id, 1, { ...refresh(), accountKey: 'other-account' })).rejects.toThrow('mixes accounts');
   await expect(repo.refreshScope(graph.id, 1, refresh([{ ...doc, parentKey: 'missing' }]))).rejects.toThrow('parent');
+  await expect(repo.refreshScope(graph.id, 1, { ...refresh(), accountKey: 'local', items: [{ ...folder, source: { ...folder.source, accountKey: 'local' } }] })).rejects.toThrow('verified account key');
   expect((await repo.readGraph(graph.id)).graph.contentRevision).toBe(1);
 });
 
@@ -138,8 +139,13 @@ test('backup imports a separate graph with remapped IDs and preserves source des
   const copy = await repo.readGraph(copyId);
   expect(copy.graph.id).not.toBe(graph.id);
   expect(copy.nodes.map((n) => n.id)).not.toEqual(original.nodes.map((n) => n.id));
-  expect(copy.nodes.map((n) => n.locator)).toEqual(original.nodes.map((n) => n.locator));
-  expect(copy.sources.map((s) => s.id)).toEqual(original.sources.map((s) => s.id));
+  // Copies get new UUIDs, so IndexedDB's primary-key order is not stable.
+  for (const node of original.nodes) {
+    const copied = copy.nodes.find((n) => n.importKey === node.importKey)!;
+    expect(copied.id).not.toBe(node.id);
+    expect(copied.locator).toEqual(node.locator);
+  }
+  expect(copy.sources.map((s) => s.id).sort()).toEqual(original.sources.map((s) => s.id).sort());
   expect(copy.relationships[0]!.memberNodeIds.every((id) => copy.nodes.some((n) => n.id === id))).toBe(true);
   await expect(repo.exportGraph(copyId)).resolves.toContain('graphnav');
   await repo.refreshScope(copyId, 0, refresh());

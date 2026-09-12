@@ -84,24 +84,26 @@ If auth has no successful read by hour 2, stop spending both people's time on it
 | Background service worker + Chrome Identity | Handle Google authorization and API requests | Partner |
 | Drive, Docs, PDF adapters | Translate each source into the same nodes and edges | Partner |
 | PDF.js in the extension reader | Render PDF pages and extract source destinations | You render; partner extracts |
-| Extension local storage + IndexedDB | Save graph metadata and PDF bytes | Partner; you show save status |
+| Dexie + extension-owned IndexedDB | Save graph records and layout; PDF bytes later | You supply the initial repository; partner integrates source adapters |
 
 Agree on this small data contract before writing adapters:
 
-The M1-C [storage proposal](./STORAGE_DESIGN.md) specifies records, relationships with two or more members, stable source locators, saved layouts, and AI draft review.
-It proposes extension-owned IndexedDB for graph records and PDFs, with chrome.storage.local reserved for small preferences.
-This refines the earlier metadata-storage split; Eddy's agreement and shared types/storage implementation remain outstanding.
+The M1-C [storage design](./STORAGE_DESIGN.md) specifies records, relationships with two or more members, stable source locators, saved layouts, and later AI draft review.
+Use extension-owned IndexedDB for graph records and future PDF bytes, with chrome.storage.local reserved for small preferences.
+The user approved local IndexedDB/Dexie and no AWS for V1; Rajvansh has implemented the initial shared types and repository.
+Eddy's integration review and real Drive adapter remain outstanding; see the [M1-C response](./M1C_HANDOFF.md).
 
-- **Graph:** stable graph ID, origin (`manual` or `generated`), optional source kind/source ID for a manual map, account key where relevant, refresh time when applicable, nodes, and edges.
-  A source-generated map must retain its source identity.
+- **Graph:** independent stable graph ID, creation mode (`manual` or `import`), optional verified account scope, source bindings, revision, and saved view.
+  An imported map retains provider identities in its source records and locators.
   Personal maps must be creatable and reopenable before a source is attached.
 - **Node:** stable ID, title, type (`source`, `idea`, or `note` plus source subtype), and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page.
   Keep source titles separate from personal display labels; ideas/notes may have no external target.
-- **Edge:** stable ID, endpoints, relationship type/label, explanation, and origin (`imported`, `manual`, `ai-suggested`, `ai-accepted`).
+- **Relationship:** stable ID, members with `from`/`to` or `peer` roles, relationship type/label, and current origin (`imported` or `manual`).
   Distinguish source containment and explicit references from personal interpretations.
-  V2 may attach supporting source anchors and a draft ID.
+  V2 will add proposal decisions and provenance; the current runtime does not accept AI-origin records.
   Preserve accepted user edits independently of later drafts.
-- **Personal state:** positions, collapsed nodes, personal concept/note nodes, notes, and custom edges, stored separately from generated source data.
+- **Personal state:** positions, view, personal concept/note nodes, notes, and custom relationships, kept separate from imported source fields.
+  Collapse state and panel resizing remain later UI work.
   Refresh applies to source-generated data and preserves the person's additions.
 - **Adapter:** `load`, `refresh`, and `navigate`, with optional supported source actions.
   No token in graph data.
@@ -110,7 +112,12 @@ This refines the earlier metadata-storage split; Eddy's agreement and shared typ
 - **V2 generation boundary:** a separate module accepts selected source excerpts and returns draft nodes/edges plus evidence references.
   Keep the model call out of the graph UI; do not build this module until V1's manual cycle works.
 
-Suggested ownership: you own `components/graph/` and visible entrypoints; partner owns `lib/adapters/`, `lib/storage/`, and the background worker. Agree together on `lib/graph/types.ts`. Only one person edits shared types, package files, or WXT configuration at a time; hand off changes explicitly.
+Current ownership after the user's storage implementation request: Rajvansh owns the first `lib/graph/` and `lib/storage/` slice, `components/graph/`, package changes, and visible entrypoints.
+Eddy owns `lib/adapters/`, Google reads/authentication, and the background worker.
+M2-B still includes the Drive adapter, real navigation, and routing source operations through the repository; the repository foundation is now supplied by Rajvansh.
+Rajvansh wires the visible panel to Eddy's AUTH_STATUS and CONNECT messages.
+Review the concrete [M1-C handoff](./M1C_HANDOFF.md) before further shared-type changes.
+Only one person edits shared types, package files, or WXT configuration at a time; hand off changes explicitly.
 
 ## Steps 4 to 6 Reuse the graph with real sources
 

@@ -33,6 +33,7 @@ export const sourceInputSchema = z.object({
   canonicalUrl: webUrlSchema.optional(), version: id.optional(),
 }).strict().superRefine((s, ctx) => {
   if (s.provider === 'local-pdf' && (s.accountKey !== 'local' || s.kind !== 'pdf' || !/^[a-f0-9]{64}$/.test(s.resourceId))) ctx.addIssue({ code: 'custom', message: 'A local PDF needs its byte fingerprint and local scope.' });
+  if (s.provider !== 'local-pdf' && s.accountKey === 'local') ctx.addIssue({ code: 'custom', message: 'A Google source needs a verified account key, not the reserved local scope.' });
   if (s.provider === 'google-docs' && s.kind !== 'document') ctx.addIssue({ code: 'custom', message: 'A Docs source must be a document.' });
 });
 export type SourceInput = z.infer<typeof sourceInputSchema>;

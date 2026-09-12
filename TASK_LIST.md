@@ -13,7 +13,7 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## V1 manual build queue
 
-M1-A is merged and verified through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3); M1-B is DOING on `partner-data`.
+M1-A is merged and verified through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3); Eddy's M1-B checkpoint is in REVIEW.
 Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
 
 | ID | When | Owner | Task | Status | Done when |
@@ -21,8 +21,8 @@ Hours describe the original proposed schedule, not actual elapsed time or eviden
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | REVIEW | Demo folder and tabbed Doc created, shared with the second test account, and recorded in GOOGLE_SETUP.md. Rajvansh to confirm access from his laptop. |
 | M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DONE | PR #3 merged as `92a76ce`; both-laptop acceptance confirmed. Type-check, production build, and six synthetic browser tests passed. Eddy corrected the stale-script failure report and confirms the complete reloaded-browser checklist, including zoom. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | REVIEW | Demo folder and Doc both read through the installed extension on `35368c4`. Awaiting review and merge. |
-| M1-C | Before M2 | Both | Agree source/idea nodes, labeled relationships, and storage/edit contracts | DOING | User approved IndexedDB/Dexie and asked Rajvansh to implement the first storage slice. Shared types and repository are now claimed on rajvansh-ui; Eddy retains Google adapters and authentication. Integration review remains required. |
-| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | DOING | Add idea, connect/label/edit/remove personal items, and open real source |
+| M1-C | Before M2 | Both | Agree source/idea nodes, labeled relationships, and storage/edit contracts | REVIEW | User approved IndexedDB/Dexie; types, validation, transactions, and backup/refresh contracts are implemented in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6). Eddy must review the exact counterproposal in M1C_HANDOFF.md before adapter integration. Not yet merged. |
+| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | DOING | Personal workspace create/connect/edit/remove, HTTPS destinations, layout/view, reopen, and backups are implemented and tested in PR #6. Installed second-laptop acceptance and the live Drive graph overlay remain open. |
 | M2-B | 2–4h | Partner | Drive adapter, edit commands, navigation, initial save | TODO | Real sources plus manual nodes/edges save and reopen with stable IDs |
 | M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
 | M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
@@ -53,7 +53,7 @@ Planned next stage. All tasks are TODO, not evidence of work in progress. Start 
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-C + M2-A storage/editor slice / `rajvansh-ui` | User approved local IndexedDB/Dexie, no AWS. Integrated Eddy's stable-ID commit `82e846c` unchanged. Claiming `lib/graph/`, `lib/storage/`, package files, and a personal-map entrypoint in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6). | Ten storage tests pass for reopening, rollback/quota failure, conflicts, refresh preservation, account separation, and backups. Installed-workspace acceptance is in progress. Integrated Eddy's M1-B review checkpoint a83d545 unchanged for auth UI wiring; Rajvansh's live Google reads are still unverified. | Implement transactional storage and manual create/connect/move/reopen/export/import, run checks, then hand the repository API to Eddy for Google integration. |
+| Rajvansh | M1-C review + M2-A storage/editor slice / `rajvansh-ui` | [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6): Dexie repository, personal workspace, backups, and visible Google auth state implemented. Clean npm ci, type-check, production build, and all 22 tests pass on Node 22.23.2 / npm 10.9.9: 10 storage, 7 shell/auth, 5 workspace. Browser restart, pointer/keyboard layout, saved zoom, group-junction rendering, safe link opening, conflicts, narrow layout, and storage-origin separation verified with fixtures. | Exact M1-C contract needs Eddy's review. Rajvansh's real OAuth/demo reads and both-laptop manual-workspace acceptance remain pending. Real Drive graph adapter, PDF reader, and AI are not implemented by this slice. | Follow M1C_HANDOFF.md: Eddy reviews and reuses the repository for M2-B Drive/account/worker integration; Rajvansh performs the own-account Chrome check and then connects the graph to the Drive panel. |
 | Partner | M1-B / `partner-data` | M1-B done-when met. Real `LIST_FOLDER` and `GET_DOC_TABS` reads verified in the installed extension, Chrome 152.0.7977.84 / macOS 26.5.2, extension ID confirmed as `pidejkbkldalibjaehjfpjkcpjpcenpk`. Folder returned ten subfolders with `webViewLink` targets and `truncated: false`; Doc returned four tabs with the sub-tab carrying `parentId`. Node 22.23.2 type-check and production build pass. Demo source IDs recorded in [GOOGLE_SETUP.md](./GOOGLE_SETUP.md). Posted an M1-C contract proposal in [M1C_PROPOSAL.md](./M1C_PROPOSAL.md) for joint review; `lib/graph/types.ts` intentionally not created until both owners agree. | Not yet merged, so M1-B is REVIEW rather than DONE. Rajvansh has not yet confirmed the extension ID or demo-source access from his laptop. `lib/messages.ts` is provisional and is not the M1-C contract. | Open a PR for `partner-data`, get the second-laptop check, then agree M1-C node/edge types with Rajvansh before M2. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
@@ -63,7 +63,7 @@ Each person updates only their task rows and handoff row, then commits/pushes th
 Eddy explicitly confirms the full README checklist passes on macOS 26.5.2 / Chrome 152.0.7977.84 after correctly reloading the extension and Google tabs.
 He built in a detached worktree with Node 22.23.2 / npm 10.9.8; `npm ci`, `npm run typecheck`, and `npm run build` passed.
 The accepted runtime is identical at `c313a1d` and `fb2695d`.
-The current local production content-script bundle matches his SHA-256:
+The accepted M1-A production content-script bundle matched his SHA-256:
 
 ```text
 5d17d121164ae70f2041064e20bce5a4683fc4ba8e9debea2fb39b9564455c51
@@ -86,8 +86,10 @@ Eddy owns the public manifest key, Identity permission, OAuth client/scopes, req
 The exact public block remains in his GOOGLE_SETUP.md at `9f68af6`.
 After adding it, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Rajvansh retains the shell component and CSS; dependency changes remain coordinated.
-M1-C is DOING: the user approved local storage and asked Rajvansh to implement the first slice; Eddy retains Google integration. Shared implementation review remains outstanding.
+M1-C is REVIEW: the user approved local storage and asked Rajvansh to implement the first slice; Eddy retains Google integration.
+The exact contract and manifest/UI handoff are in [M1C_HANDOFF.md](./M1C_HANDOFF.md).
+Eddy's `a83d545` runtime is integrated into `rajvansh-ui` as `b98100f`; his manifest, messages, Google helpers, and background entrypoint were preserved unchanged.
 
-Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, and a Drive folder with ten subfolders including one nested level.
-M0 is DOING; source preparation is underway, but the links, required demo sources, and both-account access are not yet confirmed.
-M1-B remains DOING until real API reads pass or a concrete auth blocker is recorded.
+Eddy reports the demo folder and four-tab Doc reads passing and has recorded their IDs in GOOGLE_SETUP.md.
+M0 and M1-B remain REVIEW pending Rajvansh's account/browser check and the required merge.
+The current automated auth checks use synthetic worker responses and do not establish Rajvansh's Google authorization.
