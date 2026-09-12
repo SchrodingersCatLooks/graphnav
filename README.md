@@ -2,24 +2,28 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**On `rajvansh-ui`:** My maps now creates and saves personal graphs in an extension-owned IndexedDB database through Dexie.
-You can add nodes and notes, make labeled connections, attach HTTPS destinations, arrange nodes, restore the view, and export/import backups.
-The Drive/Docs panel uses Eddy's real auth messages for Connect Google and connection status.
-His M1-B checkpoint is integrated for review; his laptop's real reads pass, and Rajvansh's account acceptance is still pending.
-The editor is currently an extension-owned workspace opened from the toolbar popup; live source graphs inside the Drive/Docs panel, PDF reading, and AI generation remain later integration work.
-
-**Merged main:** M1-A is accepted through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3).
-The newer storage/editor/auth UI work is in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6), pending review and merge.
-[TASK_LIST.md](./TASK_LIST.md) tracks work in progress; [STATUS.md](./STATUS.md) describes merged progress.
+**Current state:** the M1-A extension shell is merged and accepted through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3).
+It adds a Graph button and reversible empty panel on My Drive, Drive folders, and Google Docs, plus a toolbar popup with launch instructions.
+Google data, interactive source graphs, sign-in, PDFs, and saved state are not implemented in this merged scaffold.
+Newer personal-editor/storage/auth work is available for review in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6); follow [its branch-specific build and acceptance instructions](https://github.com/SchrodingersCatLooks/graphnav/blob/3adc4da/README.md) to test that version.
+[TASK_LIST.md](./TASK_LIST.md) tracks the next work; [STATUS.md](./STATUS.md) records the merged result and M1-B handoff.
 
 **Release order:** V1 provides manual graph creation/editing, source navigation, and saving.
 V2 adds GPT-assisted drafts with evidence and accept/edit/reject controls.
-The first manual workspace is implemented on this branch; source integration and the broader V1 checks remain open.
+Both remain planned beyond the current shell on main, with partial implementation on the review branches.
+The shared target includes assisted manual creation, editable source baselines without GPT, and V2 evidence-backed generation.
 
-**Historical M1-A acceptance:** its full second-machine checklist passed after correctly reloading the extension and Google tabs.
+**Acceptance:** the full second-machine checklist passes after correctly reloading the extension and Google tabs.
 Eddy corrected his earlier clipping/zoom report because a stale content script was still running.
 The accepted code includes the popover/visualViewport fix; both-laptop acceptance is recorded.
 See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
+
+**Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
+The code-freeze target is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan includes rest and pitch preparation.
+Publishing these documents does not merge the application features they describe.
+**Documentation workflow:** keep planning, task claims, progress, and status directly updated on main at each checkpoint.
+Use the [shared-documentation procedure](./AGENTS.md#shared-documentation-lives-on-main) so both assistants see current information while feature code remains on its working branch.
 
 ## Start here
 
@@ -27,11 +31,12 @@ See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
 | --- | --- | --- |
 | [IDEA.md](./IDEA.md) | What are we building and why? | When the team changes product scope |
 | [BUILD_PLAN.md](./BUILD_PLAN.md) | In what order, with which tools, and who does what? | When the shared schedule or architecture changes |
+| [FEATURE_SPEC.md](./FEATURE_SPEC.md) | Which workflows, controls, APIs, data, and tests must fit together? | When requirements or integration contracts change |
+| [STORAGE_DESIGN.md](./STORAGE_DESIGN.md) | What is the local storage direction and implemented review-branch subset? | When storage contracts change |
+| [M1C_HANDOFF.md](./M1C_HANDOFF.md) | What is the current shared contract and Google integration handoff? | At integration checkpoints |
 | [TASK_LIST.md](./TASK_LIST.md) | What is each person doing next? | When claiming, blocking, reviewing, or finishing a task |
 | [STATUS.md](./STATUS.md) | What works, what is blocked, and what happens next? | After a merged milestone or shared blocker changes |
 | [AGENTS.md](./AGENTS.md) | How should AI work in this repository? | When the team changes its workflow |
-| [STORAGE_DESIGN.md](./STORAGE_DESIGN.md) | Approved storage direction, implemented subset, and later planned workflows | When the storage contract changes |
-| [M1C_HANDOFF.md](./M1C_HANDOFF.md) | Response to Eddy, exact shared contract, ownership, and next adapter work | At shared integration checkpoints |
 
 ## Install and build
 
@@ -40,10 +45,10 @@ The clean-install check used Node 22.23.2 and npm 10.9.9 on macOS.
 If you use nvm, run `nvm install` and `nvm use` inside the clone; `.nvmrc` selects Node 22.
 Otherwise install Node 22 and confirm `node --version` before continuing.
 
-For a new local copy of this review build:
+For a new local copy of the merged scaffold:
 
 ```bash
-git clone --branch rajvansh-ui https://github.com/SchrodingersCatLooks/graphnav.git
+git clone https://github.com/SchrodingersCatLooks/graphnav.git
 cd graphnav
 npm ci
 npm run typecheck
@@ -56,65 +61,32 @@ The production extension is generated in **`.output/chrome-mv3/`**.
 WXT generates its `manifest.json` from `wxt.config.ts`, the package version, and entrypoint declarations.
 Commit the configuration and lockfile; do not edit or commit generated output.
 
-## Test saving in your Chrome profile
+## Test in your Chrome profile
 
-This check requires your laptop's Chrome profile.
-No database account, AWS setup, Google sign-in, or separate server is required for personal maps.
-The database is created automatically the first time you open My maps.
+These steps require each teammate's laptop and a Google account with access to the demo folder and Doc.
+No GraphNav OAuth setup is needed to test this empty shell.
 
-1. Build the branch with `npm ci`, `npm run typecheck`, and `npm run build`.
-2. Open `chrome://extensions` and enable Developer mode.
-3. Load unpacked from the clone's **`.output/chrome-mv3`** folder.
-   On macOS, use **Command+Shift+G** in the folder picker to enter its complete path.
-   For an existing same-ID installation, use **Reload** after rebuilding.
-4. Confirm the extension ID is **`pidejkbkldalibjaehjfpjkcpjpcenpk`**, pinned by Eddy's public manifest key.
-   Disable any old differently identified shell so it cannot inject duplicate buttons.
-   Export existing graphs before removing an installation; uninstalling can erase its local database.
-5. Click Chrome's puzzle-piece menu, choose **GraphNav**, then **Open my maps**.
-6. Enter a map name and choose **Create map**.
-   Add two nodes, select them in **From** and **To**, enter a connection label, and choose **Connect nodes**.
-7. Select a node or connection to edit its label/notes, then choose **Save changes**.
-   Personal nodes accept an optional HTTPS destination; **Open destination** opens the saved link.
-   Text in the inspector shows **Unsaved edits** until saved or cancelled.
-8. Drag a node, or focus/select it with Enter and move it with arrow keys.
-   Pan or zoom, then wait for **Saved locally**.
-9. Close the workspace, quit/reopen Chrome, and open My maps again.
-   Confirm the map, notes, connection label, node positions, and view are restored.
-10. Choose **Export backup**, then **Import backup** and select the downloaded `.graphnav.json` file.
-    Expect a separate map named with `(copy)`, with working destinations and independent edits.
-    Keep backups outside the repository.
-11. Open the same map in two workspace tabs.
-    Edit in one, then try an edit from the stale tab.
-    Expect a conflict instead of an overwrite; cancel the draft and use **Reload saved map** to continue.
-12. Repeat on Eddy's laptop and record the tested commit, Chrome version, results, and errors in the PR.
-
-Current measured checks use synthetic maps in temporary Chromium profiles.
-The implementation limits each map to 500 stored nodes, 2,000 relationships, 32 members per relationship, and a 5 MB JSON backup.
-The canvas displays at most 50 matching nodes; use search to focus larger maps.
-These are enforced prototype limits, not a production-scale performance claim.
-The schema and renderer can retain group relationships, but the current editor creates two-member connections; group-member controls remain later work.
-PDF bytes, caches, and authentication data are excluded from JSON backups.
-There is no cloud sync; two laptops have separate graph databases.
-
-## Test the Google panel and M1-B handoff
-
-These checks require your own Google account and access to Eddy's shared demo sources.
-Complete Google sign-in and any consent screens personally.
-The panel's connection status is backed by AUTH_STATUS; **Connect Google** calls the interactive flow only when clicked.
-[The M1-C handoff](./M1C_HANDOFF.md#second-laptop-acceptance) includes the demo links and exact read requests.
-
-1. After the build, reload the extension and refresh open Google tabs.
-2. Open My Drive, a real Drive folder, or a Doc and choose **Graph**.
-   Expect the correct source label, a complete panel header, and **Connect Google** if disconnected.
-   A cached authorized connection should show **Google connected**, with **Check connection** to refresh its state.
-3. Use **Connect Google** and finish the account flow.
-   A cancelled or failed request must show an error rather than claiming a connection.
-4. Close with X or Escape and confirm focus returns to Graph.
-   Normal Doc typing and scrolling must remain unaffected.
-5. Increase browser zoom or narrow the window and confirm the panel's header, close button, and connection controls remain reachable.
-6. Run the two M1-B demo-read requests from the extension popup's inspection console and record actual results.
-   Eddy reports ten folder children and four Doc tabs including a nested tab; Rajvansh's account is not yet verified.
-7. Confirm no Graph button appears on an unrelated website.
+1. Run the build commands above.
+2. Type `chrome://extensions` into Chrome's address bar.
+3. Turn on **Developer mode**, click **Load unpacked**, and select the clone's **`.output/chrome-mv3`** folder, not the repository root or the outer `.output` folder.
+   On macOS, press **Command+Shift+G** in the folder picker and enter the complete path if the hidden `.output` folder is not visible.
+4. Confirm **GraphNav 0.1.0** is enabled and has no extension errors.
+   Open Chrome's puzzle-piece menu and click GraphNav to check its instructions popup.
+5. Open [My Drive](https://drive.google.com/drive/my-drive), sign in if needed, and refresh the page after installing the extension.
+   Click **Graph** at the bottom right.
+   Expect a panel labeled **My Drive**, **Interface preview**, and **Google data is not connected yet**.
+6. Close it with **X**, open it again, and press **Escape** while focus is inside the panel.
+   The panel should close and keyboard focus should return to the Graph button.
+   The Graph button also toggles the panel.
+7. Open a real Drive folder and repeat.
+   Expect **Drive folder** in the header, one Graph button, and no changes to your files.
+   When changing folders without reloading, the panel closes so you can open it for the new folder.
+8. Open an existing Google Doc at a URL containing `/document/d/` or `/document/u/0/d/` and refresh it.
+   Open Graph and expect **Google Docs** and **Your document map starts here**.
+   Close the panel and verify ordinary typing, selection, and scrolling in an authorized test Doc.
+9. Narrow the window or increase Chrome zoom and confirm the panel header stays above Google's toolbar, the Graph and close buttons remain fully visible, and panel content scrolls when needed.
+   Open an unrelated website and confirm it has no Graph button.
+10. Both teammates should report the commit tested, Chrome version, Drive/Docs results, and any errors in the PR before M1-A is marked DONE.
 
 The shell recognizes My Drive, individual Drive folders, and normal Docs document URLs, including numbered account paths.
 Drive Home, Recent, Shared drives overviews, Docs home, published Docs, Sheets, and Slides are outside this first shell's supported routes.
@@ -144,7 +116,7 @@ Use the production build for teammate acceptance testing.
 # One-time browser download for automated testing:
 npx playwright install chromium
 
-# Type-check, production build, and all storage/browser tests:
+# Type-check, production build, and all six browser tests:
 npm run check
 
 # Or run individual checks:
@@ -160,10 +132,7 @@ npm run zip
 Tests install the production extension into a temporary Chromium profile and serve clearly labeled synthetic pages at the matching URLs.
 They verify panel opening/closing, focus and Escape, normal host editing and style isolation, Docs context, Drive navigation without reloads, unsupported pages, and a small viewport.
 The layout regression also checks hit-testing above a fixed host toolbar, transformed page containers, and a 150% visual viewport scale.
-The workspace tests also exercise restart persistence, backup/import, conflicts, and storage-origin separation.
-The storage tests use fake-indexeddb for transactional failure/refresh/reference checks.
-The auth UI test uses synthetic Identity responses in the isolated worker.
-These do not verify real Google editor behavior, account access, API reads, or OAuth.
+They do not verify real Google editor behavior, account access, API reads, or OAuth.
 Screenshots and failure traces are written under ignored `test-results/`.
 The temporary test profile is separate from your personal browser profile.
 
@@ -178,25 +147,23 @@ Confirm the partner accepted the repository invitation before treating M0 as com
 - `components/` and `assets/shell.css` own visible shell UI.
   The shell uses a non-modal manual popover and tracks the visual viewport to keep controls above page toolbars and within the visible window.
 - `lib/page-context.ts` reads the URL only; it does not scrape Google content.
-- `entrypoints/popup/` opens My maps and explains how to find the Graph button.
-- `entrypoints/workspace/` provides the extension-owned editor; `lib/storage/` provides its database and repository.
+- `entrypoints/popup/` explains how to find the Graph button.
 - The scaffold is merged; Eddy now owns the M1-B edits to `wxt.config.ts`: public manifest key, `identity`, OAuth client/scopes, and required Google API access.
   Rajvansh retains `components/ExtensionShell.tsx` and `assets/shell.css`; dependency changes remain coordinated.
 
 The scaffold handoff is complete through PR #3.
-Eddy's M1-B checkpoint `a83d545` is integrated into this review branch as `b98100f`, preserving his implementation.
-Rajvansh owns the initial graph/storage contract, personal workspace, and visible auth-state control under the user's explicit implementation request.
-Eddy owns Google auth/reads, verified account context, Drive adapters, and background command routing.
-M2-B still includes Drive integration; it should reuse the repository rather than building a second storage layer.
-See [M1C_HANDOFF.md](./M1C_HANDOFF.md) for the concrete response to Eddy's proposal and adapter example.
+Bring main into each working branch while preserving local changes; continue reviewing and merging subsequent slices through PRs.
+M1-B adds the background worker, Chrome Identity, a stable public manifest key, and suitable API permissions in his M1-B slice.
+Those settings are deliberately absent from M1-A.
+Use Eddy's [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md) for the public configuration values.
+After adding the key, both laptops must verify the installed extension ID is `pidejkbkldalibjaehjfpjkcpjpcenpk`.
+Eddy reports the shared folder and nested-Doc reads/imports working on partner-data; Rajvansh's complete own-account acceptance remains open.
+M1-C review uses the implemented contract linked from M1C_HANDOFF; React Flow/Dexie are present on the review branch, while ELK and PDF.js integration remain planned.
+None of that branch runtime is added to main by publishing the plan.
+The merger updates STATUS with verified shared progress after review and brings main into both working branches.
 
-M0 and M1-B remain REVIEW until the required second-account acceptance and merge.
-M1-C is awaiting Eddy's implementation review.
-The manual workspace is implemented; live Drive/Docs graph imports, unavailable-target UI, collapse/resize controls, PDF reading/blob imports, cache cleanup, and GPT generation are not yet complete.
-The merger updates STATUS after reviewed shared progress is merged.
-
-The selected stack and official implementation references remain in BUILD_PLAN.
-No hosted website is required for the local extension demo.
+The selected stack and official implementation references are in FEATURE_SPEC, with implementation order in BUILD_PLAN.
+Manual maps need no AI server; the planned V2 workflow requires the local model relay described there.
 
 ## Provenance
 

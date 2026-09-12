@@ -3,7 +3,7 @@
 M1-C design by Rajvansh for joint review with Eddy.
 The user approved IndexedDB/Dexie and asked Rajvansh to implement the first slice.
 Initial shared types, version-1 database, repository commands, and the My maps workspace are now implemented on `rajvansh-ui`.
-The broader fields and workflows below remain a design target; [lib/graph/types.ts](./lib/graph/types.ts) is the current exact record format, and [M1C_HANDOFF.md](./M1C_HANDOFF.md) resolves the overlap with Eddy's proposal.
+The broader fields and workflows below remain a design target; [lib/graph/types.ts](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/lib/graph/types.ts) is the current exact record format, and [M1C_HANDOFF.md](./M1C_HANDOFF.md) resolves the overlap with Eddy's proposal.
 The first slice supports manual editing, positions/view, validated backup/import, and fixture-tested source reconciliation.
 AI drafts, PDF reading/blob import, cache eviction, collapsed/resized layouts, unavailable-target UI, and live Google graph import are still pending.
 Eight stores are declared; sourceCache and blobs are reserved and unused by this first workspace.

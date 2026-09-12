@@ -5,11 +5,15 @@ The user approved IndexedDB/Dexie, excluded AWS for V1, and explicitly asked Raj
 That rebalances the initial repository work to Rajvansh; Eddy keeps Google authentication, reads, and source adapters.
 This response is a concrete implementation handoff for review, not a claim of Eddy's acceptance or second-laptop OAuth verification.
 
+Later planning checkpoint: Eddy has now added the import/account/worker foundation on `partner-data` at `c6e6b5e`.
+The implementation examples below remain the original contract handoff; do not rebuild work already present in that branch.
+[BUILD_PLAN.md](./BUILD_PLAN.md) and [TASK_LIST.md](./TASK_LIST.md) now provide the complete V1 + V2 sequence, individual assignments, 6 AM code-freeze target, and 4 PM submission schedule.
+
 ## Sign-off and counterproposal
 
 I agree with the SourceGraph/PersonalOverlay separation in meaning: refresh must never regenerate personal work.
 I also agree with origin on nodes and connections, explicit account context, versioning, and preserving missing destinations.
-Use the implemented record contract in [lib/graph/types.ts](./lib/graph/types.ts) and [lib/storage/repository.ts](./lib/storage/repository.ts) rather than introducing a second database or aggregate snapshot format.
+Use the implemented record contract in [lib/graph/types.ts](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/lib/graph/types.ts) and [lib/storage/repository.ts](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/lib/storage/repository.ts) rather than introducing a second database or aggregate snapshot format.
 The storage checkpoint is `c7f1226`; subsequent commits add the workspace and auth-state UI.
 
 The differences from your proposed TypeScript are:
@@ -32,7 +36,7 @@ The differences from your proposed TypeScript are:
    Personal `web` locators permit an explicitly entered HTTPS destination without claiming a source integration.
 
 React Flow does not dictate the stored record shape.
-[GraphCanvas](./components/graph/GraphCanvas.tsx) converts our saved records to flat React Flow nodes and edges.
+[GraphCanvas](https://github.com/SchrodingersCatLooks/graphnav/blob/88a4d00/components/graph/GraphCanvas.tsx) converts our saved records to flat React Flow nodes and edges.
 For a multi-member relationship it creates a display junction and spokes; it never turns the group into every possible pair.
 The database stores graph coordinates separately from source destinations.
 
