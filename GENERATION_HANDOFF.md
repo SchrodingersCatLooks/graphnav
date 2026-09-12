@@ -99,3 +99,17 @@ There is no additional approval blocker merely because Rajvansh originally creat
 Rajvansh will keep new UI work outside those persistence files while G3-B is active.
 Eddy should publish the typed proposal-store API and request/reply handoff on main before Rajvansh connects accept/edit/reject controls.
 Keep proposal text/evidence, accepted IDs, edited labels and rejection/removal decisions persistent; reusing the same proposal or regenerating must not duplicate accepted work.
+
+## Integration coordination at a8325dc
+
+Eddy’s a8325dc reached main while Rajvansh was implementing the already-claimed relay integration.
+Rajvansh has reconciled both checkpoints locally and is completing the integrated check before the next runtime PR.
+Please leave relay/server/provider/client files with Rajvansh until that checkpoint; Eddy has the explicitly assigned G3-B storage work above.
+The a8325dc server still computes the old reduced input hash instead of calling hashGenerationInput, so its returned hash does not match the client.
+The integration uses the shared full-input hash and revalidates the returned draft on both sides.
+It also adds environment-file startup, abort on client disconnect, an output token limit, bounded upstream responses and per-launch/per-minute provider-attempt caps.
+These are local changes under test, not yet a claim that current main works against a real model.
+
+The replacement user credential now authenticates successfully and lists gpt-5-mini as available.
+It remains only in ignored local configuration.
+No provider secret or pairing code is published here.
