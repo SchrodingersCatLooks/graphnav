@@ -1,35 +1,45 @@
-# Hackathon tasks
+# Shared task tracker
 
-The private repository and workflow starter are ready. Application implementation is pending. Teammate access still needs to be confirmed.
+Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.md) for the shared handoff. Claim one task at a time. Statuses: **TODO**, **DOING**, **BLOCKED**, **REVIEW**, **DONE**. DONE means merged and verified; REVIEW means implemented but awaiting the required check. Never treat a proposed feature as completed.
 
-| Order | Owner | Milestone | Completion check | Status |
+## Completed setup
+
+| ID | Task | Status | Evidence |
+| --- | --- | --- | --- |
+| DOC-0 | Create private repo and initial workflow | DONE | Starter committed in `7139f9e` |
+| DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
+
+## Build queue
+
+All application work is TODO. Hours are elapsed from the start of the proposed build session.
+
+| ID | When | Owner | Task | Status | Done when |
+| --- | --- | --- | --- | --- | --- |
+| M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
+| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | TODO | Same installed shell on both laptops; scripts and lockfile committed |
+| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
+| M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
+| M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
+| M2-B | 2–4h | Partner | Drive adapter, navigation, initial cache | TODO | Real children/files load and reopen correctly |
+| M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
+| M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
+| M4-A | 6–8h | Rajvansh | PDF reader and graph interface | TODO | Same graph beside a real PDF |
+| M4-B | 6–8h | Partner | PDF section extraction and destinations | TODO | At least three section jumps verified; fallback labeled |
+| M5-A | 8–10h | Rajvansh | Notes/connections, refresh status, creation form | TODO | Personal edits and one source-action control work |
+| M5-B | 8–10h | Partner | Save/refresh merge and real source creation | TODO | Reopening preserves edits; one authorized write and read-only behavior verified |
+| M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | All completed surfaces pass real navigation checks |
+| M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Type check/build and packaged extension verified |
+| M7-A | 12–13h | Rajvansh | Draft deck and product story | TODO | Short deck matches working product |
+| M7-B | 12–13h | Partner | Demo setup and backup recording | TODO | Recording matches final commit |
+| M8 | 13–15h | Both | Rehearse pitch, demo, handoffs, and questions | TODO | Full run fits organizer's time limit |
+
+M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both rows describe parts of the same shared milestone. Merge and test together before the next. If blocked, record the fallback decision in STATUS and reorder the remaining tasks together.
+
+## Active handoffs
+
+| Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| 0A | Team | Create private repository and add workflow starter | Six setup files are present on `main` | Complete |
-| 0B | Team | Invite teammate and clone repository | Both can access and clone it | Unverified |
-| 1 | A | Scaffold WXT + React + TypeScript | Both laptops run the extension; lockfile committed | Pending |
-| 2 | A + B | Define graph, node, edge, target, and adapter types | Both adapters and UI can use one sample graph | Pending |
-| 3A | A | Shared graph UI and basic autosave | Expand, select, search, focus, and restore sample layout | Pending |
-| 3B | B | Stable extension ID and Google authorization | Actual extension reads a demo folder and tabbed Doc | Pending |
-| 4 | B, with A for UI | Drive graph overlay | Expand a real folder and open a file; restore normal Drive view | Pending |
-| 5 | B, with A for UI | Docs graph panel | Read nested tabs and navigate to the correct tab | Pending |
-| 6 | A | Independent PDF reader and section graph | Open a text PDF and jump to outline/page destinations | Pending |
-| 7 | B | Minimal source authoring | Create a Drive folder and add/rename a Doc tab with permission | Pending |
-| 8 | A + B | Personal edits, refresh, and reopening | Preserve layouts/notes after reload and refresh; correct PDF anchors | Pending |
-| 9 | A + B | Integrated demo and production build | Packaged extension passes real-browser walkthrough | Pending |
-| 10 | A + B | Deck, backup recording, and rehearsal | Complete rehearsed demo of Drive, Docs, and a paper | Pending |
+| Rajvansh | Unclaimed | No application work started | Setup unverified | Claim M1-A after M0 |
+| Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
 
-3A and 3B run in parallel. A can start milestone 6 once the shared graph is stable while B finishes Google integration. Use roughly equal work time, and hand off a smaller task when one person is blocked.
-
-## Scope controls
-
-- Timebox authentication debugging. If blocked, A continues the real PDF experience and shared UI while B records the specific blocker. Label prepared sample data clearly; do not call it a live integration.
-- Prioritize exact navigation and persistence over extra graph styling.
-- Optional after core completion: evidence-backed related-section suggestions, further source editing, or PDF links. Defer OCR, behavioral learning, arbitrary publisher support, and cloud synchronization.
-- Freeze features before preparing and rehearsing the presentation.
-
-## Current handoff
-
-- Working: private GitHub repository, project scope, and lightweight AI workflow documents.
-- Not implemented: application, APIs, authentication, extension UI, PDF reader, and build scripts.
-- Next: confirm teammate access, clone separate working copies, and scaffold the WXT React application.
-- Manual step: the repository owner must invite the teammate in GitHub; the current connection has no collaborator-invitation action.
+Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
