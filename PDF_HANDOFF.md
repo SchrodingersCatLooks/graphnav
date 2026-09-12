@@ -13,7 +13,7 @@ G1-A/G2-A/G3-A generation controls remain separate open tasks and will be reused
   Parsing and hashing happen before transactions; failed quota/import work must not leave a partially created graph.
 - Use one bundled pdfjs-dist version and worker.
   WXT copies its standard fonts, character maps, and decoding assets during build; no CDN scripts or fonts.
-  Planned limits are 20 MiB per PDF, 300 pages, 100 MiB total PDF bytes, and the existing 500-node graph limit, with visible errors/partial notices.
+  Enforced limits are 20 MiB per PDF, 300 pages, 100 MiB total PDF bytes, and the existing 500-node graph limit, with visible errors/partial notices.
 - Navigation: reader.html?fingerprint=<hash>&page=<one-based-page>, optional normalized x/y and map ID.
   Stored locators remain zero-based; the reader converts only at the PDF.js boundary.
   A PDF graph node opens the exact page in the current reader when it matches, or another reader page otherwise.
@@ -22,6 +22,16 @@ G1-A/G2-A/G3-A generation controls remain separate open tasks and will be reused
 - JSON graph backups continue to exclude PDF bytes.
   The reader must say this explicitly and request the matching original PDF when bytes are missing, verifying its fingerprint before reattachment.
 
-Eddy retains selected-text/draft/relay work and the underlying extractor contract.
+Eddy retains the underlying section extractor, Docs text extraction, relay/provider, and proposal-persistence lane.
+GENERATION_HANDOFF now assigns the new lib/pdf/selected-text.ts and reader preview bridge to Rajvansh for G1-A integration; do not duplicate that file.
 The reader-specific library glue above is claimed by Rajvansh to avoid a duplicate implementation in M4-B.
 Real PDF text suitability and V2 evidence acceptance remain open even when synthetic reader tests pass.
+
+## Merged reader checkpoint
+
+PR #10 merged as dc57282; runtime e30ff42 passes typecheck/build/all 58 tests.
+PDF.js fonts, worker, character maps and decoders are bundled locally; extension CSP permits wasm-unsafe-eval for the bundled decoders, without JavaScript unsafe-eval or a remote script origin.
+Google OAuth and permissions are unchanged.
+Installed Chromium tests prove three page jumps, distinct same-page anchors, selection-only refresh, personal notes, full restart, backup copies, byte deletion, wrong-file rejection and exact reattachment.
+Screenshots were inspected and PDF text-layer CSS is scoped so it cannot style the editor sidebar.
+This is the manual reader slice; V2 controls, OCR/password support, and final real-content acceptance are not claimed complete.

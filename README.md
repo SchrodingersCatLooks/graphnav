@@ -110,6 +110,29 @@ If the button is missing, check the route, extension toggle/site access, selecte
 Report actual Chrome errors instead of marking the browser check passed.
 See Chrome's [official unpacked-extension instructions](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked).
 
+## Read a local PDF beside its graph
+
+1. Rebuild the extension, reload GraphNav at chrome://extensions, then open its toolbar popup and choose **Open a PDF**.
+2. Choose a text PDF up to 20 MiB and 300 pages.
+   Bookmarked sections or detected heading suggestions have names and page destinations already filled in.
+   **All pages** provides page destinations if the outline is unsuitable.
+3. Select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
+   This works without GPT or an API key.
+4. Select a graph node, add notes, and choose **Go to page N**.
+   Section destinations include a visible marker; two sections on one page can have different anchors.
+   **Hide tools** gives the graph more room; **Sources & edit** brings controls back.
+5. Close/reopen the reader or restart Chrome, then choose the paper under **Saved PDFs**.
+   The original file, graph and personal edits stay in this Chrome profile.
+6. Export/import a graph backup to keep a separate map copy.
+   JSON backups exclude PDF bytes, so keep the original file yourself.
+   If bytes are missing, **Reattach original PDF** requires the exact matching file and restores existing page/section destinations.
+   **Remove saved PDF** deletes only the local bytes after confirmation; it retains maps and notes.
+
+The local PDF library is limited to 100 MiB total.
+Opening a PDF makes no upload or AI request.
+Password-protected files and OCR are unsupported; pages without selectable text retain page navigation with an explanation.
+V2 generation controls and the final demo acceptance are still open in TASK_LIST.
+
 ## Development and automated checks
 
 ```bash
@@ -164,6 +187,8 @@ Confirm the partner accepted the repository invitation before treating M0 as com
 
 The scaffold, Google identity/read integration, Dexie editor, and on-page Drive/Docs graphs are merged through PR #6.
 PR #9 adds graph browsing controls, panel preferences, and source-availability UI.
+PR #10 adds local PDF reading, editable section/page maps, and exact-file recovery.
+Its tested runtime e30ff42 passes typecheck/build/all 58 tests.
 The public manifest key and read scopes are already present on main.
 Eddy's new G1-B text/draft contract at `f412f9b` remains on partner-data; a temporary combined checkout passes typecheck, build, and all 63 tests.
 Read [EDITOR_HANDOFF.md](./EDITOR_HANDOFF.md) before changing shared messages or integrating generation.

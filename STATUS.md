@@ -1,12 +1,13 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #9 merged as `487b315`.
+Last shared update: 2026-09-12, after runtime PR #10 merged as `dc57282`.
 
 ## Working on main
 
 [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) merged the saved editor, Google integration, and on-page Drive/Docs graphs.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
-The current main runtime matches tested checkpoint `c209a87`.
+[PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
+The current main runtime matches tested checkpoint `e30ff42`.
 Eddy's application work through `4738cb2` is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -24,16 +25,22 @@ Eddy's application work through `4738cb2` is included through normal merges.
 - Maps, annotations, positions, viewport, and JSON backups survive reopening.
   Google source identity includes the verified account key.
 - Eddy's direct target-availability checker and PDF section extractor are merged foundations.
-  PDF reading is not implemented yet.
+  The extension-owned PDF reader now uses that extractor, with a local library, section/page suggestions, selected imports or a baseline, and the shared graph beside the paper.
+- PDF nodes open exact pages and section anchors, including separate sections on the same page.
+  Bytes survive Chrome restarting; removing bytes retains maps, and exact-fingerprint reattachment restores destinations.
+  Backups visibly explain that they exclude original PDF bytes.
 
 ## Verification and limits
 
-Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 52 tests passed for `c209a87`.
+Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 58 tests passed for `e30ff42`.
 Installed Chromium tests use isolated profiles and synthetic Google API responses.
 They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
 Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
 Screenshots were inspected and graph-control rendering was corrected.
-The build reports a large ELK chunk warning; the PDF fixture emits a standard-font configuration warning that must be resolved when adding the reader.
+The build retains large-chunk warnings; the PDF standard-font warning is resolved with bundled local fonts.
+The installed reader tests render actual PDF bytes, navigate all three fixture pages and distinct same-page sections, preserve notes through restart/refresh, copy backups, reject wrong-file reattachment, and check narrow layouts.
+Desktop/narrow screenshots were inspected; scoped text-layer styles prevent the PDF viewer from altering graph controls.
+These tests use authored synthetic content, not acceptance on an independent publication.
 Eddy separately reports real Google reads/imports/navigation and a full Chrome restart passing.
 No new live-account run on Rajvansh's laptop is claimed here.
 Repeated partner-laptop checks are not a routine merge gate.
@@ -43,26 +50,29 @@ Source reads follow at most five Drive pages and report a partial result rather 
 The synthetic 500-node document imported and arranged in 868 ms in one measured run, with 50 source/idea nodes displayed per page.
 This includes mocked API responses and is not a real Google latency or production-scale benchmark.
 Group junctions are additional rendered elements; dense relationship-heavy graphs still need broader performance testing.
-Group membership controls, PDF reading, floating placement, source authoring, and AI generation/review remain open.
+PDF limits are 20 MiB per file, 300 pages, and 100 MiB total saved PDF bytes.
+Password-protected PDFs and OCR are unsupported.
+Group membership controls, floating placement, source authoring, and AI generation/review remain open.
 Backups currently exclude PDF bytes and future AI decisions.
 No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh continues the shared PDF-reader and selected-content preview UI tasks after this merged checkpoint.
-Eddy should bring main into `partner-data`, read EDITOR_HANDOFF and the current tracker, and continue G0-B/G1-B: the relay and selected-content extraction contract.
-The UI integration now supplies the selected-source service and same-Doc navigation; do not build a second scaffold or competing editor worker.
-Eddy has fetched main and published the G1-B extraction/draft contract at `f412f9b` on partner-data, with its tracker update on main at `06e34fc`.
-That new contract is not merged by PR #9.
-A temporary integration with this UI checkpoint passed typecheck, build, and all 63 tests.
-Eddy's previously reported intermittent workspace failure did not reproduce in that run; it remains a report to monitor rather than a declared fix.
-EDITOR_HANDOFF records input-validation follow-ups before a real relay call.
+Rajvansh claims G1-A: selected Doc-tab/PDF-page preview and the shared generation UI integration.
+The PDF manual loop is merged; generation controls and full M4 acceptance stay open.
+Eddy should bring main into partner-data and read GENERATION_HANDOFF, PDF_HANDOFF, and the current tracker.
+His latest observed checkpoint is 179d98f, containing the extraction/draft contract, authored demo paper, provider-agnostic request path, and scale tests.
+Those new files are still unmerged at this status update.
+Rajvansh will integrate that checkpoint and address the published input-validation/request-boundary review before connecting the UI.
+Eddy retains the relay/provider and proposal-persistence lane; the handoff records the exact new UI bridge and PDF selection-file ownership.
+No model has been called.
 
 The user is unsure who has an OpenAI API project/key.
 G0-A remains blocked on identifying the account owner and configuring a server-held credential and test-spend limit privately.
 Do not put a key in chat, GitHub, extension storage, or the browser bundle.
 This does not block manual/source-assisted maps or PDF reading.
-A meaningful authorized text PDF and document passages supporting useful connections are still needed for final demos.
+Eddy has committed an authored six-page demo PDF on partner-data; it is not yet merged here or claimed as an independent publication.
+Its content and the shared Doc still need the final evidence/usefulness check.
 
 V1 and V2 both remain in the requested target.
 The user removed the 6 AM code freeze; there is no automatic stop at that time.
@@ -124,3 +134,7 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 - 2026-09-12: Removed the 6 AM freeze at the user's request.
   Rajvansh claims M4-A for the PDF reader and documents its shared boundary in PDF_HANDOFF.
   This is a claim and schedule update, not a completed PDF or V2 feature.
+
+- 2026-09-12: Merged M4-A manual PDF reader slice in PR #10 as dc57282.
+  Typecheck/build/all 58 tests pass, including actual PDF rendering, restart, exact page/section jumps, notes/refresh, backups, quota/rollback, and missing-file recovery.
+  M4-A stays REVIEW because generation reuse and final demo acceptance remain; G1-A is now claimed in GENERATION_HANDOFF.
