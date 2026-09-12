@@ -37,14 +37,22 @@ export type Request =
   | { type: 'AUTH_STATUS' }
   | { type: 'CONNECT' }
   | { type: 'DISCONNECT' }
+  | { type: 'ACCOUNT_KEY' }
   | { type: 'LIST_FOLDER'; folderId: string }
-  | { type: 'GET_DOC_TABS'; documentId: string };
+  | { type: 'GET_DOC_TABS'; documentId: string }
+  | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string }
+  | { type: 'IMPORT_DOC_TABS'; documentId: string }
+  | { type: 'LIST_GRAPHS' }
+  | { type: 'READ_GRAPH'; graphId: string };
 
 export type Response<T = unknown> =
   | { ok: true; data: T }
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type AuthStatus = { connected: boolean };
+export type AccountKeyResult = { accountKey: string };
+/** Returned after an import so the caller can open the stored graph. */
+export type ImportResult = { graphId: string; scopeKey: string; nodeCount: number; complete: boolean };
 export type ListFolderResult = { items: SourceItem[]; truncated: boolean };
 export type DocTabsResult = { title: string; items: SourceItem[] };
 
