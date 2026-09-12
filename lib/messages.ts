@@ -42,8 +42,9 @@ export type Request =
   | { type: 'ACCOUNT_KEY' }
   | { type: 'LIST_FOLDER'; folderId: string }
   | { type: 'GET_DOC_TABS'; documentId: string }
-  | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string }
-  | { type: 'IMPORT_DOC_TABS'; documentId: string }
+  /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */
+  | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string; intoGraphId?: string }
+  | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }
   | { type: 'LIST_GRAPHS' }
   | { type: 'READ_GRAPH'; graphId: string }
   | { type: 'NAVIGATE'; locator: Locator };
