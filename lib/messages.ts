@@ -9,6 +9,7 @@
 import { browser } from 'wxt/browser';
 import type { Locator } from './graph/types';
 import type { ImportedItem } from './storage/repository';
+import type { GenerationRequest } from './generation/ui-service';
 
 export type SourceItem = {
   /** Stable provider ID. Drive file ID, or `${documentId}:${tabId}` for a tab. */
@@ -36,6 +37,12 @@ export type DocsLocator = {
 };
 
 export type Request =
+  | { type: 'AI_STATUS' }
+  | { type: 'OPEN_AI_SETTINGS' }
+  | { type: 'PAIR_RELAY'; code: string }
+  | { type: 'FORGET_RELAY' }
+  | ({ type: 'GENERATE_DRAFT' } & GenerationRequest)
+  | { type: 'CANCEL_DRAFT'; requestId: string }
   | { type: 'AUTH_STATUS' }
   | { type: 'CONNECT' }
   | { type: 'DISCONNECT' }

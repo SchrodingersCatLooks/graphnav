@@ -11,6 +11,7 @@ createRoot(document.getElementById('root')!).render(
     <nav aria-label="Supported applications">
       <a href="workspace.html" target="_blank" rel="noreferrer">Open my maps <span aria-hidden="true">↗</span></a>
       <a href="reader.html" target="_blank" rel="noreferrer">Open a PDF <span aria-hidden="true">↗</span></a>
+      <a href="options.html" target="_blank" rel="noreferrer">AI connection <span aria-hidden="true">↗</span></a>
       <a href="https://drive.google.com/drive/my-drive" target="_blank" rel="noreferrer">Open Drive <span aria-hidden="true">↗</span></a>
       <a href="https://docs.google.com/document/" target="_blank" rel="noreferrer">Choose a Doc <span aria-hidden="true">↗</span></a>
     </nav>
