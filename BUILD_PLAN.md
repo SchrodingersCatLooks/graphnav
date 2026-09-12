@@ -34,7 +34,8 @@ Every starting path uses the same editor and local saving.
 Steps are dependencies, not promises that a fixed number of minutes will be sufficient.
 Start API account setup during step 1; most of it can proceed independently of the UI.
 Eddy can prepare a reviewed data contract while Rajvansh builds its controls against clearly labeled fixtures.
-Each gate still needs real integration evidence before its tasks become DONE.
+Each gate still needs appropriate integration evidence before its tasks become DONE.
+The user has removed repeated second-laptop validation as a routine gate; use focused automated checks and targeted installed-Chrome verification, with additional account/device checks only for specific unresolved issues.
 
 | Order | Feature / result | Rajvansh's lane | Eddy's lane | Tools / prerequisite |
 | --- | --- | --- | --- | --- |
@@ -51,7 +52,7 @@ Each gate still needs real integration evidence before its tasks become DONE.
 | 11 | Chosen sources combined in one map | X2-A: Add another source, cross-source links and selection | X2-B: multiple bindings, canonical reuse, scoped refresh/generation | Existing adapters and repository; steps 8/9 |
 | 12 | Real folder/tab authoring | X3-A: explicit Create folder / Add tab / Rename tab controls | X3-B: minimal write grant, capabilities, Google mutations/readback | Drive files.create, Docs batchUpdate; step 4 plus account approval |
 | 13 | Placement and deeper navigation refinements | X4-A, X7-A: floating panel, heading/bookmark controls | X4-B, X7-B: saved rectangle, locator migration/resolution | Pointer events, visualViewport, Docs anchors; steps 4/5/6 |
-| 14 | Freeze a verified release | G4-A, M6-A: full visual/user walkthrough on both laptops | G4-B, M6-B: failures, limits, checks, packaging/startup | Playwright, real Chrome, npm check, WXT zip; all features claimed for release |
+| 14 | Freeze a verified release | G4-A, M6-A: targeted visual/user walkthrough | G4-B, M6-B: failures, limits, checks, packaging/startup | Playwright, real Chrome, npm check, WXT zip; all features claimed for release |
 | 15 | Demonstrate and submit | M7-A, M8-A: deck, pitch, submission | M7-B, M8-B: live demo, recording, technical verification | Exact frozen commit, real screenshots, rehearsal |
 
 Steps 1-9 establish the core V1 + V2 workflow; steps 10-13 complete the additional described interactions.
@@ -266,7 +267,8 @@ Do not claim arbitrary paragraph highlighting from text offsets alone.
 **Tasks:** G4-A, G4-B, M6-A, M6-B.
 **Tools:** pinned Node 22, `npm ci`, `npm run check`, `npm run zip`, temporary test profiles, actual Chrome/accounts.
 
-Rajvansh checks the user-facing result; Eddy checks data/runtime behavior; both run the agreed release on their laptops.
+Rajvansh checks the user-facing result and Eddy supplies data/runtime evidence.
+Use a targeted installed-Chrome walkthrough and focused automated checks; a repeated run on Eddy's laptop is optional unless a specific account/device issue remains unresolved.
 Record commit, extension ID, browser/Node versions, expected/actual outcome, and live versus fixture evidence.
 
 | Release story | Required evidence |

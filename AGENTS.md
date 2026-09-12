@@ -33,6 +33,11 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
 
 ## Implementation and validation
 
+The user has removed repeated partner-laptop acceptance as a routine gate.
+Use focused automated checks, code review, and targeted installed-Chrome checks for changed behavior; use a second laptop/account only when a specific unresolved issue requires it.
+Existing historical acceptance stays recorded, but lack of a repeated second-machine run does not block an otherwise reviewed working checkpoint.
+Read current main and the latest relevant partner checkpoint before shared-file changes; publish contracts/handoffs on main and never assume another assistant has read them without evidence.
+
 - Use the agreed stack and only add dependencies needed for the task. Commit the lockfile. Scaffold in a temporary sibling folder if initialization would overwrite these documents.
 - Verify current official API details when uncertain. Do not assume a narrow Google file grant grants access to an entire folder tree.
 - Use authorized demo content or clearly labeled fixtures. Never commit tokens, private keys, personal source files, or unrelated production settings. Keep Google tokens out of page contexts.

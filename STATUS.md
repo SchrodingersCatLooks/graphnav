@@ -82,6 +82,9 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - Standing workflow decision: shared planning/tracking/reference documents are updated directly on main at claims and checkpoints from a clean main-based checkout.
   Both assistants must preserve concurrent teammate edits; runtime code continues on feature branches and reaches main through its separate review/acceptance process.
 
+- Validation policy updated by the user: repeated partner-laptop validation is no longer a routine gate.
+  Continue focused automated/code checks and targeted installed-Chrome acceptance; retain explicit limits on unverified real accounts without blocking unrelated implementation.
+
 ## Completed action log
 
 - 2026-09-12: Added the initial repository workflow starter.
