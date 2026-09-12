@@ -3,14 +3,14 @@
 import { authorizedGet } from './auth';
 import type { ListFolderResult, SourceItem } from '../messages';
 
-const FOLDER_MIME = 'application/vnd.google-apps.folder';
+export const FOLDER_MIME = 'application/vnd.google-apps.folder';
 const FIELDS = 'nextPageToken,files(id,name,mimeType,parents,webViewLink)';
 
 /** Bounded so one call cannot walk an entire Drive. */
 const PAGE_SIZE = 100;
 const MAX_PAGES = 5;
 
-type DriveFile = {
+export type DriveFile = {
   id: string;
   name: string;
   mimeType: string;
@@ -19,6 +19,13 @@ type DriveFile = {
 };
 
 type FileListResponse = { files?: DriveFile[]; nextPageToken?: string };
+
+/** Metadata for one file or folder, used to label the container being imported. */
+export async function getFileMetadata(fileId: string): Promise<DriveFile> {
+  const url = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`);
+  url.searchParams.set('fields', 'id,name,mimeType,parents,webViewLink');
+  return authorizedGet<DriveFile>(url.toString());
+}
 
 function toItem(file: DriveFile, folderId: string): SourceItem {
   return {

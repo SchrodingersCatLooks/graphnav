@@ -130,6 +130,34 @@ extension ID confirmed as `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Both calls used real OAuth tokens through Chrome Identity. No token appears in any message
 payload, in storage, or in page context.
 
+### M2-B import, verified 2026-09-12
+
+Same browser and extension ID. Imports go through the background worker into the Dexie
+repository; content scripts never open IndexedDB on a Google origin.
+
+- `ACCOUNT_KEY` returned a Drive `permissionId`. This confirms `about.get` is permitted by the
+  existing `drive.metadata.readonly` scope, so no extra Chrome permission and no re-consent is
+  needed for account scoping. The value is an opaque account ID, not an email address.
+- `IMPORT_DRIVE_FOLDER` on the demo folder stored 11 nodes (ten subfolders plus the folder
+  itself) with `complete: true`.
+- Running the same import a second time returned the **same** `graphId`, so a repeat import
+  reuses the graph bound to that source scope instead of creating a duplicate.
+- `IMPORT_DOC_TABS` on the demo Doc stored 5 nodes (four tabs plus the document) with
+  `complete: true`.
+
+Navigation verified the same session:
+
+- `NAVIGATE` with the nested sub-tab locator opened the demo Doc with **Scope and Definitions**
+  selected, not merely the document.
+- `NAVIGATE` with a Drive folder locator opened **04 Raw Data**.
+
+Destinations come from the stored locator, so navigation does not depend on node position or on
+re-reading the source.
+
+Reopening verified after a full browser quit and relaunch: the stored Doc map reopened in the
+workspace with all five nodes and four `contains` connections intact, so saved state survives a
+cold start rather than only a page reload.
+
 ## 6. Which steps need whom
 
 | Step | Who | Status |

@@ -7,6 +7,8 @@
  */
 
 import { browser } from 'wxt/browser';
+import type { Locator } from './graph/types';
+import type { ImportedItem } from './storage/repository';
 
 export type SourceItem = {
   /** Stable provider ID. Drive file ID, or `${documentId}:${tabId}` for a tab. */
@@ -37,14 +39,35 @@ export type Request =
   | { type: 'AUTH_STATUS' }
   | { type: 'CONNECT' }
   | { type: 'DISCONNECT' }
+  | { type: 'ACCOUNT_KEY' }
   | { type: 'LIST_FOLDER'; folderId: string }
-  | { type: 'GET_DOC_TABS'; documentId: string };
+  | { type: 'GET_DOC_TABS'; documentId: string }
+  | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string }
+  | { type: 'IMPORT_DOC_TABS'; documentId: string }
+  | { type: 'LIST_GRAPHS' }
+  | { type: 'READ_GRAPH'; graphId: string }
+  | { type: 'NAVIGATE'; locator: Locator };
 
 export type Response<T = unknown> =
   | { ok: true; data: T }
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type AuthStatus = { connected: boolean };
+export type AccountKeyResult = { accountKey: string };
+/** Returned after an import so the caller can open the stored graph. */
+/** One source scope ready to hand to the repository. */
+export type ScopedImport = {
+  scopeKey: string;
+  /** False when a read was cut short, so the repository keeps unseen children. */
+  complete: boolean;
+  title: string;
+  accountKey: string;
+  items: ImportedItem[];
+};
+
+export type ImportResult = { graphId: string; scopeKey: string; nodeCount: number; complete: boolean };
+/** Where a NAVIGATE request actually sent the user. */
+export type NavigateResult = { url: string };
 export type ListFolderResult = { items: SourceItem[]; truncated: boolean };
 export type DocTabsResult = { title: string; items: SourceItem[] };
 
