@@ -1,3 +1,4 @@
+import { closeTools, selectNode, tools } from './ui-helpers';
 import { test as base, expect, chromium, type BrowserContext, type Page } from '@playwright/test';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -21,6 +22,7 @@ async function ready(page: Page, pageNumber = 1) {
   await expect(page.getByRole('alert')).toHaveCount(0);
 }
 async function baseline(page: Page) {
+  await tools(page, 'Sources');
   await page.getByRole('button', { name: 'Build baseline (5)', exact: true }).click();
   await expect(page.locator('.react-flow__node')).toHaveCount(5);
   await ready(page);
@@ -43,8 +45,14 @@ test('local PDF outline, exact section navigation, editable map and bytes surviv
   await baseline(reader);
   const sidebar = (await reader.getByRole('complementary', { name: 'Map editor' }).boundingBox())!;
   const graphPanel = (await reader.getByRole('region', { name: 'Paper graph', exact: true }).boundingBox())!;
-  expect(sidebar.width).toBeGreaterThan(graphPanel.width * .9);
-  await reader.getByRole('button', { name: 'Methods', exact: true }).click();
+  expect(sidebar.width).toBeLessThan(graphPanel.width * .6);
+  expect(sidebar.x).toBeGreaterThanOrEqual(graphPanel.x);
+  expect(sidebar.x + sidebar.width).toBeLessThanOrEqual(graphPanel.x + graphPanel.width);
+  await closeTools(reader);
+  const canvas = (await reader.locator('.canvas').boundingBox())!;
+  expect(canvas.width).toBeGreaterThan(graphPanel.width * .95);
+  expect(canvas.height).toBeGreaterThan(graphPanel.height * .6);
+  await selectNode(reader, 'Methods');
   await reader.getByRole('link', { name: 'Go to page 2', exact: true }).click();
   await ready(reader, 2);
   await expect(reader.locator('.textLayer')).toContainText('Methods');
@@ -52,19 +60,19 @@ test('local PDF outline, exact section navigation, editable map and bytes surviv
   await reader.getByLabel('Notes', { exact: true }).fill('Compare the method with my project.');
   await reader.getByRole('button', { name: 'Save changes', exact: true }).click();
   await ready(reader, 2);
-  await reader.getByRole('button', { name: 'Scope and Definitions', exact: true }).click();
+  await selectNode(reader, 'Scope and Definitions');
   await reader.getByRole('link', { name: 'Go to page 1', exact: true }).click();
   await ready(reader);
   const nestedY = new URL(reader.url()).searchParams.get('y');
   expect(Number(nestedY)).toBeGreaterThan(0);
-  await reader.getByRole('button', { name: 'Overview', exact: true }).click();
+  await selectNode(reader, 'Overview');
   await reader.getByRole('link', { name: 'Go to page 1', exact: true }).click();
   await ready(reader);
   expect(new URL(reader.url()).searchParams.get('y')).not.toBe(nestedY);
-  await reader.getByRole('button', { name: 'Findings', exact: true }).click();
+  await selectNode(reader, 'Findings');
   await reader.getByRole('link', { name: 'Go to page 3', exact: true }).click();
   await ready(reader, 3);
-  await reader.getByRole('button', { name: 'Hide tools', exact: true }).click();
+  await closeTools(reader);
   await reader.screenshot({ path: testInfo.outputPath('pdf-reader-desktop.png') });
   expect(errors).toEqual([]);
   expect(remoteRequests).toEqual([]);
@@ -74,14 +82,15 @@ test('local PDF outline, exact section navigation, editable map and bytes surviv
   await restored.goto(savedUrl);
   await ready(restored, 3);
   await expect(restored.locator('.react-flow__node')).toHaveCount(5);
-  await restored.getByRole('button', { name: 'Methods', exact: true }).click();
+  await selectNode(restored, 'Methods');
   await expect(restored.getByLabel('Notes', { exact: true })).toHaveValue('Compare the method with my project.');
+  await tools(restored, 'Sources');
   await restored.getByRole('button', { name: 'Refresh PDF outline', exact: true }).click();
   await ready(restored, 3);
   await expect(restored.getByLabel('Notes', { exact: true })).toHaveValue('Compare the method with my project.');
   await restored.setViewportSize({ width: 390, height: 844 });
   await expect.poll(() => restored.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await restored.getByRole('button', { name: 'Hide tools', exact: true }).click();
+  await closeTools(restored);
   await restored.getByRole('button', { name: 'Fit View', exact: true }).click();
   await restored.screenshot({ path: testInfo.outputPath('pdf-reader-narrow.png'), fullPage: true });
 });
@@ -93,13 +102,14 @@ test('backup excludes bytes, missing originals are explicit, and exact reattachm
   await expect(page.getByRole('alert')).toContainText('Invalid PDF');
   await page.getByLabel('Choose PDF file').setInputFiles(fixture);
   await ready(page); await baseline(page);
-  await page.getByRole('button', { name: 'Scope and Definitions', exact: true }).click();
+  await selectNode(page, 'Scope and Definitions');
   await page.getByRole('link', { name: 'Go to page 1', exact: true }).click();
   await ready(page);
   await page.getByLabel('Notes', { exact: true }).fill('Keep this exact section.');
   await page.getByRole('button', { name: 'Save changes', exact: true }).click();
   await ready(page);
   const originalUrl = page.url();
+  await tools(page, 'More');
   const downloaded = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup', exact: true }).click();
   const backupPath = (await (await downloaded).path())!;
@@ -117,7 +127,7 @@ test('backup excludes bytes, missing originals are explicit, and exact reattachm
   await page.getByLabel('Choose PDF file').setInputFiles(fixture);
   await ready(page);
   expect(page.url()).toBe(originalUrl);
-  await page.getByRole('button', { name: 'Scope and Definitions', exact: true }).click();
+  await selectNode(page, 'Scope and Definitions');
   await expect(page.getByLabel('Notes', { exact: true })).toHaveValue('Keep this exact section.');
   // Importing into My maps creates a separate graph whose PDF link opens the
   // shared local reader at its exact destination and preserves the copied map.
@@ -125,7 +135,7 @@ test('backup excludes bytes, missing originals are explicit, and exact reattachm
   await workspace.goto(`${origin}/workspace.html`);
   await workspace.getByLabel('Import graph backup', { exact: true }).setInputFiles(backupPath);
   await expect(workspace.getByRole('heading', { name: 'demo-paper.pdf (copy)', exact: true })).toBeVisible();
-  await workspace.getByRole('button', { name: 'Scope and Definitions', exact: true }).click();
+  await selectNode(workspace, 'Scope and Definitions');
   const nextReader = workspace.waitForEvent('popup');
   await workspace.getByRole('link', { name: 'Go to page 1', exact: true }).click();
   const copy = await nextReader;
@@ -142,6 +152,7 @@ test('PDF AI preview processes only selected pages and leaves the manual graph u
   await page.goto(`${origin}/reader.html`);
   await page.getByLabel('Choose PDF file').setInputFiles(fixture);
   await ready(page); await baseline(page);
+  await tools(page, 'AI');
   await page.getByRole('button', { name: 'Select content for AI', exact: true }).click();
   await page.getByRole('checkbox', { name: 'Analyze Page 2', exact: true }).check();
   await page.getByRole('button', { name: 'Preview selected text', exact: true }).click();

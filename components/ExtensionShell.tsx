@@ -10,6 +10,15 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [authEpoch, setAuthEpoch] = useState(0);
+  const lastConnection = useRef(false);
+  function connectionChanged(value: boolean) {
+    if (lastConnection.current !== value) {
+      lastConnection.current = value;
+      setConnected(value); setAuthEpoch((epoch) => epoch + 1);
+    }
+  }
+  const [editorBusy, setEditorBusy] = useState(false);
   const [preferences, setPreferences] = useState<PanelPreferences>({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' });
   const placement = usePanelPlacement(context.kind, preferences);
   const [preferenceError, setPreferenceError] = useState('');
@@ -112,14 +121,18 @@ export function ExtensionShell({ context }: { context: PageContext }) {
             </div>
           </header>
 
-          <div className="panel-auth"><GoogleConnection onConnected={setConnected} /></div>
-          <GraphEditor layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
+          <div className="panel-auth"><GoogleConnection onConnected={connectionChanged} disabled={editorBusy} /></div>
+          {context.label === 'Drive Home' && <p className="home-map-note">Home shows your My Drive map. Open a folder for its own map.</p>}
+          <GraphEditor layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} googleConnected={connected} onBusyChange={setEditorBusy} />
 
           <footer className="panel-footer flex items-center justify-between gap-3">
+            <span>{placement.floating ? 'Floating overlay' : 'Fixed overlay'}</span>
+            <details className="panel-settings"><summary>Panel settings</summary><div className="panel-settings-controls">
             {!placement.floating && <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>}
             <button type="button" className="dock-button" onClick={() => { placement.dock(); changePreferences({ ...preferences, dock: preferences.dock === 'left' ? 'right' : 'left' }); }}>Dock {preferences.dock === 'left' ? 'right' : 'left'}</button>
             <button type="button" className="dock-button" onClick={placement.toggle}>{placement.floating ? 'Dock panel' : 'Float panel'}</button>
             <button type="button" className="dock-button" onClick={() => { placement.reset(); changePreferences({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' }); }}>Reset position</button>
+            </div></details>
             {placement.floating ? <button type="button" className="panel-resize" aria-label="Resize graph panel" aria-describedby="panel-placement-help" title="Drag to resize; arrow keys resize, Shift resizes faster" {...placement.controls('resize')}>Resize <span aria-hidden="true">↘</span></button> : <kbd>Esc</kbd>}
             {(preferenceError || placement.error) && <span className="panel-preference-error" role="alert">{preferenceError || placement.error}</span>}
           </footer>

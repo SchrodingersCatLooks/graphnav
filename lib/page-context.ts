@@ -1,7 +1,7 @@
 /** URL-only context for the shell, not an adapter or an authenticated account. */
 export type PageContext = {
   kind: 'drive' | 'docs';
-  label: 'Drive folder' | 'My Drive' | 'Google Docs';
+  label: 'Drive folder' | 'My Drive' | 'Drive Home' | 'Google Docs';
   sourceId: string;
   tabId?: string;
 };
@@ -15,6 +15,9 @@ export function getPageContext(href: string): PageContext | null {
     if (folder?.[1]) return { kind: 'drive', label: 'Drive folder', sourceId: folder[1] };
     if (/^\/drive\/(?:u\/\d+\/)?my-drive\/?$/.test(url.pathname)) {
       return { kind: 'drive', label: 'My Drive', sourceId: 'root' };
+    }
+    if (/^\/drive(?:\/(?:u\/\d+\/)?(?:home)?)?\/?$/.test(url.pathname)) {
+      return { kind: 'drive', label: 'Drive Home', sourceId: 'root' };
     }
   }
 

@@ -107,3 +107,19 @@ test('arranging skips saved pins and a stale source import cannot change members
   await expect(call('applySource', [context, id, 0, 'selected', [importedKey(source.items[0]!)]] )).rejects.toThrow('changed in another tab');
   expect((await repo.readGraph(id)).graph.sourceBindings).toEqual(saved.graph.sourceBindings);
 });
+
+test('the page map is separate from personal maps, reused without refetching, and created once across concurrent opens', async () => {
+  const personal = await call('createContextMap', ['Personal project', context]) as string;
+  await call('addNode', [personal, 0, { id: 'idea', label: 'Keep this idea', position: { x: 25, y: 35 } }]);
+  const [first, second] = await Promise.all([call('openPageMap', [context]), call('openPageMap', [context])]) as { graphId: string; created: boolean }[];
+  expect(first!.graphId).toBe(second!.graphId);
+  expect(first!.graphId).not.toBe(personal);
+  const snapshot = await repo.readGraph(first!.graphId);
+  expect(snapshot.nodes).toHaveLength(3);
+  expect((await repo.readGraph(personal)).nodes).toHaveLength(1);
+  await repo.setPersonalEdit({ graphId: first!.graphId, itemType: 'node', itemId: snapshot.nodes[0]!.id }, snapshot.graph.contentRevision, { displayLabel: 'My root', notes: 'Keep this' });
+  const offlineSource = new EditorService(repo, { account: async () => account, read: async () => { throw new Error('Source request unavailable'); } });
+  const restored = await offlineSource.handle({ type: 'EDITOR', op: 'openPageMap', args: [context] });
+  expect(restored).toEqual({ graphId: first!.graphId, created: false });
+  expect((await repo.readGraph(first!.graphId)).itemEdits[0]).toMatchObject({ displayLabel: 'My root', notes: 'Keep this' });
+});

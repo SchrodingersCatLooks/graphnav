@@ -38,6 +38,23 @@ export class EditorService {
         return rows.filter((graph) => !graph.accountScope || graph.accountScope === account);
       }
       case 'readGraph': return repository.readGraph(...request.args);
+      case 'openPageMap': {
+        const [context] = request.args, account = await this.sources.account();
+        const find = async () => (await repository.listGraphs()).find((graph) => graph.accountScope === account && graph.createdVia === 'import' && graph.sourceBindings[0]?.key === scopeKey(context));
+        const cached = await find();
+        if (cached) return { graphId: cached.id, created: false };
+        const source = await this.source(context, false);
+        return repository.db.transaction('rw', repository.db.tables, async () => {
+          const existing = await find();
+          if (existing) return { graphId: existing.id, created: false };
+          const graph = await repository.createGraph(source.title, crypto.randomUUID(), 'import');
+          await repository.refreshScope(graph.id, graph.contentRevision, {
+            scopeKey: source.scopeKey, accountKey: account, complete: source.complete, items: source.items,
+            selection: { mode: 'baseline', memberKeys: source.items.map(importedKey), missingKeys: [] },
+          });
+          return { graphId: graph.id, created: true };
+        });
+      }
       case 'createGraph': return repository.createGraph(...request.args);
       case 'createContextMap': return repository.db.transaction('rw', repository.db.graphs, async () => {
         const [title, context] = request.args, graph = await repository.createGraph(title);

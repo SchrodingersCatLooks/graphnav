@@ -76,7 +76,7 @@ export type Response<T = unknown> =
   | { ok: true; data: T }
   | { ok: false; error: string; needsAuth?: boolean };
 
-export type AuthStatus = { connected: boolean };
+export type AuthStatus = { connected: boolean; accountLabel?: string };
 export type PanelState = { open: boolean; graphId?: string };
 export type PanelPreferences = { width: 420 | 580 | 780; dock: 'left' | 'right' };
 export type AccountKeyResult = { accountKey: string };

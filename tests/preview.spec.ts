@@ -1,3 +1,4 @@
+import { tools } from './ui-helpers';
 import { test, expect, chromium } from '@playwright/test';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -31,6 +32,9 @@ test('Docs preview honors nested-tab selection and ignores a cancelled read arri
     const page = await context.newPage();
     await page.goto('https://docs.google.com/document/d/doc-1/edit?tab=t.0');
     await page.getByRole('button', { name: 'Graph', exact: true }).click();
+    await expect(page.locator('.react-flow__node')).toHaveCount(4);
+    const baselineIds = await page.locator('.react-flow__node').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-id')));
+    await tools(page, 'AI');
     await page.getByRole('button', { name: 'Select content for AI', exact: true }).click();
     const panel = page.getByRole('region', { name: 'AI assistance' });
     const firstTab = panel.getByRole('checkbox').first();
@@ -61,6 +65,6 @@ test('Docs preview honors nested-tab selection and ignores a cancelled read arri
     await page.getByLabel('Host editor').fill('Editing the original remains available');
     await expect(preview).toHaveAttribute('data-input-hash', nextHash!);
     await expect(preview).not.toContainText('Junction J3');
-    await expect(page.locator('.react-flow__node')).toHaveCount(0);
+    expect(await page.locator('.react-flow__node').evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-id')))).toEqual(baselineIds);
   } finally { await context.close(); await rm(profile, { recursive: true, force: true }); }
 });
