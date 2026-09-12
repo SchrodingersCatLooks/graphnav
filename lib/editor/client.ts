@@ -1,3 +1,4 @@
+import { effectiveLabel, LIMITS } from '../graph/types';
 import { browser } from 'wxt/browser';
 import type { Catalog, EditorRepository, EditorRequest, SourceContext } from './protocol';
 
@@ -26,11 +27,19 @@ export async function arrangeMap(graphId: string, revision: number, newOnly = fa
   const snapshot = await editorClient.readGraph(graphId);
   if (snapshot.graph.contentRevision !== revision) throw new Error('This map changed. Reload before arranging it.');
   const hidden = new Set(snapshot.itemEdits.filter((edit) => edit.hidden).map((edit) => edit.itemId));
-  const ids = new Set(snapshot.nodes.filter((node) => !hidden.has(node.id)).map((node) => node.id));
+  const ids = new Set(snapshot.nodes.filter((node) => !hidden.has(node.id)).sort((a, b) => effectiveLabel(a, snapshot.itemEdits).localeCompare(effectiveLabel(b, snapshot.itemEdits), undefined, { numeric: true, sensitivity: 'base' }) || a.id.localeCompare(b.id)).map((node) => node.id));
   const relations = snapshot.relationships.filter((r) => !hidden.has(r.id) && r.members.every((m) => ids.has(m.nodeId)));
   const junctions = relations.filter((r) => r.members.length > 2).map((r) => r.id);
   const links = relations.flatMap((r) => r.members.length === 2 ? [{ from: (r.members.find((m) => m.role === 'from') ?? r.members[0]!).nodeId, to: (r.members.find((m) => m.role === 'to') ?? r.members[1]!).nodeId }] : r.members.map((m) => ({ from: m.role === 'to' ? r.id : m.nodeId, to: m.role === 'to' ? m.nodeId : r.id })));
-  const positions = await sourceLayout([...ids, ...junctions], links);
+  const positions = new Map<string, { x: number; y: number }>();
+  const allIds = [...ids, ...junctions];
+  let top = 0;
+  // Bound each layout calculation to the same size as a canvas page.
+  for (let offset = 0; offset < allIds.length; offset += LIMITS.visibleNodes) {
+    const batch = await sourceLayout(allIds.slice(offset, offset + LIMITS.visibleNodes), links);
+    for (const [id, point] of batch) positions.set(id, { x: point.x, y: point.y + top });
+    top += Math.max(0, ...[...batch.values()].map((point) => point.y)) + 180;
+  }
   const fixed = snapshot.layoutItems.filter((p) => p.pinned || newOnly), fixedIds = new Set(fixed.map((p) => p.itemId));
   const occupied = fixed.map((p) => ({ x: p.x, y: p.y }));
   const placed = [...positions].filter(([id]) => !fixedIds.has(id)).map(([itemId, point]) => {

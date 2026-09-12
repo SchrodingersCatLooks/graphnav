@@ -133,3 +133,9 @@
 @container (max-width: 640px) {
   .graphnav-editor.embedded .sidebar { flex: 0 0 42%; height: 42%; max-height: 42%; min-height: 0; }
 }
+.graphnav-editor .node-kind { display: block; margin-bottom: 4px; font-size: 9px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; opacity: .7; }
+
+.graphnav-editor .target-status { font-size: 11px; margin: 0; padding: 5px 12px; color: #536b70; background: #f1f6f3; }
+.graphnav-editor .source-warning { display: block; color: #8a512d; font-size: 11px; margin: 4px 0 10px; }
+.graphnav-editor .react-flow__node.unavailable-node { border-color: #bf906d; background: #fff9f2; }
+.graphnav-editor.embedded .map-tools { flex-shrink: 0; max-height: 96px; overflow: auto; gap: 6px; }

@@ -49,7 +49,23 @@ export const generationInputSchema = z.object({
   truncated: z.boolean(),
   /** Existing nodes a proposal may attach to. Anything else is unresolvable. */
   existingNodeIds: z.array(id).max(GENERATION_LIMITS.maxProposedNodes * 4),
-}).strict();
+}).strict().superRefine((input, context) => {
+  const issue = (message: string) => context.addIssue({ code: 'custom', message });
+  if (new Set(input.passages.map((passage) => passage.passageId)).size !== input.passages.length) issue('Passage IDs must be unique.');
+  if (new Set(input.existingNodeIds).size !== input.existingNodeIds.length) issue('Existing node IDs must be unique.');
+  if (input.passages.reduce((sum, passage) => sum + passage.text.length, 0) !== input.totalCharacters) issue('The character total does not match the selected text.');
+  const first = input.passages[0];
+  for (const passage of input.passages) {
+    if (passage.charCount !== passage.text.length) issue('A passage character count does not match its text.');
+    if (first && (passage.accountKey !== first.accountKey || passage.sourceId !== first.sourceId || passage.version !== first.version)) issue('One preview must use the same source, account and version.');
+    const locator = passage.locator;
+    if (locator.kind === 'docs') {
+      if (locator.documentId !== input.documentId || !locator.tabId || passage.sourceId !== `google-docs:${passage.accountKey}:${input.documentId}`) issue('A selected passage does not match this document and account.');
+    } else if (locator.kind === 'pdf') {
+      if (locator.fingerprint !== input.documentId || passage.accountKey !== 'local' || passage.sourceId !== `local-pdf:${input.documentId}` || passage.version !== input.documentId) issue('A selected passage does not match this local PDF.');
+    } else issue('Only selected Docs tabs and local PDF pages can be analyzed.');
+  }
+});
 export type GenerationInput = z.infer<typeof generationInputSchema>;
 
 /** A proposal may point at something new in this draft or something we already store. */
@@ -101,6 +117,7 @@ export function validateDraft(
   input: GenerationInput,
   inputHash: string,
 ): { ok: true; draft: GraphDraft } | { ok: false; error: string } {
+  if (!generationInputSchema.safeParse(input).success) return { ok: false, error: 'The submitted content is invalid.' };
   const parsed = graphDraftSchema.safeParse(value);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Malformed draft.' };
   const draft = parsed.data;
@@ -145,11 +162,7 @@ export function validateDraft(
 
 /** Content-addresses exactly what was sent, so a later source edit marks evidence stale. */
 export async function hashGenerationInput(input: GenerationInput): Promise<string> {
-  const canonical = JSON.stringify({
-    purpose: input.purpose,
-    documentId: input.documentId,
-    passages: input.passages.map((p) => [p.passageId, p.version, p.text]),
-  });
+  const canonical = JSON.stringify(generationInputSchema.parse(input));
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonical));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }

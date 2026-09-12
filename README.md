@@ -2,22 +2,21 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) is merged on main as `4cfe83d`.
-Drive and Docs now open an editable graph on the page, with existing-source suggestions, selected imports, structural baselines, personal nodes/connections, ELK arrangement, local saving, and backups.
-The Docs graph sits on the left and opens document tabs in the same browser tab.
-The toolbar popup also opens an optional My maps workspace.
+**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #12](https://github.com/SchrodingersCatLooks/graphnav/pull/12).
+Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
+AI connection settings and draft/evidence display work against the local test relay; a real model and persistent review decisions are not yet verified.
 
-**Still open:** PDF reading, GPT generation/evidence review, source-authoring controls, and remaining larger-map/panel refinements.
-The PDF extractor is a tested foundation, not a reader.
-V1 and V2 remain in the requested MVP target; consult TASK_LIST for exact status rather than treating all planned features as shipped.
+**Still open:** actual provider integration and accepted/edited/rejected AI persistence, source-authoring controls, group editing, floating placement and final demo acceptance.
+V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Verification:** typecheck, production build, and all 48 tests pass on Node 22.23.2 / npm 10.9.9.
-Installed browser tests use synthetic Google responses and temporary profiles; Eddy separately reports live Google reads/imports/navigation and restart success.
-A fresh live-account run on Rajvansh's account is not claimed.
+**Verification:** Node 22.23.2 / npm 10.9.9 typecheck, production build and all 102 tests pass.
+Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
+No live generated graph or fresh Google-account acceptance is implied by those tests.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
-The code-freeze target is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan includes rest and pitch preparation.
+The 6 AM code freeze has been removed by the user.
+Implementation continues toward the full V1/V2 target; submission remains 4 PM on September 12, local Eastern time, with human rest and pitch preparation still planned.
 Publishing these documents does not merge the application features they describe.
 **Documentation workflow:** keep planning, task claims, progress, and status directly updated on main at each checkpoint.
 Use the [shared-documentation procedure](./AGENTS.md#shared-documentation-lives-on-main) so both assistants see current information while feature code remains on its working branch.
@@ -84,9 +83,15 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    Use the inspector to edit labels/notes and open destinations.
    **Arrange map** arranges unpinned nodes; dragging a node pins its position.
    **Hide tools** gives the graph more room.
+   Use **Focus selected** for a compact neighborhood preview, **Collapse branch** for containment, and **Show whole map** to return.
+   Focus previews preserve saved positions; return to the whole map to drag nodes.
+   **Find a node** searches the loaded map, and **Previous 50 / Next 50** keep the list and canvas on the same page.
+   Choose **Panel width** and **Dock left/right** in the footer; these settings survive Chrome restarting.
 9. Use **Refresh source**, close/reopen the panel, and verify your personal edits remain.
    A selected-only map must not suddenly add unselected siblings.
    Export/import a backup through the toolbar or the optional My maps workspace.
+   **Check destinations** checks Google source availability and marks unavailable sources while preserving their notes.
+   A failed check is reported separately from a missing destination.
 10. Open a Doc, refresh it, and click **Graph**.
     Select top-level/nested tabs or build a baseline; select a node and choose **Go to tab in this document**.
     Confirm the original browser tab reaches the exact tab, the graph reopens on the left, and the current tab is highlighted.
@@ -102,6 +107,44 @@ Disable or remove GraphNav and refresh the page to remove its button completely.
 If the button is missing, check the route, extension toggle/site access, selected output folder, and page refresh.
 Report actual Chrome errors instead of marking the browser check passed.
 See Chrome's [official unpacked-extension instructions](https://developer.chrome.com/docs/extensions/get-started/tutorial/hello-world#load-unpacked).
+
+## Read a local PDF beside its graph
+
+1. Rebuild the extension, reload GraphNav at chrome://extensions, then open its toolbar popup and choose **Open a PDF**.
+2. Choose a text PDF up to 20 MiB and 300 pages.
+   Bookmarked sections or detected heading suggestions have names and page destinations already filled in.
+   **All pages** provides page destinations if the outline is unsuitable.
+3. Select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
+   This works without GPT or an API key.
+4. Select a graph node, add notes, and choose **Go to page N**.
+   Section destinations include a visible marker; two sections on one page can have different anchors.
+   **Hide tools** gives the graph more room; **Sources & edit** brings controls back.
+5. Close/reopen the reader or restart Chrome, then choose the paper under **Saved PDFs**.
+   The original file, graph and personal edits stay in this Chrome profile.
+6. Export/import a graph backup to keep a separate map copy.
+   JSON backups exclude PDF bytes, so keep the original file yourself.
+   If bytes are missing, **Reattach original PDF** requires the exact matching file and restores existing page/section destinations.
+   **Remove saved PDF** deletes only the local bytes after confirmation; it retains maps and notes.
+
+The local PDF library is limited to 100 MiB total.
+Opening a PDF makes no upload or AI request.
+Password-protected files and OCR are unsupported; pages without selectable text retain page navigation with an explanation.
+V2 generation controls and the final demo acceptance are still open in TASK_LIST.
+
+## Preview content for AI
+
+1. In a Doc graph panel or the PDF reader, choose **Select content for AI**.
+2. Choose the graph's purpose, then explicitly select document tabs or PDF pages.
+   Nested tabs are separate choices.
+3. Choose **Preview selected text** and inspect the complete passages shown.
+   The preview is limited to 20,000 characters and 200 passages, with visible truncation and empty-text explanations.
+   Changing the selection or purpose clears the old preview; **Cancel preview** ignores late results.
+
+Previewing sends nothing to a model and does not change the manual graph.
+**Generate with AI** is currently unavailable while the relay is being connected.
+API keys must remain on the relay server, not in the extension, GitHub or chat.
+The authored demo paper is available at [demo/GraphNav-demo-paper.pdf](./demo/GraphNav-demo-paper.pdf).
+It is demonstration content, not a published study.
 
 ## Development and automated checks
 
@@ -155,16 +198,17 @@ Confirm the partner accepted the repository invitation before treating M0 as com
 - The scaffold is merged; Eddy now owns the M1-B edits to `wxt.config.ts`: public manifest key, `identity`, OAuth client/scopes, and required Google API access.
   Rajvansh retains `components/ExtensionShell.tsx` and `assets/shell.css`; dependency changes remain coordinated.
 
-The scaffold handoff is complete through PR #3.
-Bring main into each working branch while preserving local changes; continue reviewing and merging subsequent slices through PRs.
-M1-B adds the background worker, Chrome Identity, a stable public manifest key, and suitable API permissions in his M1-B slice.
-Those settings are deliberately absent from M1-A.
-Use Eddy's [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md) for the public configuration values.
-After adding the key, both laptops must verify the installed extension ID is `pidejkbkldalibjaehjfpjkcpjpcenpk`.
-Eddy reports the shared folder and nested-Doc reads/imports working on partner-data; Rajvansh's complete own-account acceptance remains open.
-M1-C review uses the implemented contract linked from M1C_HANDOFF; React Flow/Dexie are present on the review branch, while ELK and PDF.js integration remain planned.
-None of that branch runtime is added to main by publishing the plan.
-The merger updates STATUS with verified shared progress after review and brings main into both working branches.
+The scaffold, Google identity/read integration, Dexie editor, and on-page Drive/Docs graphs are merged through PR #6.
+PR #9 adds graph browsing controls, panel preferences, and source-availability UI.
+PR #10 adds local PDF reading, editable section/page maps, and exact-file recovery.
+Its tested runtime e30ff42 passes typecheck/build/all 58 tests.
+The public manifest key and read scopes are already present on main.
+PR #11 merges Eddy work through 179d98f and the selected-text preview integration.
+The combined suite passes 94 tests; the final preview layout passed four focused installed-browser checks.
+Read GENERATION_HANDOFF for the active relay-client boundary; no model has been called.
+Read [EDITOR_HANDOFF.md](./EDITOR_HANDOFF.md) before changing shared messages or integrating generation.
+Bring current main into each working branch with a normal merge, preserving local changes.
+GitHub does not synchronize private maps, Google tokens, or PDF bytes.
 
 The selected stack and official implementation references are in FEATURE_SPEC, with implementation order in BUILD_PLAN.
 Manual maps need no AI server; the planned V2 workflow requires the local model relay described there.

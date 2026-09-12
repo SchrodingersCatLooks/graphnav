@@ -1,0 +1,36 @@
+.graphnav-editor .generation-panel { border: 1px solid #d8d8e8; border-radius: 12px; padding: 14px 12px; background: #f9f8fc; }
+.graphnav-editor .generation-heading { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.graphnav-editor .generation-heading h2 { margin: 0; color: #4b4768; }
+.graphnav-editor .generation-badge { font-size: 9px; background: #eeebf6; color: #716885; border-radius: 20px; padding: 3px 7px; }
+.graphnav-editor .generation-panel .muted { font-size: 11px; margin: 8px 0 12px; }
+.graphnav-editor .generation-toggle { width: 100%; }
+.graphnav-editor .generation-content { display: grid; gap: 12px; margin-top: 8px; }
+.graphnav-editor .generation-content .local-note { margin: 0; }
+.graphnav-editor .generation-choice-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+.graphnav-editor .generation-choices { max-height: 200px; overflow: auto; display: grid; gap: 5px; }
+.graphnav-editor .generation-choice { display: flex; align-items: flex-start; gap: 8px; border: 1px solid #e4e1eb; background: white; border-radius: 7px; padding: 8px; cursor: pointer; }
+.graphnav-editor .generation-choice input { width: 15px; height: 15px; margin: 2px 0 0; flex-shrink: 0; accent-color: #62527e; }
+.graphnav-editor .generation-choice span { min-width: 0; overflow-wrap: anywhere; }
+.graphnav-editor .generation-choice small { display: block; font-size: 10px; font-weight: 400; color: #7b7485; }
+.graphnav-editor .generation-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.graphnav-editor .generation-preview { display: grid; gap: 10px; font-size: 11px; border-top: 1px solid #dbd6e8; padding-top: 14px; }
+.graphnav-editor .generation-preview h3, .graphnav-editor .generation-preview h4 { margin: 0; color: #494060; }
+.graphnav-editor .generation-passages { max-height: 320px; overflow: auto; border: 1px solid #e0ddea; border-radius: 8px; background: white; padding: 10px; }
+.graphnav-editor .generation-passages article + article { margin-top: 14px; border-top: 1px solid #ece8f1; padding-top: 14px; }
+.graphnav-editor .generation-passages p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; margin-top: 5px; }
+.graphnav-editor .generation-connection { background: #f0edf7; border-radius: 8px; padding: 10px; font-size: 11px; }
+.graphnav-editor .draft-preview { display: grid; gap: 10px; border-top: 1px solid #dcd6eb; padding-top: 14px; }
+.graphnav-editor .draft-card { border: 1px solid #ded9eb; border-radius: 9px; padding: 12px; background: #fff; overflow-wrap: anywhere; }
+.graphnav-editor .draft-kind { display: block; text-transform: uppercase; color: #8b7e9e; font-size: 9px; letter-spacing: 1px; margin-bottom: 6px; }
+.graphnav-editor .draft-card h4 { font-size: 13px; line-height: 1.6; }
+.graphnav-editor .draft-card p { color: #786e86; font-size: 11px; line-height: 1.6; }
+.graphnav-editor .draft-relation { display: inline-block; margin-top: 6px; background: #f0edf6; border-radius: 6px; padding: 3px 7px; color: #6d5a88; }
+.graphnav-editor .draft-arrow { color: #9c8fb0; }
+.graphnav-editor .draft-evidence { border-top: 1px solid #eeeaf4; padding-top: 9px; }
+.graphnav-editor .draft-evidence summary { cursor: pointer; color: #77658d; }
+.graphnav-editor .draft-evidence article { margin-top: 12px; }
+.graphnav-editor .draft-evidence blockquote { max-height: 180px; overflow: auto; white-space: pre-wrap; margin: 8px 0; border-left: 2px solid #c9c0db; padding-left: 10px; line-height: 1.6; }
+
+@container (max-width: 640px) {
+  .graphnav-editor.embedded:has(.generation-content) .sidebar { flex: 0 0 65%; height: 65%; max-height: 65%; }
+}

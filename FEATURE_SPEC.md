@@ -16,12 +16,12 @@ The later plan's blanket deferral is not evidence that the user dropped those re
 Three coverage labels keep the promise honest:
 
 - **Core:** required for the currently targeted V1 + V2 navigation MVP, including Drive, Docs, a text PDF, manual editing, real AI review, and durable saving.
-- **Completion:** part of the broader described product, with an explicit task and implementation below; its delivery slot needs reconciliation against the 6 AM deadline.
+- **Completion:** part of the broader described product, with an explicit task and implementation below; its delivery order follows BUILD_PLAN and the 4 PM submission deadline.
   This label does not mean the user approved removing it.
 - **Expansion:** additional formats, integrations, and public-service capabilities beyond the bounded prototype.
 
 Do not describe all applications as complete unless their acceptance cases pass.
-The remaining work cannot be made certain to fit before 6 AM by adding more items to a schedule.
+The user removed the 6 AM freeze; the remaining work still requires implementation and verification rather than schedule-only completion.
 
 ## Required assisted creation, including manual mode
 
@@ -320,7 +320,8 @@ Eddy must verify the actual grant and capabilities, or disclose the broader scop
 ## Exact demonstration scenarios
 
 M6 records the commit, browser/Node versions, expected/actual results, and whether evidence is live or a fixture.
-The complete core target must pass these end-to-end stories on both laptops.
+The complete core target must pass these end-to-end stories on the exact release build using focused automated checks and targeted installed-Chrome verification.
+Use another laptop/account only for a specific unresolved issue, following the current AGENTS validation policy.
 
 1. **Planner:** with AI stopped, add existing sources through autofill without typing their names/URLs, then create a blank map without Google; add three ideas; connect one to two others; edit a label/note; attach an HTTPS source; arrange, close Chrome, reopen, and restore a backup copy.
 2. **Drive organizer:** open the shared folder; import its ten children plus root; expand the nested level; add a personal idea; connect two real files; open one; refresh after a source rename without losing edits.

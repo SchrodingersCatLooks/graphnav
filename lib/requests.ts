@@ -9,17 +9,28 @@
 
 import { z } from 'zod';
 import { locatorSchema } from './graph/types';
+import { generationInputSchema } from './generation/types';
+import { pairingCodeSchema } from './generation/relay';
 
 const id = z.string().min(1).max(300);
+export const panelPreferencesSchema = z.object({ width: z.union([z.literal(420), z.literal(580), z.literal(780)]), dock: z.enum(['left', 'right']) }).strict();
 
 export const requestSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('AI_STATUS') }).strict(),
+  z.object({ type: z.literal('OPEN_AI_SETTINGS') }).strict(),
+  z.object({ type: z.literal('PAIR_RELAY'), code: pairingCodeSchema }).strict(),
+  z.object({ type: z.literal('FORGET_RELAY') }).strict(),
+  z.object({ type: z.literal('GENERATE_DRAFT'), requestId: z.string().uuid(), input: generationInputSchema, graphId: id.optional(), revision: z.number().int().nonnegative().optional() }).strict().refine((value) => (value.graphId === undefined) === (value.revision === undefined)),
+  z.object({ type: z.literal('CANCEL_DRAFT'), requestId: z.string().uuid() }).strict(),
   z.object({ type: z.literal('AUTH_STATUS') }).strict(),
   z.object({ type: z.literal('CONNECT') }).strict(),
   z.object({ type: z.literal('DISCONNECT') }).strict(),
   z.object({ type: z.literal('ACCOUNT_KEY') }).strict(),
   z.object({ type: z.literal('LIST_FOLDER'), folderId: id }).strict(),
   z.object({ type: z.literal('GET_DOC_TABS'), documentId: id }).strict(),
+  z.object({ type: z.literal('DOC_TEXT_PREVIEW'), documentId: id, tabIds: z.array(id).min(1).max(200).refine((ids) => new Set(ids).size === ids.length) }).strict(),
   z.object({ type: z.literal('PANEL_STATE'), source: z.string().regex(/^(drive|docs):[A-Za-z0-9_-]{1,200}$/), open: z.boolean().optional() }).strict(),
+  z.object({ type: z.literal('PANEL_PREFERENCES'), kind: z.enum(['drive', 'docs']), preferences: panelPreferencesSchema.optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DRIVE_FOLDER'), folderId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DOC_TABS'), documentId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('LIST_GRAPHS') }).strict(),

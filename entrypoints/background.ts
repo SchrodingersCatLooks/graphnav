@@ -5,19 +5,28 @@ import { getAccountKey } from '../lib/google/account';
 import { checkTargets } from '../lib/google/availability';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
+import { extractSelectedTabs } from '../lib/google/docs-content';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository, storageError } from '../lib/storage/repository';
+import { pdfReaderPath } from '../lib/pdf/navigation';
 import { destinationUrl } from '../lib/graph/types';
-import { isTrustedSender, requestSchema } from '../lib/requests';
+import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/requests';
 import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
 import { EditorService } from '../lib/editor/service';
 import { getPageContext } from '../lib/page-context';
+import { RelayClient } from '../lib/generation/relay';
+import { GenerationUiService } from '../lib/generation/ui-service';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
 // state worth losing. The database lives in the extension origin; content
 // scripts reach it only through these messages.
 const repository = new GraphRepository();
 const editor = new EditorService(repository);
+const relay = new RelayClient(
+  async () => { const value = (await browser.storage.session.get('relay-pairing:v1'))['relay-pairing:v1']; return typeof value === 'string' ? value : undefined; },
+  async (code) => { if (code) await browser.storage.session.set({ 'relay-pairing:v1': code }); else await browser.storage.session.remove('relay-pairing:v1'); },
+);
+const generation = new GenerationUiService(repository, relay);
 
 /**
  * Chooses the map this scope belongs to.
@@ -61,7 +70,7 @@ async function storeImport(scoped: ScopedImport, intoGraphId?: string): Promise<
   };
 }
 
-async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number } }): Promise<Response> {
+async function handle(raw: unknown, sender: { url?: string; documentId?: string; tab?: { id?: number } }): Promise<Response> {
   if (typeof raw === 'object' && raw !== null && 'type' in raw && raw.type === 'EDITOR') {
     const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
     return { ok: true, data: await editor.handle(raw, ownPage) };
@@ -72,7 +81,19 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
   if (!parsed.success) return { ok: false, error: 'Unsupported request.' };
   const request: Request = parsed.data;
 
+  const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
+  const owner = `${sender.documentId ?? sender.tab?.id ?? ''}:${sender.url ?? ''}`;
   switch (request.type) {
+    case 'AI_STATUS': return { ok: true, data: await relay.status() };
+    case 'OPEN_AI_SETTINGS': await browser.tabs.create({ url: browser.runtime.getURL('/options.html') }); return { ok: true, data: null };
+    case 'PAIR_RELAY':
+      if (!ownPage) return { ok: false, error: 'Pair the relay from GraphNav settings.' };
+      return { ok: true, data: await relay.pair(request.code) };
+    case 'FORGET_RELAY':
+      if (!ownPage) return { ok: false, error: 'Change pairing from GraphNav settings.' };
+      await relay.forget(); return { ok: true, data: null };
+    case 'GENERATE_DRAFT': return { ok: true, data: await generation.generate(request, owner, ownPage) };
+    case 'CANCEL_DRAFT': generation.cancel(request.requestId, owner); return { ok: true, data: null };
     case 'AUTH_STATUS':
       return { ok: true, data: { connected: await isConnected() } };
     case 'CONNECT':
@@ -87,6 +108,13 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       return { ok: true, data: await listFolderChildren(request.folderId) };
     case 'GET_DOC_TABS':
       return { ok: true, data: await getDocumentTabs(request.documentId) };
+    case 'DOC_TEXT_PREVIEW': {
+      const account = await getAccountKey();
+      const data = await extractSelectedTabs(request.documentId, request.tabIds, account);
+      if (await getAccountKey() !== account) throw new Error('Your Google account changed. Preview the selection again.');
+      if (data.tabs.length !== request.tabIds.length) throw new Error('A selected tab is no longer available. Reload the tab list and select again.');
+      return { ok: true, data };
+    }
     case 'PANEL_STATE': {
       const context = sender.url ? getPageContext(sender.url) : null;
       if (!context || sender.tab?.id === undefined || !request.source.startsWith(`${context.kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };
@@ -95,6 +123,12 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
       const value = (await browser.storage.session.get(key))[key];
       return { ok: true, data: { open: !!value && typeof value === 'object' && 'source' in value && 'open' in value && value.source === request.source && value.open === true } };
+    }
+    case 'PANEL_PREFERENCES': {
+      const key = `panel-preferences:v1:${request.kind}`;
+      if (request.preferences) await browser.storage.local.set({ [key]: request.preferences });
+      const stored = panelPreferencesSchema.safeParse((await browser.storage.local.get(key))[key]);
+      return { ok: true, data: stored.success ? stored.data : { width: request.kind === 'docs' ? 580 : 780, dock: request.kind === 'docs' ? 'left' : 'right' } };
     }
     case 'IMPORT_DRIVE_FOLDER':
       return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey()), request.intoGraphId) };
@@ -133,8 +167,8 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
     case 'NAVIGATE': {
       // The locator is the node's stored destination, so navigation does not
       // depend on layout or on re-reading the source.
-      const url = destinationUrl(request.locator);
-      if (!url) return { ok: false, error: 'This destination opens in the PDF reader, which is M4.' };
+      const url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
+      if (!url) return { ok: false, error: 'This destination is not supported.' };
       // Content scripts cannot open tabs themselves, so the worker does it.
       const context = sender.url ? getPageContext(sender.url) : null;
       if (request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined) {

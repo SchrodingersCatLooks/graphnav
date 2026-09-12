@@ -9,6 +9,7 @@
 import { browser } from 'wxt/browser';
 import type { Locator } from './graph/types';
 import type { ImportedItem } from './storage/repository';
+import type { GenerationRequest } from './generation/ui-service';
 
 export type SourceItem = {
   /** Stable provider ID. Drive file ID, or `${documentId}:${tabId}` for a tab. */
@@ -36,13 +37,21 @@ export type DocsLocator = {
 };
 
 export type Request =
+  | { type: 'AI_STATUS' }
+  | { type: 'OPEN_AI_SETTINGS' }
+  | { type: 'PAIR_RELAY'; code: string }
+  | { type: 'FORGET_RELAY' }
+  | ({ type: 'GENERATE_DRAFT' } & GenerationRequest)
+  | { type: 'CANCEL_DRAFT'; requestId: string }
   | { type: 'AUTH_STATUS' }
   | { type: 'CONNECT' }
   | { type: 'DISCONNECT' }
   | { type: 'ACCOUNT_KEY' }
   | { type: 'LIST_FOLDER'; folderId: string }
   | { type: 'GET_DOC_TABS'; documentId: string }
+  | { type: 'DOC_TEXT_PREVIEW'; documentId: string; tabIds: string[] }
   | { type: 'PANEL_STATE'; source: string; open?: boolean }
+  | { type: 'PANEL_PREFERENCES'; kind: 'drive' | 'docs'; preferences?: PanelPreferences }
   /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */
   | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string; intoGraphId?: string }
   | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }
@@ -56,6 +65,7 @@ export type Response<T = unknown> =
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type AuthStatus = { connected: boolean };
+export type PanelPreferences = { width: 420 | 580 | 780; dock: 'left' | 'right' };
 export type AccountKeyResult = { accountKey: string };
 /** Returned after an import so the caller can open the stored graph. */
 /** One source scope ready to hand to the repository. */

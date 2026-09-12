@@ -122,3 +122,6 @@
   .editor-panel .panel-header { padding: 4px 12px; }
   .editor-panel .brand-mark { display: none; }
 }
+.panel-width-label { display: flex; gap: 6px; align-items: center; }
+.panel-width-label select { font: inherit; width: 82px; border: 1px solid #d2dfd7; border-radius: 5px; padding: 4px; color: #34584c; background: white; }
+.dock-button { border: 1px solid #d2dfd7; border-radius: 6px; padding: 4px 8px; background: white; color: #34584c; }
