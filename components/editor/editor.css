@@ -208,3 +208,21 @@
 
 .graphnav-editor.embedded .map-picker { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
 .graphnav-editor.creating-graph .drawer-heading { font-size: 18px; }
+
+.graphnav-editor.entry-flow { flex: 0 1 auto; background: white; overflow-y: auto; }
+.graphnav-editor.entry-flow .workspace { height: auto; }
+.graphnav-editor.entry-flow .workspace-body { min-height: 0; display: block; }
+.graphnav-editor.entry-flow .sidebar { position: static; inset: auto; width: 100%; height: auto; max-height: none; margin: 0; padding: 18px; border: 0; border-radius: 0; box-shadow: none; background: white; overflow: visible; }
+.graphnav-editor.entry-flow .sidebar section { padding: 0; margin: 0; border: 0; }
+.graphnav-editor.entry-flow .entry-question { font-size: 20px; line-height: 1.35; color: #214e45; margin: 0 0 16px; }
+.graphnav-editor.entry-flow .new-graph-options { margin: 0; gap: 12px; }
+.graphnav-editor.entry-flow .new-graph-options .graph-entry-choice { display: flex; gap: 14px; }
+.graphnav-editor.entry-flow .saved-graph-choices { display: grid; gap: 12px; }
+.graphnav-editor.entry-flow .saved-graph-choices h2 { font-size: 18px; margin: 0 0 4px; }
+.graphnav-editor.entry-flow .saved-graph-choices .entry-copy strong { font-size: 15px; }
+.graphnav-editor.entry-flow .backup-actions { margin: 0 0 16px; }
+.graphnav-editor.entry-flow .backup-actions button { font-size: 12px; padding: 6px 9px; }
+.graphnav-editor .new-graph-options .graph-entry-choice { display: flex; }
+.graphnav-editor .new-graph-options .entry-copy strong { font-size: 17px; color: #214b45; }
+.graphnav-editor .new-graph-options .entry-icon { color: #2c6358; }
+.graphnav-editor.entry-flow .entry-question { font-weight: 650; }

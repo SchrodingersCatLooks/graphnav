@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { sendToBackground, type AuthStatus } from '../lib/messages';
 
-export function GoogleConnection({ onConnected, disabled = false }: { onConnected?: (connected: boolean) => void; disabled?: boolean }) {
+export function GoogleConnection({ onConnected, onInitialCheckComplete, disabled = false, expanded = false }: { expanded?: boolean; onConnected?: (connected: boolean) => void; onInitialCheckComplete?: () => void; disabled?: boolean }) {
   const [state, setState] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const [error, setError] = useState('');
   const mounted = useRef(true);
@@ -45,7 +45,7 @@ export function GoogleConnection({ onConnected, disabled = false }: { onConnecte
   }
   useEffect(() => {
     mounted.current = true;
-    void check();
+    void check().finally(() => { if (mounted.current) onInitialCheckComplete?.(); });
     // Returning from another extension window can change the shared auth state.
     const refresh = () => { if (document.visibilityState === 'visible') void check(); };
     document.addEventListener('visibilitychange', refresh);
@@ -60,8 +60,8 @@ export function GoogleConnection({ onConnected, disabled = false }: { onConnecte
     {error && <p className="auth-error" role="alert">{error}</p>}
     <div className="connection-actions">
       {state !== 'connected' && <button type="button" disabled={state === 'checking'} className="connect-button" onClick={() => void check(true)}>Connect Google</button>}
-      <button type="button" disabled={disabled || state === 'checking'} className="auth-refresh" aria-expanded={settings} onClick={() => setSettings(!settings)}>Google account</button>
+      <button type="button" hidden={expanded} disabled={disabled || state === 'checking'} className="auth-refresh" aria-expanded={settings} onClick={() => setSettings(!settings)}>Google account</button>
     </div>
-    {settings && <div className="account-settings">{accountLabel && state === 'connected' && <strong>Connected as {accountLabel}</strong>}<p>Use Google sign-in to reconnect. Chrome may use its signed-in profile account; choose another Chrome profile if the account you need is not offered.</p><div className="connection-actions"><button disabled={disabled || state === 'checking'} className="auth-refresh" onClick={() => void changeConnection(true)}>Change Google account</button><button disabled={disabled || state === 'checking'} className="auth-refresh" onClick={() => void changeConnection(false)}>Disconnect Google</button><button disabled={state === 'checking'} className="auth-refresh" onClick={() => void check()}>Check connection</button></div><p>Your saved maps stay on this laptop.</p></div>}
+    {(expanded || settings) && <div className="account-settings">{accountLabel && state === 'connected' && <strong>Connected as {accountLabel}</strong>}<p>Use Google sign-in to reconnect. Chrome may use its signed-in profile account; choose another Chrome profile if the account you need is not offered.</p><div className="connection-actions"><button disabled={disabled || state === 'checking'} className="auth-refresh" onClick={() => void changeConnection(true)}>Change Google account</button><button disabled={disabled || state === 'checking'} className="auth-refresh" onClick={() => void changeConnection(false)}>Disconnect Google</button><button disabled={state === 'checking'} className="auth-refresh" onClick={() => void check()}>Check connection</button></div><p>Your saved maps stay on this laptop.</p></div>}
   </div>;
 }

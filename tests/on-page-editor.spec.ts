@@ -1,4 +1,4 @@
-import { editGraph, currentMapId, restoreMap, newAiGraph, blankMap, closeTools, mapOptions, panelSettings, selectNode, tools } from './ui-helpers';
+import { openSavedGraph, manageAccount, editGraph, currentMapId, restoreMap, newAiGraph, blankMap, closeTools, mapOptions, panelSettings, selectNode, tools } from './ui-helpers';
 import { test as base, expect, chromium, type BrowserContext, type Page } from '@playwright/test';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -50,9 +50,8 @@ const test = base.extend<{ installed: { context: BrowserContext; restart: () => 
 async function open(context: BrowserContext, url: string) {
   const page = await context.newPage(); await page.goto(url);
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
-  await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
-  await expect(page.locator('.save-state')).not.toHaveText('Saving…');
-  if (await page.getByRole('button', { name: 'Manually', exact: true }).isVisible()) {
+  await expect(page.getByRole('button', { name: 'Manage Google connection', exact: true })).toBeEnabled();
+  if (!await openSavedGraph(page)) {
     await blankMap(page, url.includes('docs.google') ? 'Demo document' : 'Demo folder');
     await page.getByRole('button', { name: /^Build baseline/ }).click(); await saved(page);
   }
@@ -239,6 +238,12 @@ test('floating move and resize survive Chrome restart without changing nodes, th
   })).toBe(true);
   await page.screenshot({ path: testInfo.outputPath('floating-map.png') });
 
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  expect((await panel.boundingBox())!.width).toBe(400);
+  await openSavedGraph(page);
+  await expect.poll(() => panel.boundingBox()).toEqual(result);
+  expect(await graphRows()).toEqual(original);
+
   const context = await installed.restart();
   const restored = await open(context, url); await saved(restored);
   await expect.poll(() => restored.getByRole('dialog').boundingBox()).toEqual(result);
@@ -386,7 +391,7 @@ test('the graph is primary, two clicks connect nodes, edges edit, and page maps 
   await page.getByRole('button', { name: 'Open Research', exact: true }).click();
   await expect(page).toHaveURL('https://drive.google.com/drive/folders/child-folder');
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true })).toBeVisible();
   await blankMap(page, 'Research map');
   await page.getByRole('button', { name: /^Build baseline/ }).click(); await saved(page);
   await closeTools(page);
@@ -426,43 +431,49 @@ test('changing Google account selects its page map and disconnecting preserves e
   await page.getByLabel('Node name', { exact: true }).fill('Only account A');
   await page.getByRole('button', { name: 'Add node', exact: true }).click(); await saved(page);
   await page.getByLabel('Notes', { exact: true }).fill('Keep this private to the original map.');
-  await expect(page.getByRole('button', { name: 'Google account', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Save changes', exact: true }).click(); await saved(page);
   await closeTools(page);
-  await page.getByRole('button', { name: 'Google account', exact: true }).click();
+  await manageAccount(page);
   await page.getByRole('button', { name: 'Change Google account', exact: true }).click();
   await expect(page.getByText('Connected as Fixture B', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  expect(await openSavedGraph(page)).toBe(false);
   await blankMap(page, 'Account B map');
   await page.getByRole('button', { name: /^Build baseline/ }).click();
   await expect(page.locator('.react-flow__node')).toHaveCount(4); await saved(page);
   await expect(page.locator('.react-flow__node').filter({ hasText: 'Only account A' })).toHaveCount(0);
   await worker.evaluate(() => { (globalThis as any).nextAccount = 'fixture-account'; });
+  await manageAccount(page);
   await page.getByRole('button', { name: 'Change Google account', exact: true }).click();
   await expect(page.getByText('Connected as Fixture A', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  expect(await openSavedGraph(page)).toBe(true);
   await expect(page.locator('.react-flow__node')).toHaveCount(5); await saved(page);
   await expect(page.locator('.react-flow__node').filter({ hasText: 'Only account A' })).toHaveCount(1);
-  await page.getByRole('button', { name: 'Google account', exact: true }).click();
   await editGraph(page);
   await page.getByRole('button', { name: 'Edit Only account A', exact: true }).click();
   await expect(page.getByLabel('Notes', { exact: true })).toHaveValue('Keep this private to the original map.');
   await closeTools(page);
-  await page.getByRole('button', { name: 'Google account', exact: true }).click();
+  await manageAccount(page);
   await page.getByRole('button', { name: 'Disconnect Google', exact: true }).click();
   await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
   await expect(page.locator('.react-flow__node')).toHaveCount(0);
   expect(await worker.evaluate(() => (globalThis as any).identityResetCount)).toBe(3);
   await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
+  await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await openSavedGraph(page);
   await expect(page.locator('.react-flow__node')).toHaveCount(5); await saved(page);
   await expect(page.locator('.error-banner')).toHaveCount(0);
 });
 
-test('no saved graph opens manual or AI creation, and a saved graph reopens for navigation', async ({ installed }, testInfo) => {
+test('launcher choices preserve existing maps through manual and automated creation', async ({ installed }, testInfo) => {
   const page = await installed.context.newPage();
   await page.goto('https://drive.google.com/drive/folders/root-folder');
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'With AI', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manual', exact: true })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Edit graph', exact: true })).toBeHidden();
   await expect(page.getByLabel('New map name', { exact: true })).toHaveCount(0);
   await expect(page.locator('.react-flow__node')).toHaveCount(0);
@@ -475,16 +486,17 @@ test('no saved graph opens manual or AI creation, and a saved graph reopens for 
   await page.screenshot({ path: testInfo.outputPath('new-graph-choice.png') });
   await page.getByRole('button', { name: 'Close graph panel', exact: true }).click();
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
   await blankMap(page, 'Saved research');
   await page.getByRole('button', { name: /^Build baseline/ }).click(); await saved(page);
   const originalId = await currentMapId(page);
   await page.getByRole('button', { name: 'Close graph panel', exact: true }).click();
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await openSavedGraph(page);
   await expect(page.getByRole('heading', { name: 'Saved research', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Edit graph', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'New graph', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'With AI', exact: true })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Automated', exact: true })).toBeHidden();
   await expect(page.getByRole('button', { name: 'Generate with AI', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Connect Research', exact: true })).toHaveCount(0);
   await expect(page.locator('.react-flow__node.draggable')).toHaveCount(0);
@@ -502,6 +514,7 @@ test('no saved graph opens manual or AI creation, and a saved graph reopens for 
   await restoreMap(page, originalId);
   await expect(page.locator('.react-flow__node')).toHaveCount(4);
   await page.reload();
+  await openSavedGraph(page);
   await expect(page.getByRole('heading', { name: 'Saved research', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Edit graph', exact: true })).toBeVisible();
   await expect(page.locator('.error-banner')).toHaveCount(0);
@@ -529,7 +542,7 @@ test('New graph with AI in Drive previews selected Doc text without leaving the 
   const folderUrl = 'https://drive.google.com/drive/folders/root-folder';
   await page.goto(folderUrl);
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'With AI', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true })).toBeVisible();
   await newAiGraph(page, 'Study connections');
   const chooser = page.getByLabel('Document to analyze', { exact: true });
   await expect(chooser.getByRole('option', { name: 'Navigation study', exact: true })).toHaveCount(1);
@@ -544,4 +557,44 @@ test('New graph with AI in Drive previews selected Doc text without leaving the 
   await expect(page).toHaveURL(folderUrl);
   await expect(page.locator('.react-flow__node')).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('drive-document-ai-preview.png') });
+});
+
+test('Graph starts with a compact launcher and New Graph has a separate backable choice screen', async ({ installed }, testInfo) => {
+  const page = await installed.context.newPage();
+  await page.goto('https://drive.google.com/drive/folders/root-folder');
+  await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manage Google connection', exact: true })).toBeVisible();
+  const panel = page.getByRole('dialog');
+  const box = (await panel.boundingBox())!;
+  expect(box.width).toBeLessThanOrEqual(420); expect(box.height).toBeLessThan(450);
+  await page.screenshot({ path: testInfo.outputPath('compact-launcher.png') });
+  await page.getByRole('button', { name: 'New Graph', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Manual', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Automated', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manage Google connection', exact: true })).toBeHidden();
+  await expect(page.getByText('Google connected', { exact: true })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath('compact-new-graph.png') });
+  await page.getByRole('button', { name: 'Manual', exact: true }).click();
+  await expect(page.getByLabel('New map name', { exact: true })).toBeFocused();
+  await page.getByLabel('New map name', { exact: true }).fill('Uncreated draft');
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Automated', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.getByRole('button', { name: 'Use Existing Graph', exact: true }).click();
+  await expect(page.getByText('No saved graphs yet.', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manage Google connection', exact: true })).toBeHidden();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.setViewportSize({ width: 640, height: 400 });
+  await page.getByRole('button', { name: 'New Graph', exact: true }).click();
+  await page.getByRole('button', { name: 'Automated', exact: true }).click();
+  await expect(page.getByLabel('New map name', { exact: true })).toBeFocused();
+  const compact = (await panel.boundingBox())!;
+  expect(compact.x).toBeGreaterThanOrEqual(0); expect(compact.y).toBeGreaterThanOrEqual(0);
+  expect(compact.x + compact.width).toBeLessThanOrEqual(640); expect(compact.y + compact.height).toBeLessThanOrEqual(400);
+  await page.screenshot({ path: testInfo.outputPath('compact-automated-small-viewport.png') });
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
 });

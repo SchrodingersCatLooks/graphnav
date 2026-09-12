@@ -1,4 +1,4 @@
-import { panelSettings } from './ui-helpers';
+import { blankMap, manageAccount, panelSettings } from './ui-helpers';
 import { test as base, expect, chromium, type BrowserContext } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -61,8 +61,7 @@ test('Drive shell opens, closes, restores focus, and preserves host editing and 
   await editor.fill('Before opening');
   await trigger.click();
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.getByText('Drive folder', { exact: true })).toBeVisible();
-  await expect(page.getByText('Google data is not connected yet')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manage Google connection', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close graph panel' })).toBeFocused();
   await page.screenshot({ path: testInfo.outputPath('drive-panel.png') });
 
@@ -89,9 +88,8 @@ test('Docs shell uses document context and supports keyboard opening', async ({ 
   const trigger = page.getByRole('button', { name: 'Graph', exact: true });
   await trigger.focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('Google Docs', { exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Manually', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'With AI', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
   await page.getByRole('textbox').fill('Still editable');
@@ -102,10 +100,10 @@ test('Drive SPA navigation updates context without duplicate buttons', async ({ 
   await page.goto('https://drive.google.com/drive/u/1/my-drive');
   const trigger = page.getByRole('button', { name: 'Graph', exact: true });
   await trigger.click();
-  await expect(page.getByText('My Drive', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true })).toBeVisible();
   await page.evaluate(() => history.pushState({}, '', '/drive/u/1/folders/next-folder'));
   await expect(page.getByRole('dialog')).toBeVisible();
-  await expect(page.getByText('Drive folder', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Use Existing Graph', exact: true })).toBeVisible();
   await expect(trigger).toHaveCount(1);
   await page.evaluate(() => history.pushState({}, '', '/drive/u/1/recent'));
   await expect(trigger).toHaveCount(0);
@@ -169,7 +167,7 @@ test('Docs controls stay above host toolbars and inside the visible viewport', a
   });
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.5 });
-  const notice = page.getByText('Google data is not connected yet');
+  const notice = page.getByRole('button', { name: 'Manage Google connection', exact: true });
   for (const control of [heading, close, trigger, notice]) {
     await expect.poll(() => control.evaluate((element) => {
       const box = element.getBoundingClientRect();
@@ -201,11 +199,13 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
   });
   await page.goto('https://drive.google.com/drive/my-drive');
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await manageAccount(page);
   await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
   await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Close graph panel' }).click();
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await manageAccount(page);
   await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
   await worker.evaluate(() => {
     const chrome = (globalThis as unknown as { chrome: { identity: { getAuthToken: (details: { interactive?: boolean }) => Promise<{ token?: string }> } } }).chrome;
@@ -214,7 +214,6 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
       return {};
     }) as typeof chrome.identity.getAuthToken;
   });
-  await page.getByRole('button', { name: 'Google account', exact: true }).click();
   await page.getByRole('button', { name: 'Check connection', exact: true }).click();
   await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
@@ -225,6 +224,7 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
 test('floating controls support keyboard, cancel a drag, and stay reachable after zoom and viewport changes', async ({ page }, testInfo) => {
   await page.goto('https://docs.google.com/document/d/fixture-doc/edit');
   await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await blankMap(page, 'Placement test');
   await panelSettings(page);
   await page.getByRole('button', { name: 'Float panel', exact: true }).click();
   const panel = page.getByRole('dialog');

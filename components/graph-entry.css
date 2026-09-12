@@ -1,0 +1,14 @@
+.graphnav-shell .graph-entry-choice, .graphnav-editor .graph-entry-choice {
+  display: flex; align-items: center; gap: 16px; width: 100%; padding: 18px 16px;
+  border: 1px solid #cbdcd5; border-radius: 12px; background: white; color: #214b45;
+  text-align: left; cursor: pointer; min-width: 0;
+}
+.graphnav-shell .graph-entry-choice.accent, .graphnav-editor .graph-entry-choice.accent { background: #f1f7f4; }
+.graphnav-shell .graph-entry-choice:hover:not(:disabled), .graphnav-editor .graph-entry-choice:hover:not(:disabled) { background: #e9f3ee; border-color: #84ad9c; }
+.graph-entry-choice .entry-icon { display: grid; place-items: center; flex: 0 0 38px; color: #2c6358; }
+.graph-entry-choice .entry-copy { display: grid; gap: 5px; flex: 1; min-width: 0; }
+.graph-entry-choice strong { font-size: 17px; font-weight: 650; line-height: 1.3; overflow-wrap: anywhere; }
+.graph-entry-choice small { font-size: 13px; font-weight: 400; line-height: 1.5; color: #5d736d; }
+.graph-entry-choice .entry-chevron { flex-shrink: 0; }
+.graph-entry-choice:disabled { opacity: .5; cursor: default; }
+.graph-entry-choice:focus-visible { outline: 3px solid #38a38c; outline-offset: 2px; }
