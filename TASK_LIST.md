@@ -13,12 +13,12 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## V1 manual build queue
 
-All application work is TODO. Hours are elapsed from the start of the proposed build session.
+M1-A has an existing scaffold in [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) and is in REVIEW with unresolved partner-browser checks; other implementation tasks remain TODO. Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | TODO | Same installed shell on both laptops; scripts and lockfile committed |
+| M1-A | 0.5–2h | Rajvansh | Finish acceptance of existing extension shell in PR #3 | REVIEW | Resolve reported Docs clipping/side-rail overlap/zoom failures; verify exact build and full checklist on both laptops before merge |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree source/idea nodes, labeled edges, and edit commands | TODO | UI and adapters share stable IDs, targets, and origin fields |
 | M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | TODO | Add idea, connect/label/edit/remove personal items, and open real source |
@@ -52,7 +52,7 @@ Planned next stage. All tasks are TODO, not evidence of work in progress. Start 
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | Unclaimed | No implementation merged; local work unverified | Setup unverified | Claim M1-A after M0 |
-| Partner | Unclaimed | No implementation merged; local work unverified | Setup unverified | Claim M1-B after M0 |
+| Rajvansh | M1-A, `rajvansh-ui`, [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) | PR reports scaffold/build/tests; this documentation update did not rerun them | Partner reports unresolved Docs clipping, overlap, and zoom acceptance | Preserve existing code; verify loaded build and fix/retest the reported browser failures |
+| Partner | M1-A acceptance support; M1-B console preparation | PR #3 contains the partner's browser report; Google access remains unverified | Exact loaded build and browser acceptance need confirmation | Retest the same production build with Rajvansh; prepare Google Console in parallel |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
