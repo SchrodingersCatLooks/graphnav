@@ -19,8 +19,8 @@ Suggested pitch: **Turn the information you already use into a map you can navig
 ## Product versions
 
 **Current decision: complete the initial V1 manual workflow, then deliver V2 GPT-assisted graph generation in the same MVP effort.**
-The user explicitly wants the complete route through V2 by the 6 AM code-freeze target on September 12, ahead of a 4 PM local Eastern submission.
-V2 is required by that target but is not yet implemented.
+The user removed the 6 AM code freeze and wants the complete route through V2 ahead of a 4 PM local Eastern submission on September 12.
+V2 generation and evidence preview are implemented; persistent review decisions and full acceptance remain open in TASK_LIST.
 Both versions use the same graph, source navigation, and persistence system.
 The timeboxes and explicit fallback decision points are in BUILD_PLAN.
 

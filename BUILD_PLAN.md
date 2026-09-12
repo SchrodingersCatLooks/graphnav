@@ -255,7 +255,8 @@ Grant investigation can start during step 1; it must not block read-only suggest
 **Tasks:** X4-A, X4-B, X7-A, X7-B.
 **Tools:** pointer events, visualViewport/popover, extension preferences, Docs heading/bookmark locators.
 
-1. Complete floating placement as a separate small checkpoint: Rajvansh adds drag/resize/dock/reset and Eddy persists/clamps the rectangle independently of graph view.
+1. Complete floating placement as a separate small checkpoint: Rajvansh adds drag/resize/dock/reset plus the versioned chrome.storage.local placement bridge and viewport clamping independently of graph view.
+   Eddy reviews the persistence/restart/display-change results while retaining proposal-store ownership.
 2. Complete deeper navigation as another checkpoint: Eddy adds tab-aware heading/bookmark locators through a tested migration; Rajvansh shows section nodes and evidence controls.
 3. Test actual Chrome deep links, stale-anchor fallback to tab/excerpt, viewport resize, browser zoom, keyboard close/focus, and normal document editing.
 

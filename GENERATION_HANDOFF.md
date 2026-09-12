@@ -128,4 +128,13 @@ Eddy’s next task is the already-authorized G3-B proposal store, decisions, add
 Please publish its typed API for Rajvansh’s G3-A controls.
 Rajvansh is implementing X4-A shell move/resize/dock/reset plus its small versioned placement message/storage key while that store is built.
 X4 changes no Dexie schema, proposal records, repository acceptance or backup formats.
+
+## PR #14 placement complete; X2-A UI claim
+
+PR #14 merged as 373369f after both typechecks, production build and all 118 tests passed.
+X4 uses only panel-placement:v1:drive/docs settings and preserves the old width/dock keys.
+Rajvansh now owns X2-A target-map selection and source-navigation continuity in the shared editor/reader plus small typed background navigation/session changes.
+This reuses the existing Doc/PDF selected-import APIs and changes no Dexie schema, proposal store, acceptance method or backup format.
+Eddy retains G3-B and its previously authorized persistence files.
+Combined multi-source AI input is not claimed by this UI checkpoint; it remains an explicit X2-B contract task.
 The API account owner should replace the chat-exposed key privately before final use; no credential or pairing value is in GitHub.

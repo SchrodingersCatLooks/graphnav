@@ -1,6 +1,6 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #13 merged as `5fa1ba4`.
+Last shared update: 2026-09-12, after runtime PR #14 merged as `373369f`.
 
 ## Working on main
 
@@ -8,7 +8,8 @@ Last shared update: 2026-09-12, after runtime PR #13 merged as `5fa1ba4`.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
 [PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
-The current main runtime matches checkpoint 12ee690.
+[PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
+The current main runtime matches checkpoint 24e6a2e.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -19,6 +20,8 @@ Eddy's application work through 179d98f is included through normal merges.
 - Search, consistent canvas/list pages, cycle-safe branch collapse, and compact focus previews make larger maps accessible.
   Focus previews preserve saved positions and do not allow dragging; use Show whole map to arrange.
 - Compact, standard, and wide panel presets plus left/right docking persist in extension-owned storage.
+- Floating panels support pointer/keyboard move/resize, docking/reset and cancelled-drag rollback.
+  Placement survives Chrome restarting and clamps to the visual viewport without changing saved graph records.
 - Check destinations uses Eddy's checker and shows unavailable sources while retaining personal notes.
 - The Docs panel sits on the left, navigates exact document tabs in the same browser tab, highlights the current tab, and restores the panel after navigation.
 - The extension background owns Dexie storage and validated edit commands.
@@ -35,13 +38,14 @@ Eddy's application work through 179d98f is included through normal merges.
   Selection/purpose/map changes invalidate preview state, cancelled/late reads cannot replace newer choices, and preview sends nothing to a model.
 - Generation input validation binds text, character totals, passage IDs, account/source/locator/version and allowed map-node IDs.
   Empty drafts require valid identity/schema; late output after timeout and caller cancellation are refused.
-  The merged extension client now pairs with a local relay and displays validated drafts/evidence; the actual provider connection is still unverified.
+  The merged extension client pairs with a local relay and displays validated drafts/evidence.
+  One real OpenAI request returned eight ideas and eight connections from two explicitly selected authored PDF pages, with exact evidence navigation and unchanged saved graph.
 - Eddy's authored six-page demo paper and generation/scale tests are now included on main.
 
 ## Verification and limits
 
-Node 22.23.2 / npm 10.9.9: typecheck, production build and all 94 combined tests passed for the PR #11 integration.
-The final preview-space/scroll refinement was rebuilt and rerun in all four affected installed Docs/PDF cases before committing 8f092f1.
+Node 22.23.2 / npm 10.9.9: extension/relay typechecks, production build and all 118 combined tests passed for the PR #14 integration.
+Floating controls passed installed pointer/keyboard, cancellation, restart, dock/reset, narrow-window/zoom, top-layer and host-editing checks.
 Installed Chromium tests use isolated profiles and synthetic Google API responses.
 They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
 Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
@@ -61,31 +65,26 @@ This includes mocked API responses and is not a real Google latency or productio
 Group junctions are additional rendered elements; dense relationship-heavy graphs still need broader performance testing.
 PDF limits are 20 MiB per file, 300 pages, and 100 MiB total saved PDF bytes.
 Password-protected PDFs and OCR are unsupported.
-Group membership controls, floating placement, source authoring, and AI generation/review remain open.
+Group membership controls, mixed-source workflow completion, source authoring, and persistent AI review remain open.
 Backups currently exclude PDF bytes and future AI decisions.
 No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-G1-A is merged and verified for selected-content preview.
-G2-A extension pairing, request/cancel handling and proposal/evidence UI merged in PR #12.
-All 102 tests pass, including an installed Chrome extension talking to a real loopback HTTP fixture.
-The actual server/provider and persistent review decisions remain open.
-Eddy should bring main into partner-data and read GENERATION_HANDOFF before changing the same generation/type/request files.
-His work through 179d98f is now merged, including the authored paper and request/scale tests.
-The review fixes are implemented with reproductions and regression checks; Eddy retains server/provider startup and proposal-persistence/migrations.
-GENERATION_HANDOFF defines the extension client's bounded loopback contract so he can build the server independently.
-One real OpenAI request now returned eight ideas and eight connections inside the installed PDF reader.
-Persistent accepted/edited/rejected AI decisions are still open, and no complete V2 acceptance is claimed.
+G1 selected-content preview and G2 relay generation/evidence display are merged through PR #13.
+Eddy should bring main into partner-data and read GENERATION_HANDOFF before editing shared generation/type/request files.
+His relay work through a8325dc is merged and reconciled with the extension client.
+Eddy owns G3-B proposal persistence, decisions, additive migration and atomic acceptance/backup methods.
+Rajvansh owns the G3-A review UI and is building X2-A project-map selection/navigation while the typed proposal API is prepared.
+Persistent accepted/edited/rejected AI decisions remain open; no complete V2 acceptance is claimed.
 
-The user supplied OpenAI project, organization and key metadata.
-These IDs do not authenticate model requests.
-A private ignored .env.relay.local file is prepared on Rajvansh’s laptop for the actual secret; it is not committed or bundled.
-The user saved a value locally, but the first private GET /v1/models check returned 401 invalid_api_key.
-The user has been asked to replace it with the complete actual secret.
-G0-A remains blocked on successful authentication and verifying live model access, funding and the test-spend limit.
-Do not put a key in chat, GitHub, extension storage, or the browser bundle.
-This does not block manual/source-assisted maps or PDF reading.
+The replacement private key authenticated successfully and completed one real gpt-5-mini-2025-08-07 request in 24,973 ms, using 757 input and 1,552 output tokens.
+Its private ignored .env.relay.local file is not committed or bundled; Chrome stores only a separate relay pairing code.
+The relay defaults to one active request, five starts per minute and twenty starts per launch.
+No account-wide monetary budget was configured.
+The exposed chat credential should be rotated before final use; do not put replacement keys in chat, GitHub, extension storage or the browser bundle.
+Startup and authenticated health were verified; the relay process was stopped after that check.
+Use relay/README.md to start it for the demo, then pair from the extension settings.
 Eddy's authored six-page demo PDF is now on main at demo/GraphNav-demo-paper.pdf; it is not an independent publication.
 Its content and the shared Doc still need the final evidence/usefulness check.
 
@@ -103,6 +102,11 @@ The assistants must fetch/read current main and the published handoffs; a commit
 Google files remain read only in the current UI; changing a graph never renames or moves source files.
 
 ## Completed action log
+
+- 2026-09-12: Pulled current main before implementing X4-A, merged PR #14 as 373369f, then pulled main again.
+  The 24e6a2e runtime passes both typechecks, production build and all 118 tests.
+  Desktop/narrow screenshots inspected; panel gestures leave nodes, relationships, positions and annotations unchanged.
+  Updated stale AI/freeze prose and claimed X2-A UI/navigation outside Eddy's proposal persistence files.
 
 - 2026-09-12: Added the initial repository workflow starter.
 - 2026-09-12: Added useful idea-note context, shared nightly milestones, and task/status update instructions. No application features were implemented by this documentation change.

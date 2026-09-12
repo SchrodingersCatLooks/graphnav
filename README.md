@@ -8,10 +8,11 @@ The local OpenAI relay now generates real suggestions with supporting text and s
 Persistent accept/edit/reject decisions remain the next G3 integration step.
 See [relay setup](./relay/README.md) for the private configuration and startup command.
 
-**Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, floating placement and final demo acceptance.
+PR #14 adds movable/resizable floating panels, saved placement, docking and reset.
+**Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Verification:** Node 22.23.2 / npm 10.9.9 typecheck, production build and all 116 tests passed; the final recovery-message refinement passed 14 affected tests.
+**Verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
 Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
 Separately, one actual OpenAI request returned eight ideas/eight connections from two authored PDF pages, with exact evidence navigation and unchanged saved graph.
 No fresh Google-account acceptance or full saved-review loop is implied.
@@ -90,6 +91,11 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    Focus previews preserve saved positions; return to the whole map to drag nodes.
    **Find a node** searches the loaded map, and **Previous 50 / Next 50** keep the list and canvas on the same page.
    Choose **Panel width** and **Dock left/right** in the footer; these settings survive Chrome restarting.
+   **Float panel** enables **Move** in the header and **Resize** in the footer.
+   Drag those controls or focus one and use arrow keys; hold Shift for larger steps.
+   Escape cancels an active drag, otherwise it closes the panel.
+   **Dock panel** restores the docked layout, and **Reset position** returns to the default side and width.
+   Floating placement survives restarting Chrome and stays within the visible window after resizing or zooming.
 9. Use **Refresh source**, close/reopen the panel, and verify your personal edits remain.
    A selected-only map must not suddenly add unselected siblings.
    Export/import a backup through the toolbar or the optional My maps workspace.
@@ -144,7 +150,9 @@ V2 generation controls and the final demo acceptance are still open in TASK_LIST
    Changing the selection or purpose clears the old preview; **Cancel preview** ignores late results.
 
 Previewing sends nothing to a model and does not change the manual graph.
-**Generate with AI** is currently unavailable while the relay is being connected.
+After pairing the running local relay in **AI connection** settings, choose **Generate with AI** to request suggestions from the selected preview.
+Use **Cancel** while it runs, then inspect each suggestion's supporting text and open its evidence source.
+The current draft is a preview; persistent accept/edit/reject controls are still being implemented.
 API keys must remain on the relay server, not in the extension, GitHub or chat.
 The authored demo paper is available at [demo/GraphNav-demo-paper.pdf](./demo/GraphNav-demo-paper.pdf).
 It is demonstration content, not a published study.
@@ -208,7 +216,8 @@ Its tested runtime e30ff42 passes typecheck/build/all 58 tests.
 The public manifest key and read scopes are already present on main.
 PR #11 merges Eddy work through 179d98f and the selected-text preview integration.
 The combined suite passes 94 tests; the final preview layout passed four focused installed-browser checks.
-Read GENERATION_HANDOFF for the active relay-client boundary; no model has been called.
+PR #13 integrates the relay and verifies one real OpenAI generation inside the PDF reader.
+Read GENERATION_HANDOFF for the active proposal-persistence boundary and exact verification limits.
 Read [EDITOR_HANDOFF.md](./EDITOR_HANDOFF.md) before changing shared messages or integrating generation.
 Bring current main into each working branch with a normal merge, preserving local changes.
 GitHub does not synchronize private maps, Google tokens, or PDF bytes.
