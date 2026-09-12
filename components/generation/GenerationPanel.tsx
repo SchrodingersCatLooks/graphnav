@@ -6,10 +6,16 @@ import type { RelayStatus } from '../../lib/generation/relay';
 import type { GenerationOutcome } from '../../lib/generation/request';
 import type { Locator } from '../../lib/graph/types';
 import { DraftPreview } from './DraftPreview';
+import type { ApplyResult } from '../../lib/storage/proposals';
+
+/** Falls back to a readable name when nothing was selected by title. */
+function sourceTitle(source: GenerationSource): string {
+  return source.kind === 'pdf' ? 'Selected paper' : 'Selected document';
+}
 import './generation.css';
 
 type Preview = { input: GenerationInput; hash: string; notices: string[]; names: string[] };
-export function GenerationPanel({ expanded = false, source, graphKey, graphId, revision, busy, onNavigate }: { expanded?: boolean; source: GenerationSource; graphKey: string; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void> }) {
+export function GenerationPanel({ expanded = false, source, graphKey, graphId, revision, busy, onNavigate, onApplied }: { expanded?: boolean; source: GenerationSource; graphKey: string; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void>; onApplied?: (result: ApplyResult) => void }) {
   const [open, setOpen] = useState(false), [choices, setChoices] = useState<TextChoice[]>([]), [selected, setSelected] = useState<string[]>([]);
   const [purpose, setPurpose] = useState<GenerationInput['purpose']>('concept-connections');
   const [query, setQuery] = useState(''), [limit, setLimit] = useState(20);
@@ -18,11 +24,19 @@ export function GenerationPanel({ expanded = false, source, graphKey, graphId, r
   const [relay, setRelay] = useState<RelayStatus>({ configured: false, ready: false }), [checking, setChecking] = useState(false);
   const [generating, setGenerating] = useState(false), [outcome, setOutcome] = useState<GenerationOutcome | null>(null);
   const requestId = useRef<string | null>(null), connectionEpoch = useRef(0);
+  // Set when this panel's own review changed the map, so the resulting revision
+  // change does not tear down the draft the user just acted on.
+  const appliedHere = useRef(false);
   const previewElement = useRef<HTMLDivElement>(null);
   const operation = useRef(0), pending = useRef<AbortController | null>(null), sourceRef = useRef(source);
   function cancelRequest() { if (requestId.current) void sendToBackground({ type: 'CANCEL_DRAFT', requestId: requestId.current }).catch(() => {}); requestId.current = null; }
   function invalidate() { operation.current++; pending.current?.abort(); pending.current = null; cancelRequest(); setGenerating(false); setOutcome(null); setReading(false); setListing(false); setPreview(null); setError(''); }
-  useEffect(() => { invalidate(); }, [graphKey]);
+  useEffect(() => {
+    // Applying a review bumps the map revision. Tearing down here would remove
+    // the draft and its confirmation the instant the user saved.
+    if (appliedHere.current) { appliedHere.current = false; return; }
+    invalidate();
+  }, [graphKey]);
   useEffect(() => {
     if (sourceRef.current !== source) { invalidate(); setOpen(false); setSelected([]); setChoices([]); sourceRef.current = source; }
     return () => { operation.current++; connectionEpoch.current++; pending.current?.abort(); cancelRequest(); };
@@ -110,7 +124,7 @@ export function GenerationPanel({ expanded = false, source, graphKey, graphId, r
         {!relay.ready && <p className="local-note">AI generation is not connected yet. You can keep building and editing your map.</p>}
         {generating && <p className="local-note" role="status">Finding connections in your selected text… You can cancel at any time.</p>}
         {outcome && outcome.status !== 'draft' && <p className="source-notice" role="status">{outcome.status === 'cancelled' ? 'Generation cancelled. Your map has not changed.' : outcome.status === 'timeout' ? 'Generation took too long. Retry with fewer tabs or pages.' : outcome.status === 'empty' ? 'No useful connections were proposed for this selection. Try a different purpose or more relevant content.' : outcome.status === 'refused' ? `The model declined this selection: ${outcome.reason}` : outcome.status === 'invalid' ? `The reply could not be used: ${outcome.error}` : outcome.status === 'unavailable' ? outcome.error : 'Another AI request is running. Wait for it to finish or cancel it in its tab.'}</p>}
-        {outcome?.status === 'draft' && <DraftPreview draft={outcome.draft} input={preview.input} onNavigate={onNavigate} />}
+        {outcome?.status === 'draft' && <DraftPreview draft={outcome.draft} input={preview.input} sourceTitle={preview.names[0] ?? sourceTitle(source)} graphId={graphId} revision={revision} onNavigate={onNavigate} onApplied={(result) => { appliedHere.current = true; onApplied?.(result); }} />}
       </div>}
     </div>}
   </section>;

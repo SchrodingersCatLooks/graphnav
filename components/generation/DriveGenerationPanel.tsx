@@ -5,9 +5,10 @@ import type { Locator } from '../../lib/graph/types';
 import { docsGenerationSource } from '../../lib/generation/selection';
 import { getPageContext } from '../../lib/page-context';
 import { GenerationPanel } from './GenerationPanel';
+import type { ApplyResult } from '../../lib/storage/proposals';
 
 type DocumentChoice = { id: string; title: string };
-export function DriveGenerationPanel({ context, graphId, revision, busy, onNavigate }: { context: SourceContext; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void> }) {
+export function DriveGenerationPanel({ context, graphId, revision, busy, onNavigate, onApplied }: { context: SourceContext; graphId?: string; revision?: number; busy: boolean; onNavigate: (locator: Locator) => Promise<void>; onApplied?: (result: ApplyResult) => void }) {
   const [documents, setDocuments] = useState<DocumentChoice[]>([]), [documentId, setDocumentId] = useState('');
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
   const source = useMemo(() => documentId ? docsGenerationSource(documentId) : null, [documentId]);
@@ -31,6 +32,6 @@ export function DriveGenerationPanel({ context, graphId, revision, busy, onNavig
     {error && <p role="alert">{error}</p>}
     {!loading && !error && !documents.length && <p>No Google Docs were found at this folder level. Open a folder containing a Doc, open a Doc directly, or use Open a PDF from the GraphNav toolbar popup. Folder names alone are not enough to infer meaningful connections.</p>}
     {documents.length > 0 && <label>Document to analyze<select aria-label="Document to analyze" value={documentId} disabled={busy} onChange={(event) => setDocumentId(event.target.value)}><option value="">Choose a document</option>{documents.map((doc) => <option key={doc.id} value={doc.id}>{doc.title}</option>)}</select></label>}
-    {source && <GenerationPanel key={documentId} expanded source={source} graphKey={`${graphId ?? 'new'}:${revision ?? 0}`} graphId={graphId} revision={revision} busy={busy} onNavigate={onNavigate} />}
+    {source && <GenerationPanel key={documentId} expanded source={source} graphKey={`${graphId ?? 'new'}:${revision ?? 0}`} graphId={graphId} revision={revision} busy={busy} onNavigate={onNavigate} onApplied={onApplied} />}
   </div>;
 }
