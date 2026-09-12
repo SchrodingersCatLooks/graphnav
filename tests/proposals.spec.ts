@@ -1,5 +1,6 @@
 import 'fake-indexeddb/auto';
 import { test, expect } from '@playwright/test';
+import { Dexie } from 'dexie';
 import { GraphDatabase } from '../lib/storage/database';
 import { GraphRepository } from '../lib/storage/repository';
 import { applyProposals, listDecisions, recallDecisions } from '../lib/storage/proposals';
@@ -376,4 +377,67 @@ test('an accepted suggestion keeps a destination you can open', async () => {
   expect(snapshot.sources.some((source) => source.id === node.sourceId)).toBe(true);
   // The remaining passages are still evidence; only the first is the destination.
   expect(node.evidence).toHaveLength(2);
+});
+
+test('suggestions accepted before destinations existed gain one on upgrade', async () => {
+  const FINGERPRINT = 'f'.repeat(64);
+  const name = 'graphnav-upgrade-' + crypto.randomUUID();
+
+  // Open at version 3 the way a database written before this change is, so
+  // the upgrade has something to upgrade. Declaring the schema through
+  // GraphDatabase would create it at the current version and prove nothing.
+  const before = new Dexie(name);
+  before.version(1).stores({
+    graphs: 'id, accountScope, updatedAt',
+    sources: 'id, &sourceKey, [provider+accountKey]',
+    nodes: 'id, graphId, sourceId, &[graphId+importKey]',
+    relationships: 'id, graphId, *memberNodeIds, &[graphId+importKey], [graphId+scopeKey]',
+    itemEdits: '[graphId+itemType+itemId], graphId',
+    layoutItems: '[graphId+itemType+itemId], graphId',
+    sourceCache: 'id, &[sourceId+sourceVersion+chunkKey], lastAccessedAt',
+    blobs: 'id',
+  });
+  before.version(2).stores({ proposalDecisions: '[graphId+proposalKey], graphId, decision' });
+  before.version(3).stores({ undoEntries: '++seq, graphId, [graphId+seq]' });
+  await before.open();
+  const graphId = crypto.randomUUID();
+  const graph = { id: graphId, contentRevision: 0 };
+  await before.table('graphs').put({
+    id: graphId, title: 'Paper', createdVia: 'import', contentRevision: 0,
+    sourceBindings: [], view: { x: 0, y: 0, zoom: 1 }, createdAt: Date.now(), updatedAt: Date.now(),
+  });
+  const sourceId = crypto.randomUUID();
+  await before.table('sources').put({
+    id: sourceId, sourceKey: JSON.stringify(['local-pdf', 'local', FINGERPRINT]),
+    provider: 'local-pdf', accountKey: 'local', resourceId: FINGERPRINT, kind: 'pdf',
+    title: 'Paper', availability: 'available', createdAt: Date.now(), updatedAt: Date.now(),
+  });
+  const nodeId = crypto.randomUUID();
+  await before.table('nodes').put({
+    id: nodeId, graphId: graph.id, kind: 'idea', origin: 'generated',
+    baseLabel: 'Branching drives backtracking', body: '',
+    evidence: [{ sourceId, locator: { kind: 'pdf', fingerprint: FINGERPRINT, pageIndex: 3 }, sourceVersion: FINGERPRINT, quote: 'Backtracking rose.' }],
+    createdAt: Date.now(), updatedAt: Date.now(),
+  });
+  const manualId = crypto.randomUUID();
+  await before.table('nodes').put({
+    id: manualId, graphId: graph.id, kind: 'idea', origin: 'manual',
+    baseLabel: 'My own thought', body: '', evidence: [], createdAt: Date.now(), updatedAt: Date.now(),
+  });
+  expect((await before.table('nodes').get(nodeId))!.locator).toBeUndefined();
+  before.close();
+
+  // Reopening runs the upgrade.
+  const after = new GraphDatabase(name);
+  const repaired = new GraphRepository(after);
+  const snapshot = await repaired.readGraph(graph.id);
+
+  const generated = snapshot.nodes.find((node) => node.id === nodeId)!;
+  expect(generated.locator).toEqual({ kind: 'pdf', fingerprint: FINGERPRINT, pageIndex: 3 });
+  expect(generated.sourceId).toBe(sourceId);
+  // A node that was never generated is left exactly as it was.
+  const manual = snapshot.nodes.find((node) => node.id === manualId)!;
+  expect(manual.locator).toBeUndefined();
+  expect(manual.sourceId).toBeUndefined();
+  await after.delete();
 });

@@ -42,6 +42,31 @@ export class GraphDatabase extends Dexie {
     this.version(3).stores({
       undoEntries: '++seq, graphId, [graphId+seq]',
     });
+
+    /**
+     * Version 4 gives suggestions accepted before destinations existed the
+     * destination they always had the evidence for.
+     *
+     * The canvas shows a node's Open control only when the node itself carries
+     * a locator. Accepted suggestions stored their cited passages but no
+     * locator of their own, so a map built earlier shows ideas that cannot be
+     * traced back to the page they came from, and no amount of reloading fixes
+     * it — the record is simply missing a field. Regenerating would work but
+     * costs the user the map they already arranged.
+     *
+     * This changes no table, only fills a gap from data already present, and
+     * touches a node only when it is generated, has evidence, and has no
+     * destination yet. Anything else is left exactly as it is.
+     */
+    this.version(4).upgrade(async (transaction) => {
+      const nodes = transaction.table<GraphNode, string>('nodes');
+      for (const node of await nodes.toArray()) {
+        if (node.origin !== 'generated' || node.locator || !node.evidence?.length) continue;
+        const [destination] = node.evidence;
+        if (!destination) continue;
+        await nodes.put({ ...node, sourceId: destination.sourceId, locator: destination.locator });
+      }
+    });
     this.on('versionchange', () => this.close());
   }
 }
