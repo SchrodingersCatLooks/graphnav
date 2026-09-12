@@ -10,7 +10,11 @@ export function ConnectionPopup({ from, to, editor }: { from: string; to: string
   const draft = editor.draft;
   const [saving, setSaving] = useState(false);
   const input = useRef<HTMLInputElement>(null);
-  useEffect(() => { input.current?.focus(); }, []);
+  // A connection with no label yet was just drawn, so put the cursor where the
+  // name goes. An existing one was selected to look at or act on: taking focus
+  // into a text field there would quietly disable Delete, which everywhere else
+  // removes what is selected.
+  useEffect(() => { if (!editor.draft.label) input.current?.focus(); }, []);
   function change(next: ConnectionValues) { editor.onChange(next); }
   async function save() {
     if (saving || editor.busy) return;

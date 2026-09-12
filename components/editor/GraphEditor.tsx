@@ -95,6 +95,22 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
     return () => window.removeEventListener('keydown', handler);
   }, []);
 
+  /**
+   * Delete removes what is selected on the canvas. No confirmation dialog:
+   * undo is one keystroke away, which is quicker to recover from than a prompt
+   * is to read, and a prompt on every removal makes tidying a map feel like
+   * work. React Flow owns the keystroke so that typing a Backspace in a field
+   * stays text editing.
+   */
+  function removeSelected(target: Selection) {
+    void perform(async (data) => {
+      if (!data) return;
+      await repository.removeItem({ graphId: data.graph.id, ...target }, data.graph.contentRevision);
+      setSelection((previous) => previous?.itemId === target.itemId ? null : previous);
+      setTool((previous) => previous === 'edit' ? null : previous);
+    });
+  }
+
   function startNewGraph() { setNewMap(''); setCreationMode(null); showTool('new'); onEntryScreenChange?.('new'); }
   function chooseCreation(mode: 'manual' | 'ai') { setCreationMode(mode); onEntryScreenChange?.(mode === 'manual' ? 'manual' : 'automated'); }
   function openExisting(id: string) {
@@ -359,7 +375,7 @@ export function GraphEditor({ onTitleChange, entryScreen, onEntryScreenChange, p
           {projection && projection.pages > 1 && <><button disabled={projection.page === 0} onClick={() => setGraphPage(projection.page - 1)}>Previous 50</button><span>Page {projection.page + 1} of {projection.pages}</span><button disabled={projection.page === projection.pages - 1} onClick={() => setGraphPage(projection.page + 1)}>Next 50</button></>}
           <span>Dashed lines show source structure. Your own connections are solid.</span></div></details></div>}
         {targetStatus && <p className="target-status" role="status">{targetStatus}</p>}
-        {snapshot ? <GraphCanvas key={`${snapshot.graph.id}:${canvasVersion}:${focusId}:${collapsedIds.join(',')}:${graphPage}:${query}`} focusId={focusId} collapsedIds={collapsedIds} page={graphPage} activeTabId={activeTabId} fit={canvasVersion > 0 || !!query || !!focusId || collapsedIds.length > 0 || graphPage > 0} snapshot={snapshot} query={query} busy={busy || dirty} editable={editing} focusRequest={focusRequest} connectionEditor={selection?.itemType === 'relationship' && snapshot.relationships.find((item) => item.id === selection.itemId)?.members.length === 2 ? { id: selection.itemId, busy, onSave: saveConnection, onRemove: () => perform(async (data) => { if (data && selection) await repository.removeItem({ graphId: data.graph.id, ...selection }, data.graph.contentRevision); }), onCancel: closeConnection, draft: connectionDraft, onChange: (draft) => { setConnectionDraft(draft); setDirty(true); } } : undefined} connectingFrom={connectionStart}
+        {snapshot ? <GraphCanvas onDelete={removeSelected} key={`${snapshot.graph.id}:${canvasVersion}:${focusId}:${collapsedIds.join(',')}:${graphPage}:${query}`} focusId={focusId} collapsedIds={collapsedIds} page={graphPage} activeTabId={activeTabId} fit={canvasVersion > 0 || !!query || !!focusId || collapsedIds.length > 0 || graphPage > 0} snapshot={snapshot} query={query} busy={busy || dirty} editable={editing} focusRequest={focusRequest} connectionEditor={selection?.itemType === 'relationship' && snapshot.relationships.find((item) => item.id === selection.itemId)?.members.length === 2 ? { id: selection.itemId, busy, onSave: saveConnection, onRemove: () => perform(async (data) => { if (data && selection) await repository.removeItem({ graphId: data.graph.id, ...selection }, data.graph.contentRevision); }), onCancel: closeConnection, draft: connectionDraft, onChange: (draft) => { setConnectionDraft(draft); setDirty(true); } } : undefined} connectingFrom={connectionStart}
           onOpen={openNode} onChooseConnection={editing ? chooseConnection : undefined}
           onSelect={select} onConnect={(connection) => connect(connection.source, connection.target, '')}
           onCreateAt={(position) => { void perform(async (data) => {

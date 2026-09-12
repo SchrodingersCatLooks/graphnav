@@ -129,3 +129,73 @@ test('direct canvas gestures: double-click creates, double-click renames, and dr
     await rm(profile, { recursive: true, force: true });
   }
 });
+
+test('Delete removes the selection, undo brings it back, and typing a Backspace does not', async () => {
+  test.setTimeout(90_000);
+  const profile = await mkdtemp(join(tmpdir(), 'graphnav-delete-'));
+  const extension = resolve('.output/chrome-mv3');
+  const context = await chromium.launchPersistentContext(profile, {
+    channel: 'chromium', headless: true, viewport: { width: 1400, height: 960 },
+    args: [`--disable-extensions-except=${extension}`, `--load-extension=${extension}`],
+  });
+
+  try {
+    const page = await context.newPage();
+    await page.goto(workspaceUrl);
+    await page.getByLabel('New map name').fill('Deletions');
+    await page.getByRole('button', { name: 'Create map', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Deletions', exact: true })).toBeVisible();
+
+    const pane = page.locator('.react-flow__pane');
+    await pane.dblclick({ position: { x: 300, y: 240 } });
+    await pane.dblclick({ position: { x: 700, y: 420 } });
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+
+    await source0Click(page);
+    await page.keyboard.press('Delete');
+    await expect(page.locator('.react-flow__node')).toHaveCount(1);
+
+    // Nothing is lost: the removal is a normal undo step like any other.
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+
+    // Backspace while typing edits the text rather than deleting the node.
+    await source0Click(page);
+    const field = page.getByLabel('Node name');
+    await field.fill('Draft');
+    await field.press('Backspace');
+    await expect(field).toHaveValue('Draf');
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+
+    // The same goes for a rename happening on the card itself.
+    await page.locator('.react-flow__node').first().dblclick();
+    await page.locator('.react-flow__node').first().getByRole('textbox').press('Backspace');
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+    await page.locator('.react-flow__node').first().getByRole('textbox').press('Escape');
+
+    // A connection can be deleted too, without taking its nodes with it.
+    const options = await page.getByLabel('From', { exact: true }).locator('option').evaluateAll((els) =>
+      els.map((el) => (el as HTMLOptionElement).value).filter(Boolean));
+    await page.getByLabel('From', { exact: true }).selectOption(options[0]!);
+    await page.getByLabel('To', { exact: true }).selectOption(options[1]!);
+    await page.getByLabel('Connection label').fill('depends on');
+    await page.getByRole('button', { name: 'Connect nodes', exact: true }).click();
+    await expect(page.locator('.react-flow__edge')).toHaveCount(1);
+
+    // A new connection opens its editor over the line; put it away first.
+    await page.getByRole('button', { name: 'Cancel connection changes' }).click();
+    await expect(page.getByRole('dialog', { name: 'Connection' })).toHaveCount(0);
+
+    // Clicking the label selects the connection it belongs to, so the same
+    // keystroke that removes a card removes a line.
+    await page.locator('.graph-edge-label').first().click();
+    await expect(page.locator('.react-flow__edge.selected')).toHaveCount(1);
+    await page.keyboard.press('Delete');
+    await expect(page.locator('.react-flow__edge')).toHaveCount(0);
+    // Only the connection goes; the nodes it joined stay put.
+    await expect(page.locator('.react-flow__node')).toHaveCount(2);
+  } finally {
+    await context.close();
+    await rm(profile, { recursive: true, force: true });
+  }
+});

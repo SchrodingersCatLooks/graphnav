@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyNodeChanges, type EdgeProps, type NodeProps, type ReactFlowInstance, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactFlow, Background, Controls, BaseEdge, EdgeLabelRenderer, EdgeToolbar, NodeResizer, Handle, useConnection, useReactFlow, useViewport, useStore, ConnectionMode, getBezierPath, MarkerType, Position, applyEdgeChanges, applyNodeChanges, type EdgeProps, type NodeProps, type ReactFlowInstance, type Node, type Edge, type Connection, type NodeChange, type Viewport } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { directedMembers, effectiveConnection, effectiveLabel, LIMITS, type ConnectionValues, type GraphSnapshot, type ItemKey } from '../../lib/graph/types';
 import { projectGraph } from '../../lib/graph/view';
@@ -7,7 +7,7 @@ import { ConnectionPopup, type ConnectionEditor } from './ConnectionPopup';
 
 export type Selection = Pick<ItemKey, 'itemType' | 'itemId'>;
 export type Geometry = { x: number; y: number; width?: number; height?: number };
-type ConnectionEdgeData = { itemId: string; offset: number; busy: boolean; from: string; to: string; value: ConnectionValues; editor?: ConnectionEditor; select: Props['onSelect'] };
+type ConnectionEdgeData = { itemId: string; offset: number; busy: boolean; from: string; to: string; value: ConnectionValues; editor?: ConnectionEditor; select: Props['onSelect']; selectEdge?: (edgeId: string) => void };
 function ConnectionControls({ id, x, y, data }: { id: string; x: number; y: number; data: ConnectionEdgeData }) {
   const view = useViewport(), width = useStore((state) => state.width), height = useStore((state) => state.height);
   const container = useRef<HTMLDivElement>(null), [size, setSize] = useState({ width: 320, height: 350 });
@@ -31,7 +31,14 @@ function ConnectionEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition
     x = (sourceX + targetX) / 2 + data.offset * .75; y = middleY;
   }
   return <><BaseEdge id={id} path={path} markerEnd={markerEnd} interactionWidth={32} />
-    {label !== undefined && <EdgeLabelRenderer><button className="graph-edge-label react-flow__edge-text nodrag nopan" style={{ pointerEvents: 'all', transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }} disabled={data?.busy} aria-label={label ? `Edit connection: ${label}` : `Add label: ${data?.from} to ${data?.to}`} onClick={(event) => { event.stopPropagation(); data?.select({ itemType: 'relationship', itemId: data.itemId }); }}>{label || 'Add label'}</button></EdgeLabelRenderer>}
+    {label !== undefined && <EdgeLabelRenderer><button className="graph-edge-label react-flow__edge-text nodrag nopan" style={{ pointerEvents: 'all', transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }} disabled={data?.busy} aria-label={label ? `Edit connection: ${label}` : `Add label: ${data?.from} to ${data?.to}`} onClick={(event) => {
+      event.stopPropagation();
+      data?.select({ itemType: 'relationship', itemId: data.itemId });
+      // The label is the easiest part of a connection to hit, so clicking it
+      // selects the connection itself — otherwise Delete would find nothing
+      // selected right after the user picked the thing they meant.
+      data?.selectEdge?.(id);
+    }}>{label || 'Add label'}</button></EdgeLabelRenderer>}
     {data?.editor && <ConnectionControls key={id} id={id} x={x} y={y} data={data} />}
   </>;
 }
@@ -133,6 +140,7 @@ type Props = {
   focusId?: string | null; collapsedIds?: string[]; page?: number;
   snapshot: GraphSnapshot; query: string; busy: boolean;
   onSelect: (selection: Selection) => void; onOpen?: (nodeId: string) => void;
+  onDelete?: (selection: Selection) => void;
   onChooseConnection?: (nodeId: string) => void; connectingFrom?: string | null;
   onConnect: (connection: Connection) => void;
   /** Double-click on empty canvas creates a node exactly where the user pointed. */
@@ -143,10 +151,15 @@ type Props = {
   onPosition: (selection: Selection, point: Geometry) => void;
   onView: (view: Viewport) => void;
 };
-export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseConnection, connectingFrom, onConnect, onCreateAt, onCreateConnectedAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
+export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onDelete, onChooseConnection, connectingFrom, onConnect, onCreateAt, onCreateConnectedAt, onRename, onPosition, onView, connectionEditor, focusRequest, fit = false, editable = true, activeTabId, focusId = null, collapsedIds = [], page = 0 }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  const selectEdge = useCallback((edgeId: string) => {
+    setEdges((previous) => previous.map((edge) => ({ ...edge, selected: edge.id === edgeId })));
+    setNodes((previous) => previous.map((node) => node.selected ? { ...node, selected: false } : node));
+  }, []);
   const resizing = useRef(false);
-  const { initialNodes, edges, total, shown } = useMemo(() => {
+  const { initialNodes, initialEdges, total, shown } = useMemo(() => {
     const hidden = new Set(snapshot.itemEdits.filter((edit) => edit.hidden).map((edit) => edit.itemId));
     const projection = projectGraph(snapshot, query, focusId, collapsedIds, page), visible = projection.nodes;
     const visibleIds = new Set(visible.map((node) => node.id));
@@ -186,14 +199,14 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
         const vertical = Math.abs(dy) > Math.abs(dx);
         const sourceHandle = vertical ? dy >= 0 ? 'bottom' : 'top' : dx >= 0 ? 'right' : 'left';
         const targetHandle = vertical ? dy >= 0 ? 'top' : 'bottom' : dx >= 0 ? 'left' : 'right';
-        edges.push({ id: relation.id, type: 'connection', source: from.nodeId, target: to.nodeId, sourceHandle, targetHandle, label: relation.kind === 'contains' && value.label === 'contains' ? undefined : value.label, ariaLabel: `${value.label || 'Connection'}: ${labels.get(from.nodeId)} to ${labels.get(to.nodeId)}`, className: relation.kind === 'contains' ? 'contains-edge' : 'personal-edge', data: { itemId: relation.id, offset, busy, select: onSelect, from: labels.get(baseFrom.nodeId), to: labels.get(baseTo.nodeId), value, editor: connectionEditor?.id === relation.id ? connectionEditor : undefined }, markerEnd: to.role === 'to' ? { type: MarkerType.ArrowClosed } : undefined });
+        edges.push({ id: relation.id, type: 'connection', source: from.nodeId, target: to.nodeId, sourceHandle, targetHandle, label: relation.kind === 'contains' && value.label === 'contains' ? undefined : value.label, ariaLabel: `${value.label || 'Connection'}: ${labels.get(from.nodeId)} to ${labels.get(to.nodeId)}`, className: relation.kind === 'contains' ? 'contains-edge' : 'personal-edge', data: { itemId: relation.id, offset, busy, select: onSelect, selectEdge, from: labels.get(baseFrom.nodeId), to: labels.get(baseTo.nodeId), value, editor: connectionEditor?.id === relation.id ? connectionEditor : undefined }, markerEnd: to.role === 'to' ? { type: MarkerType.ArrowClosed } : undefined });
       } else {
         const id = `relationship:${relation.id}`;
         initialNodes.push({ id, type: 'default', sourcePosition: Position.Right, targetPosition: Position.Left, position: position(relation.id, { x: 340, y: 270 }), data: { label: value.label, itemType: 'relationship', itemId: relation.id }, className: 'relationship-junction', connectable: false, ariaLabel: `Group connection: ${value.label}` });
         for (const member of members) edges.push({ id: `${relation.id}:${member.nodeId}`, source: member.role === 'to' ? id : member.nodeId, target: member.role === 'to' ? member.nodeId : id, sourceHandle: member.role === 'to' ? undefined : 'right', targetHandle: member.role === 'to' ? 'left' : undefined, data: { itemId: relation.id }, markerEnd: member.role === 'to' ? { type: MarkerType.ArrowClosed } : undefined });
       }
     }
-    return { initialNodes, edges, total: projection.total, shown: visible.length };
+    return { initialNodes, initialEdges: edges, total: projection.total, shown: visible.length };
   }, [snapshot, query, activeTabId, focusId, collapsedIds, page, onOpen, onChooseConnection, onSelect, onPosition, busy, editable, connectingFrom, connectionEditor]);
   useEffect(() => {
     setNodes((previous) => initialNodes.map((node) => {
@@ -201,6 +214,12 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       return { ...old, ...node, selected: old?.selected ?? false };
     }));
   }, [initialNodes]);
+  useEffect(() => {
+    setEdges((previous) => initialEdges.map((edge) => {
+      const old = previous.find((value) => value.id === edge.id);
+      return { ...edge, selected: old?.selected ?? false };
+    }));
+  }, [initialEdges]);
   useEffect(() => { if (focusRequest) setNodes((previous) => previous.map((node) => ({ ...node, selected: node.id === focusRequest.id }))); }, [focusRequest]);
   function changeNodes(changes: NodeChange<FlowNode>[]) {
     if (changes.some((change) => change.type === 'dimensions' && change.resizing)) resizing.current = true;
@@ -214,7 +233,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
   return <div className="canvas" aria-label="Graph canvas">
     <ReactFlow<FlowNode>
       onInit={(instance) => { flowRef.current = instance; }}
-      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes}
+      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes} onEdgesChange={(changes) => setEdges((previous) => applyEdgeChanges(changes, previous))}
       onNodeClick={(_, node) => { if (node.data.itemType === 'relationship') onSelect({ itemType: 'relationship', itemId: node.data.itemId }); else if (connectingFrom) onChooseConnection?.(node.id); }}
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
       onConnect={onConnect} connectionMode={ConnectionMode.Loose} connectOnClick connectionRadius={40} isValidConnection={(connection) => connection.source !== connection.target}
@@ -231,7 +250,19 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onChooseC
       nodesDraggable={editable && !busy && !focusId} nodesConnectable={editable && !busy}
       defaultViewport={snapshot.graph.view} minZoom={0.1} maxZoom={4}
       fitView={fit || (snapshot.graph.createdVia === 'import' && !snapshot.layoutItems.some((item) => item.pinned) && snapshot.graph.view.zoom === 1 && snapshot.graph.view.x === 0 && snapshot.graph.view.y === 0)}
-      onMoveEnd={(_, view) => onView(view)} deleteKeyCode={null} multiSelectionKeyCode={null} selectionOnDrag={false}
+      onMoveEnd={(_, view) => onView(view)} multiSelectionKeyCode={null} selectionOnDrag={false}
+      // Double-click is how a node is created here, so it must not also be the
+      // zoom gesture: two ideas added in a row would otherwise leave the board
+      // at 4x, with cards filling the screen and the graph out of sight.
+      zoomOnDoubleClick={false}
+      deleteKeyCode={onDelete && editable && !busy ? ['Delete', 'Backspace'] : null}
+      onDelete={({ nodes: goneNodes, edges: goneEdges }) => {
+        // Multi-select is off, so one selection means one removal; storage
+        // takes a node's connections with it rather than leaving them dangling.
+        const node = goneNodes[0];
+        if (node) onDelete?.({ itemType: node.data.itemType, itemId: node.data.itemId });
+        else if (goneEdges[0]) onDelete?.({ itemType: 'relationship', itemId: String(goneEdges[0].data?.itemId) });
+      }}
     >
       <FocusNode request={focusRequest} /><CreateOnDoubleClick onCreateAt={editable && !busy ? onCreateAt : undefined} /><Background color="#cfddd8" gap={24} /><Controls showInteractive={false} fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} />
     </ReactFlow>
