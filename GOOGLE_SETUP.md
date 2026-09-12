@@ -154,7 +154,9 @@ Navigation verified the same session:
 Destinations come from the stored locator, so navigation does not depend on node position or on
 re-reading the source.
 
-Not yet verified: reopening a stored graph in the workspace after a full browser restart.
+Reopening verified after a full browser quit and relaunch: the stored Doc map reopened in the
+workspace with all five nodes and four `contains` connections intact, so saved state survives a
+cold start rather than only a page reload.
 
 ## 6. Which steps need whom
 
