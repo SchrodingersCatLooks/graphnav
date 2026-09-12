@@ -1,70 +1,115 @@
 # Shared task tracker
 
-Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.md) for the shared handoff. Claim one task at a time. Statuses: **TODO**, **DOING**, **BLOCKED**, **REVIEW**, **DONE**. DONE means merged and verified; REVIEW means implemented but awaiting the required check. Never treat a proposed feature as completed.
+This is the only task-status list.
+[BUILD_PLAN.md](./BUILD_PLAN.md#ordered-work-and-paired-ownership) defines the 15-step implementation order; each Order below points to its exact instructions, tools, dependencies, and exit gate.
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) supplies use cases and contracts; [STATUS.md](./STATUS.md) records merged progress.
+Statuses are **TODO**, **DOING**, **BLOCKED**, **REVIEW**, and **DONE**.
+DONE means merged and verified; a scheduled step or published specification is not completion evidence.
+A tasks belong to Rajvansh on `rajvansh-ui`; B tasks belong to Eddy on `partner-data`.
 
-## Completed setup
+The target remains 6 AM code freeze and 4 PM submission on September 12, local Eastern time.
+Expired feature timeboxes have been replaced with dependencies rather than implying that missed slots were completed.
+Steps 1-9 establish the core; 10-13 finish the additional intended interactions; 14 verifies the claimed release; 15 covers rest/pitch/submission.
+A deadline-driven reduction needs an explicit decision and accurate open tasks.
+Source suggestions, autofill, selected-item creation, and editable baselines without GPT are required V1 behavior.
 
-| ID | Task | Status | Evidence |
-| --- | --- | --- | --- |
-| DOC-7 | Rajvansh | Publish shared planning documents to main | DOING | docs-only branch publish-mvp-plan; preserve PR #6 runtime and partner handoff; validate documentation before normal PR merge |
-| DOC-0 | Create private repo and initial workflow | DONE | Starter committed in `7139f9e` |
-| DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
-| DOC-2 | Specify GitHub checkpoints and larger-source requirements | DONE | AGENTS and BUILD_PLAN include push verification, incremental loading, and performance acceptance criteria |
-| DOC-3 | Define manual V1 followed by GPT-assisted V2 | DONE | IDEA, BUILD_PLAN, AGENTS, README, STATUS, and this tracker reflect the release order |
+## Planning and accepted foundation
 
-## V1 manual build queue
-
-M1-A is merged and verified through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3); M1-B is DOING on `partner-data`.
-Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
-
-| ID | When | Owner | Task | Status | Done when |
-| --- | --- | --- | --- | --- | --- |
-| M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | DOING | Both laptops build the scaffold; finish the shared folder/Doc/PDF choice and verify both-account access. Eddy is preparing the folder and tabbed Doc. |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DONE | PR #3 merged as `92a76ce`; both-laptop acceptance confirmed. Type-check, production build, and six synthetic browser tests passed. Eddy corrected the stale-script failure report and confirms the complete reloaded-browser checklist, including zoom. |
-| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | DOING | Demo folder and Doc read through the extension, or auth gate recorded |
-| M1-C | Before M2 | Both | Agree source/idea nodes, labeled edges, and edit commands | TODO | UI and adapters share stable IDs, targets, and origin fields |
-| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | TODO | Add idea, connect/label/edit/remove personal items, and open real source |
-| M2-B | 2–4h | Partner | Drive adapter, edit commands, navigation, initial save | TODO | Real sources plus manual nodes/edges save and reopen with stable IDs |
-| M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
-| M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
-| M4-A | 6–8h | Rajvansh | PDF reader and graph interface | TODO | Same graph beside a real PDF |
-| M4-B | 6–8h | Partner | PDF section extraction and destinations | TODO | At least three section jumps verified; fallback labeled |
-| M5-A | 8–10h | Rajvansh | Complete V1 personal editing and refresh controls | TODO | Full manual editing works across completed surfaces; source form if time allows |
-| M5-B | 8–10h | Partner | Preserve manual edits on refresh and reopening | TODO | Edits survive reload/refresh; missing targets handled; any implemented source write verified |
-| M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | Real navigation verified; larger fixture remains usable within visible-node limit |
-| M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Build/package verified; pagination, bounded loading, storage, and measured limits recorded |
-| M7-A | 12–13h | Rajvansh | Draft deck and product story | TODO | Short deck matches working product |
-| M7-B | 12–13h | Partner | Demo setup and backup recording | TODO | Recording matches final commit |
-| M8 | 13–15h | Both | Rehearse pitch, demo, handoffs, and questions | TODO | Full run fits organizer's time limit |
-
-M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both rows describe parts of the same shared milestone. Merge and test together before the next. If blocked, record the fallback decision in STATUS and reorder the remaining tasks together.
-
-## V2 GPT-assisted generation queue
-
-Planned next stage. All tasks are TODO, not evidence of work in progress. Start only after the V1 manual create/connect/edit/navigate/save cycle works and time remains before feature freeze, or continue after the hackathon. Rajvansh owns the visible experience; partner owns extraction/generation/storage within each shared task.
-
-| ID | Owner | Task | Status | Done when |
+| ID | Owner | Task | Status | Evidence or remaining completion check |
 | --- | --- | --- | --- | --- |
-| G1 | Both | Select and extract supported content with source anchors | TODO | User can inspect selected Doc/PDF excerpts and their destinations |
-| G2 | Both | Return a structured GPT graph draft through a separate generator | TODO | Bounded concepts/relationships include validated source references; key stays server-side |
-| G3 | Both | Review evidence, accept/edit/reject, and persist decisions | TODO | Manual and accepted edits survive reopening, refresh, and regeneration |
-| G4 | Both | Verify generated and manual workflows together | TODO | Bad references/model failures handled; graph navigation/editor still work without generation |
+| DOC-0 | Rajvansh | Create private repo and initial workflow | DONE | Starter committed in 7139f9e |
+| DOC-1 | Rajvansh | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
+| DOC-2 | Rajvansh | Specify GitHub checkpoints and larger-source requirements | DONE | Commit/push, incremental-loading, and performance rules recorded |
+| DOC-3 | Rajvansh | Define manual V1 followed by GPT-assisted V2 | DONE | Original release-order decision recorded; DOC-4 brings both into the current target |
+| DOC-4 | Rajvansh | Complete V1 + V2 route, individual owners, and deadline plan | REVIEW | Updated BUILD_PLAN, task rows, product boundaries, and handoff in PR #6; planning checkpoint only, not completed application features |
+| DOC-5 | Rajvansh | Audit all use cases and specify tools, behavior, data, owners, and acceptance | REVIEW | FEATURE_SPEC maps 16 user workflows to exact tools/APIs, UI/data contracts, tests, and paired owners; original completion requirements restored to explicit X tasks; docs only in PR #6 |
+| DOC-6 | Rajvansh | Order the implementation and make source-assisted manual creation mandatory | REVIEW | BUILD_PLAN now gives 15 dependency-ordered steps with tools, exact lane instructions, handoffs, and acceptance; N1 rows and source-assisted V1 requirements added; docs only in PR #6 |
+| DOC-7 | Rajvansh | Publish shared planning documents to main | REVIEW | Documentation-only branch publish-mvp-plan; plan/tracker/spec and supporting docs reviewed; runtime remains in PR #6 pending its own acceptance |
+| M1-A | Rajvansh | Scaffold extension and Graph panel | DONE | PR #3 merged as 92a76ce; both-laptop acceptance and original six browser tests passed; historical record below |
+
+## Implementation in execution order
+
+Each person claims one bounded task at a time and pushes the contract before the other lane integrates it.
+N1 covers the reusable chooser/contract and its Drive gate; M3 and M4 own the subsequent Docs/PDF integration gates.
+Task IDs are preserved for existing handoffs even where the numbered order changes.
+
+| ID | Owner | Order | Task | Status | Required completion check |
+| --- | --- | --- | --- | --- | --- |
+| M0-A | Rajvansh | 1 | Finish own-laptop baseline acceptance | REVIEW | Screenshots show Google connected, the expected extension ID, and two nodes/one link with Saved locally; still need real folder/Doc outputs, reopen, backup, and same-commit acceptance |
+| M0-B | Eddy | 1 | Prepare meaningful shared Doc and PDF demo content | TODO | Reuse the existing shared folder and four-tab Doc; ensure Doc text supports at least two non-containment connections; select an authorized text PDF with three usable anchors; both accounts can access required sources |
+| M1-B | Eddy | 1 | Google sign-in and first real reads | REVIEW | Eddy reports ten folder children and four Doc tabs at a83d545; stable extension ID configured; current combined-build acceptance and merge still required |
+| M1-C-A | Rajvansh | 1 | Publish/reconcile graph, storage, and UI contracts | REVIEW | Types/repository in c7f1226 and complete UI in 88a4d00; M1C_HANDOFF answers the proposal; 22 tests passed for that runtime; integrate reviewed partner changes normally |
+| M1-C-B | Eddy | 1 | Review exact shared contract and import handoff | TODO | Existing import code already uses the repository; explicitly settle account-qualified graph lookup, request/edit types, future storage ownership, and rerun the combined checks; review PR #6 |
+| G0-A | Rajvansh | 1 | Confirm API access, funding, and demo configuration | TODO | Identify the API project/credential owner, approve a test spend cap, and configure the key privately on the relay host; no secret in chat/GitHub; do not assume ChatGPT access proves API readiness |
+| N1-A | Rajvansh | 2 | Build reusable Add existing / autofill chooser | TODO | Step 2 Drive gate: context suggestions, search/path disambiguation, multi-select, Add selected, Already added, personal-source attachment; GPT-off and cancel/no-write tests; Docs/PDF reuse completed in M3-A/M4-A |
+| N1-B | Eddy | 2 | Supply source candidates and selected-item import contract | TODO | Read-only candidate listing, stable account/source/locator keys, pagination, atomic revision-checked Add selected, deduplication, selected-versus-outline membership and compatible migration; Drive first, then M3-B/M4-B adapters |
+| M2-B | Eddy | 2-3 | Complete Drive import, account scope, and worker edit commands | DOING | Eddy reports live imports (11 Drive nodes, 5 Doc nodes), repeated-import reuse, and exact destination opening; still verify restart, account-qualified lookup/read/list, concurrent imports, pagination, and on-page transactional edit commands; complete N1 selected-item and baseline paths through the same worker; listing is read-only and selected-only Refresh must not import unwanted siblings. |
+| M2-A | Rajvansh | 3 | Put the reusable editor in the Drive panel | DOING | Reuse workspace controller in Drive popover; Add existing with autofill, Add idea, Build baseline; real typed nodes, ELK with manual pins, focus/collapse/search, accessible connections and inspector; GPT-off selected-item and baseline workflows navigate/save/reopen inside Drive |
+| M3-A | Rajvansh | 4 | Show a usable graph on the left of Docs | TODO | Reuse source chooser for top/nested tabs with titles, hierarchy, and destinations prefilled; Add selected or Build baseline with AI off; left panel, current-tab highlight, same-Doc navigation, reachable close, normal typing/scrolling at 100%/150% zoom |
+| M3-B | Eddy | 4 | Complete Docs import and same-document tab navigation | TODO | Reuse verified importDocTabs and locators; current NAVIGATE creates a new browser tab, so add current-Doc-tab navigation and test top-level/nested selection while staying in the original editor; supply N1-compatible nested-tab candidates and selected-item membership; do not require a full-document import to add one tab. |
+| M5-A | Rajvansh | 5 | Finish save/refresh/errors and panel preferences | TODO | On-page changes and panel width/dock preference restore; Refresh and stale/partial/unavailable states are clear; show saving/failure accurately; preserve pinned layout and reachable controls |
+| M5-B | Eddy | 5 | Prove persistence and refresh through the worker | TODO | Actual imports plus personal edits survive worker/browser restart, rename, partial/complete refresh, source errors, and account change; stale edits fail visibly; no duplicate default graph on simultaneous import; test selected-only refresh versus baseline scope, duplicate Add requests, and preservation of personal overrides after source rename. |
+| G0-B | Eddy | 6 | Build the minimal local AI relay and startup path | TODO | Local authenticated extension-to-relay request reaches the model with a server-held key; restrict origin/payload/rate; document startup for both laptops; stopping the relay leaves manual maps usable |
+| G1-A | Rajvansh | 6 | Select and preview exactly what will be analyzed | TODO | Choose Doc tabs or, after M4, PDF pages; show selected content and limits; Generate requires a deliberate click; unsupported/oversize content is explained |
+| G1-B | Eddy | 6 | Extract text and agree the generation input/draft types | TODO | UC-04: traverse selected tab paragraphs/table cells and heading metadata; resolve explicit links without fetching unselected content; read actual selected content into bounded passages with source ID, version/hash, passage ID, and resolvable locator; exclude unselected content; Rajvansh can build against a labeled fixture of this exact contract |
+| G2-A | Rajvansh | 7 | Add real Generate and draft-preview states | TODO | Progress, cancel, retry, empty result, and failure states work; late/cancelled output does not replace the graph; a real response appears inside the current surface |
+| G2-B | Eddy | 7 | Generate and validate a structured graph draft | TODO | Real model response proposes supported concepts/relationships beyond containment; schema, sizes, IDs, evidence excerpts, and selected-source references validate; unsupported references never reach live storage; model ID/timing recorded |
+| G3-A | Rajvansh | 8 | Inspect evidence and accept/edit/reject suggestions | TODO | Preview supporting passage and destination; accept one, edit another, reject another; distinguish suggestions, personal edges, and source structure using the same editor |
+| G3-B | Eddy | 8 | Persist proposals, decisions, and accepted records safely | TODO | Additive database/backup migration preserves 88a4d00 maps and old backups; acceptance is atomic; refresh/regeneration retains user edits and exact rejection/removal decisions without duplicating accepted items |
+| M4-A | Rajvansh | 9 | Add the extension-owned PDF reader and graph | TODO | Local file picker, readable pages, graph beside the PDF, three working jumps, personal editing, and reused selected-text generation/review controls; reuse N1 section/page suggestions and autofill; Add selected or Build baseline must work with GPT unavailable. |
+| M4-B | Eddy | 9 | Supply PDF text, identity, destinations, and storage | TODO | Bundled PDF.js reads a text PDF; bookmarks or corrected page anchors resolve; inspect multi-column extraction; bytes/fingerprint restore after reopen; backup explicitly reports external PDF attachment and exact-file reattachment; wrong reattachment and unsupported scans fail clearly; passages work with G1/G2; supply N1-compatible candidates/selected membership as well as the full PDF baseline. |
+| X1-A | Rajvansh | 10 | Group relationship controls | TODO | UC-08: select several members and From/To or peer roles; one labeled junction; edit members and recover from removal |
+| X1-B | Eddy | 10 | Group editing commands and invariants | TODO | Validate same-graph unique membership, role combinations, deletion behavior, backup, and reopen using existing member-list records |
+| X2-A | Rajvansh | 11 | Add sources to an existing project map | TODO | UC-09: source chooser attaches a Doc tab and PDF section to the same map; create a cross-source edge; keep independent maps; preview any multi-source AI selection |
+| X2-B | Eddy | 11 | Multi-source binding, import, and bounded analysis | TODO | Canonical reuse without dangling cross-graph members; one Google account plus local PDF; reconcile Drive/Docs identity; refresh one binding without disturbing another; selected-only AI input |
+| X3-A | Rajvansh | 12 | Explicit source-authoring controls | TODO | UC-10: Create folder, Add tab, Rename tab; distinguish personal labels from source titles; authorized action, permission failure, and readback states; graph drag never writes Google |
+| X3-B | Eddy | 12 | Google folder and Doc-tab author actions | TODO | Verify minimal scopes; implement files.create and tab batchUpdate requests; use returned IDs/revision controls; prevent blind retry duplicates; real allowed and read-only demo tests |
+| X4-A | Rajvansh | 13 | Optional movable floating panel | TODO | UC-11: drag/resize/dock/reset with popover behavior, keyboard access, viewport clamping, and normal host editing |
+| X4-B | Eddy | 13 | Persist and restore panel placement | TODO | Versioned extension-owned rectangle/dock settings remain separate from graph view; resizing or display change cannot leave controls offscreen |
+| X7-A | Rajvansh | 13 | Heading/bookmark navigation controls | TODO | Show section anchors and evidence previews; exact live heading jump when supported; clear tab/excerpt fallback for missing anchors |
+| X7-B | Eddy | 13 | Tab-aware heading/bookmark locators | TODO | Additive locator/backup migration; resolve API heading/bookmark IDs; verify real Chrome deep links and stale-anchor fallback; no invented offset URL |
+| G4-A | Rajvansh | 14 | Verify useful AI navigation and correction | TODO | Two real demo runs across Doc/PDF for the full target; inspect all shown evidence and at least two supported non-containment links; correct a bad suggestion; navigate, reopen, and regenerate; distinguish actual results from fixtures |
+| G4-B | Eddy | 14 | Verify failures, limits, and repeat generation | TODO | Timeout/refusal/invalid citation/prompt-like source text/empty input/stale revision/duplicate click/source change/late response tests pass; failed requests do not mutate live records; record actual limits, duration, and request usage |
+| M6-A | Rajvansh | 14 | Run both-laptop visual and end-to-end acceptance | TODO | All required BUILD_PLAN acceptance rows pass on the exact release commit; 50-node view remains readable; no host editing/zoom regression; product claims match results |
+| M6-B | Eddy | 14 | Harden, build, package, and document startup | TODO | Clean install, typecheck, build, full tests, migrations/backup/limits, real source clicks, relay startup, and zip pass; record artifact path and commit; no credentials or private sources in package |
+| M7-A | Rajvansh | 15 | Prepare deck and product story | TODO | Explain problem, in-page workflow, a meaningful AI connection, evidence, architecture, and tested limits with actual screenshots |
+| M7-B | Eddy | 15 | Prepare live demo and backup recording | TODO | Same frozen commit as deck; clean browser/source setup; relay launch tested; recording and package accessible |
+| M8-A | Rajvansh | 15 | Rehearse pitch and own submission | TODO | Two timed rehearsals, clear teammate handoffs, final deck/links checked, submission receipt before 4 PM Eastern |
+| M8-B | Eddy | 15 | Rehearse demo and verify release materials | TODO | Live and backup paths rehearsed; technical answers match code; package/recording/access independently checked before submission |
+
+## Separately scoped expansion
+
+These remain future provider/public-release choices, not prerequisites for the bounded Drive/Docs/local-PDF product.
+
+| ID | Owner | Task | Status | Required completion check |
+| --- | --- | --- | --- | --- |
+| X5-A | Rajvansh | Additional source capability UI | TODO | UC-15: identify open-only versus text-readable versus source-editable items; unsupported content never appears as fully analyzed |
+| X5-B | Eddy | Additional format/provider adapter | TODO | Separately choose Drive PDF download, OCR, or another management API; verify scopes, parser, identity, locator, refresh, and limits for the chosen integration |
+| X6-A | Rajvansh | Public installation and sharing experience | TODO | UC-16: onboarding, permissions, privacy/data controls, and truthful sharing status; actual external-user installation tested |
+| X6-B | Eddy | Public relay/release and optional sync design | TODO | Hosted authenticated model access, abuse/budget controls, Google/Chrome release requirements; implement graph sync/conflicts only if collaboration is explicitly selected |
 
 ## Active handoffs
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A complete / `rajvansh-ui`, [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) | Merged `92a76ce`; main contains the tested scaffold. Node 22.23.2/npm 10.9.9 checks passed; current production bundle matches Eddy's accepted runtime hash. | No remaining M1-A blocker. M0 source links/access and M1-C agreement remain open. | Eddy owns M1-B manifest/background work now. Rajvansh retains panel/CSS; agree the shared graph contract before M2. |
-| Partner | M1-B / `partner-data` | Eddy reports Google Cloud setup complete and full M1-A acceptance after correcting the stale-content-script reload. Public manifest configuration is in [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md). | Scaffold dependency cleared by PR #3. No real API read reported; demo sources and sharing are still being prepared. | Bring main into partner-data, apply the public key/Identity/OAuth/API manifest settings, implement the background Connect Google flow, and prove one real folder read and one Doc read. |
+| Rajvansh | DOC-6 ordered implementation review, then N1-A/M2-A / `rajvansh-ui` | PR #6 has the personal workspace, Dexie repository, backups, and visible auth state at 88a4d00; clean install/typecheck/build and 22 tests passed for that runtime. User screenshots show connected status, expected extension ID, and a two-node personal graph. BUILD_PLAN now orders 15 implementation steps; N1 makes source suggestions/autofill and GPT-free baseline creation explicit before on-page/AI integration. | Raw Google reads and full installed acceptance on Rajvansh's account are unverified; partner import changes need integration/review; API project readiness is unknown. | Complete M0-A/G0-A account actions, review Eddy's c6e6b5e checkpoint and M1-C contract, then implement N1-A shared source selection and M2-A Drive mounting against the reviewed N1-B/M2-B messages. |
+| Partner | M2-B / `partner-data` | Import and navigation both verified live. `ACCOUNT_KEY` returns a Drive `permissionId`, confirming `about.get` works under the existing metadata scope. `IMPORT_DRIVE_FOLDER` stored 11 nodes, `IMPORT_DOC_TABS` stored 5, and a repeat import reused the same `graphId` (revision bumped, no duplicate). `NAVIGATE` opened the exact nested Doc sub-tab and a real Drive folder from stored locators. Dispatcher parses requests with Zod and restricts senders. Imported maps now record `createdVia: 'import'`. Node 22.23.2 type-check, production build, and all 22 tests pass. | Reopening a stored graph after a full browser restart is unverified, so M2-B is not yet REVIEW. Existing two graphs still carry the old `createdVia: 'manual'` value. Rajvansh's own-account acceptance is still outstanding, so M1-B remains REVIEW and main does not have it. | Verify reopen after restart, then M3-B, which is largely covered by the existing Docs adapter and navigation. |
 
-Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
+Eddy's handoff above is preserved from `origin/partner-data` at `c6e6b5e`.
+His navigation checkpoint reports 22 tests passing; the newer tip adds dispatcher tests, and this planning task has not rerun or certified that combined runtime.
+The earlier backup ordering assertion is fixed in `88a4d00`; do not carry the old failure forward.
+His imports and exact destination opening are reported live results, while same-browser-tab Docs navigation and restart acceptance remain separate checks.
+The partner runtime was inspected for this plan, not merged by this documentation update.
+After this shared plan revision, each person updates their own task and handoff rows and pushes a checkpoint.
+The merger updates STATUS after reviewed runtime work reaches main.
+No future task is marked active or complete solely because it has a scheduled time.
 
 ## M1-A second-machine acceptance
 
 Eddy explicitly confirms the full README checklist passes on macOS 26.5.2 / Chrome 152.0.7977.84 after correctly reloading the extension and Google tabs.
 He built in a detached worktree with Node 22.23.2 / npm 10.9.8; `npm ci`, `npm run typecheck`, and `npm run build` passed.
 The accepted runtime is identical at `c313a1d` and `fb2695d`.
-The current local production content-script bundle matches his SHA-256:
+The accepted M1-A production content-script bundle matched his SHA-256:
 
 ```text
 5d17d121164ae70f2041064e20bce5a4683fc4ba8e9debea2fb39b9564455c51
@@ -87,8 +132,10 @@ Eddy owns the public manifest key, Identity permission, OAuth client/scopes, req
 The exact public block remains in his GOOGLE_SETUP.md at `9f68af6`.
 After adding it, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Rajvansh retains the shell component and CSS; dependency changes remain coordinated.
-M1-C remains TODO until the shared node/edge/edit format is agreed.
+M1-C is REVIEW: the user approved local storage and asked Rajvansh to implement the first slice; Eddy retains Google integration.
+The exact contract and manifest/UI handoff are in [M1C_HANDOFF.md](./M1C_HANDOFF.md).
+Eddy's `a83d545` runtime is integrated into `rajvansh-ui` as `b98100f`; his manifest, messages, Google helpers, and background entrypoint were preserved unchanged.
 
-Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, and a Drive folder with ten subfolders including one nested level.
-M0 is DOING; source preparation is underway, but the links, required demo sources, and both-account access are not yet confirmed.
-M1-B remains DOING until real API reads pass or a concrete auth blocker is recorded.
+Eddy reports the demo folder and four-tab Doc reads passing and has recorded their IDs in GOOGLE_SETUP.md.
+M0 and M1-B remain REVIEW pending Rajvansh's account/browser check and the required merge.
+The current automated auth checks use synthetic worker responses and do not establish Rajvansh's Google authorization.
