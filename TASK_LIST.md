@@ -12,13 +12,13 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 
 ## Build queue
 
-M1-A is implemented for review on `rajvansh-ui`; other application work is unclaimed.
+This branch tracks Rajvansh's M1-A work; fetch `partner-data` for Eddy's current claim.
 Hours are elapsed from the start of the proposed build session.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | REVIEW | Scripts and lockfile committed; clean install, type-check, production build, and five installed-extension fixture tests pass. Both-laptop real Drive/Docs walkthrough and reviewed merge still required. |
+| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | DOING | Fix the panel overlap reported in the installed Docs shell; then repeat layout checks and return to REVIEW. Both-laptop acceptance and reviewed merge remain required. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
@@ -41,7 +41,7 @@ M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both row
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A / `rajvansh-ui` | WXT/React/TypeScript/Tailwind shell, isolated Drive/Docs panel, keyboard controls, route updates, and toolbar instructions. `npm ci` and `npm run check` pass on Node 22.23.2/npm 10.9.9; five Chromium fixture tests pass; desktop/small screenshots inspected; `npm run dev` starts and writes `.output/chrome-mv3-dev`. Implementation: `f79a84d`; [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3). | Real Google pages, normal editor behavior, partner access, and installation on both laptops remain unverified. Google APIs/OAuth are M1-B; shared graph contract is M1-C. | Both teammates follow README's Chrome walkthrough, review and merge the scaffold, then the merger updates STATUS. Hand package files/WXT configuration to M1-B after merge and agree M1-C before M2. |
+| Rajvansh | M1-A / `rajvansh-ui` | Installed Docs screenshot confirms shell injection but exposes toolbar overlap; live layout inspection confirms the host reset removes positioning/z-index. Existing five fixture tests passed before this report. [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3). | Panel layering and viewport fit need correction; complete both-laptop acceptance remains pending. | Own UI components/styles and focused tests for the fix; reproduce overlap before editing, verify compact/zoomed layouts, rebuild, and push. Eddy can prepare M1-B account setup and review the corrected shell. |
 | Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
