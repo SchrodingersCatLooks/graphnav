@@ -17,6 +17,10 @@ the other. The ID is derived from a public RSA key placed in the manifest.
 | --- | --- |
 | Extension ID | `pidejkbkldalibjaehjfpjkcpjpcenpk` |
 | Manifest key | see `manifest.key` value below |
+| OAuth client ID | `138105039840-5394rj79mfeq3jtipsg9g8fi5bneub02.apps.googleusercontent.com` |
+
+The OAuth client ID is not a secret. It is designed to ship inside the extension manifest.
+Access tokens are secret: they stay in the background worker and never reach page code or this repository.
 
 ```
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn0YD9FY1HWmLrcjucefItnzQgPAWkSHbntf/k26IqmkzhDFnBOVh7iZXPwlTv0S889ls4JJhcdOkqCyogQX6KtBCVSX4jTdWmkywXeG/powRNgmC+DydHzBktV2i4ehoxmFewPKIx19RjyQPH6luM+Z2VypqnL/WGeyplM6f0A9Vx3fdR4H5o4l1KrrmJ5xpEByiWbKJ/c/FF7TIfes5XL02thDm3+ct4u8MCOgavpFLYVed72lwIeORlWp/0KVyQAd9hS/YtNb0VfkhkhFGLFGUKHtO+Xh6I5gES8N93NuwEQckIYO8g1H9O/gxYZGH3AzlrhNRk3bWKyrrgkb0pQIDAQAB
@@ -29,12 +33,22 @@ at `~/graphnav-local/graphnav-key.pem`, and is never committed. It is only neede
 
 ### Handoff to Rajvansh (M1-A owns the manifest)
 
-The partner lane does not edit WXT configuration. Rajvansh adds to the WXT manifest config:
+Rajvansh's `wxt.config.ts` notes that "Google Identity, OAuth, and API access belong to M1-B",
+so the partner lane applies this block once the M1-A scaffold is merged:
 
-- `key`: the string above
-- `oauth2.client_id`: the Chrome Extension client ID from section 4
-- `oauth2.scopes`: the two scopes from section 3
-- `permissions`: include `identity`
+```ts
+manifest: {
+  key: '<the manifest key printed above>',
+  permissions: ['identity'],
+  oauth2: {
+    client_id: '138105039840-5394rj79mfeq3jtipsg9g8fi5bneub02.apps.googleusercontent.com',
+    scopes: [
+      'https://www.googleapis.com/auth/drive.metadata.readonly',
+      'https://www.googleapis.com/auth/documents.readonly',
+    ],
+  },
+}
+```
 
 **Verify after loading unpacked:** open `chrome://extensions`, enable Developer mode, and
 confirm the ID reads exactly `pidejkbkldalibjaehjfpjkcpjpcenpk` on **both** laptops. A
@@ -101,12 +115,16 @@ Record the chosen IDs here once picked. Use authorized demo content, never perso
 
 ## 6. Which steps need whom
 
-| Step | Who | Why |
+| Step | Who | Status |
 | --- | --- | --- |
-| 1 Extension identity | Partner (done) | Key generated locally |
-| Manifest edit | Rajvansh | Owns WXT configuration under M1-A |
-| 2 Project and APIs | Partner, in browser | Needs a Google account |
-| 3 Scope choice | Decided above | From BUILD_PLAN |
-| 4 Consent screen and client | Partner, in browser | Needs a Google account |
-| 5 Demo sources | Both | M0 |
-| Background auth handler | Partner, in code | Blocked until the scaffold merges |
+| 1 Extension identity | Partner | DONE. Key generated locally, private key outside the repo |
+| 2 Project and APIs | Partner, in browser | DONE. `graphnav` project created, Drive API and Docs API enabled |
+| 3 Scope choice | From BUILD_PLAN | DONE. Recorded in section 3 |
+| 4 Consent screen and client | Partner, in browser | DONE. External/Testing, both test users added, Chrome Extension client created |
+| Manifest edit | Partner, handed over by M1-A | BLOCKED until the M1-A scaffold merges |
+| Background auth handler | Partner, in code | BLOCKED until the M1-A scaffold merges |
+| 5 Demo sources | Both | TODO. M0 folder and Doc still unchosen |
+| First real Drive and Doc read | Partner | TODO. Nothing has called a Google API yet |
+
+Console setup was performed in Google's newer **Google Auth Platform** layout, where Branding,
+Audience, Data Access, and Clients are separate screens rather than one consent-screen wizard.
