@@ -78,7 +78,7 @@ export const snapshotSchema = z.object({
 }).strict();
 export const backupSchema = z.object({ format: z.literal('graphnav'), version: z.literal(1), snapshot: snapshotSchema }).strict();
 export type SourceCache = { id: string; sourceId: string; sourceVersion: string; chunkKey: string; payload: string; byteSize: number; lastAccessedAt: number };
-export type StoredBlob = { id: string; blob: Blob; mimeType: string; byteSize: number; createdAt: number };
+export type StoredBlob = { id: string; name?: string; blob: Blob; mimeType: string; byteSize: number; createdAt: number };
 export const newNodeSchema = z.object({ id, label, body: z.string().max(20_000).default(''), locator: locatorSchema.optional(), position: pointSchema });
 export const newRelationshipSchema = z.object({ id, label, members: membersSchema });
 
@@ -101,6 +101,6 @@ export function destinationUrl(locator: Locator): string | undefined {
     case 'web': return webUrlSchema.parse(locator.url);
     case 'drive': return `https://drive.google.com/open?id=${encodeURIComponent(locator.fileId)}`;
     case 'docs': return `https://docs.google.com/document/d/${encodeURIComponent(locator.documentId)}/edit${locator.tabId ? `?tab=${encodeURIComponent(locator.tabId)}` : ''}`;
-    case 'pdf': return undefined; // The extension-owned PDF reader is M4.
+    case 'pdf': return undefined; // Resolved by the reader UI or extension worker.
   }
 }

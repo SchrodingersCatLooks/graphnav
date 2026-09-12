@@ -7,6 +7,7 @@ import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository, storageError } from '../lib/storage/repository';
+import { pdfReaderPath } from '../lib/pdf/navigation';
 import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/requests';
 import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
@@ -139,8 +140,8 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
     case 'NAVIGATE': {
       // The locator is the node's stored destination, so navigation does not
       // depend on layout or on re-reading the source.
-      const url = destinationUrl(request.locator);
-      if (!url) return { ok: false, error: 'This destination opens in the PDF reader, which is M4.' };
+      const url = request.locator.kind === 'pdf' ? new URL(pdfReaderPath(request.locator), browser.runtime.getURL('/')).href : destinationUrl(request.locator);
+      if (!url) return { ok: false, error: 'This destination is not supported.' };
       // Content scripts cannot open tabs themselves, so the worker does it.
       const context = sender.url ? getPageContext(sender.url) : null;
       if (request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined) {

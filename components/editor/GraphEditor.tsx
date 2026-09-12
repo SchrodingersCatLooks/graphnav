@@ -1,17 +1,21 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { GraphMark } from '../GraphMark';
 import { GraphCanvas, type Selection } from '../graph/GraphCanvas';
-import { destinationUrl, effectiveLabel, LIMITS, type Graph, type GraphSnapshot, type Locator } from '../../lib/graph/types';
+import { destinationUrl, effectiveLabel, LIMITS, type Graph, type GraphSnapshot, type GraphNode, type Locator } from '../../lib/graph/types';
 import { editorClient as repository, createContextMap, arrangeMap } from '../../lib/editor/client';
 import { scopeKey, type SourceContext } from '../../lib/editor/protocol';
 import { SourcePicker } from './SourcePicker';
 import { sendToBackground, type CheckTargetsResult } from '../../lib/messages';
 import { projectGraph } from '../../lib/graph/view';
+import { pdfReaderPath, type PdfLocator } from '../../lib/pdf/navigation';
 import './editor.css';
 
 const storageError = (reason: unknown) => reason instanceof Error ? reason.message : 'The change could not be saved. Please retry.';
 type Action = (current: GraphSnapshot | null) => Promise<string | void>;
-export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = 'workspace' }: { context?: SourceContext; authEpoch?: number; activeTabId?: string; layoutKey?: string }) {
+export type SourceToolsProps = { snapshot: GraphSnapshot | null; selectedNode?: GraphNode; busy: boolean; apply: (action: Action) => Promise<boolean> };
+type Props = { context?: SourceContext; authEpoch?: number; activeTabId?: string; layoutKey?: string; initialGraphId?: string | null; sourceTools?: (props: SourceToolsProps) => ReactNode; onNavigatePdf?: (locator: PdfLocator) => Promise<void>; onBusyChange?: (busy: boolean) => void; onGraphChange?: (id: string) => void };
+export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = 'workspace', initialGraphId, sourceTools, onNavigatePdf, onBusyChange, onGraphChange }: Props) {
+  const embedded = !!context || !!sourceTools;
   const [toolsOpen, setToolsOpen] = useState(true);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const previousLayout = useRef(layoutKey);
@@ -45,14 +49,15 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
       setQuery(''); setFrom(''); setTo(''); setTargetStatus('');
     }
     current.current = value; setSnapshot(value);
-    if (!context) history.replaceState(null, '', `#${encodeURIComponent(id)}`);
+    if (!embedded) history.replaceState(null, '', `#${encodeURIComponent(id)}`);
+    onGraphChange?.(id);
   }
   useEffect(() => {
     void (async () => {
       try {
         const rows = await repository.listGraphs(); setGraphs(rows);
-        const requested = context ? '' : decodeURIComponent(location.hash.slice(1));
-        const id = context ? rows.find((graph) => graph.sourceBindings.some((binding) => binding.key === scopeKey(context)))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
+        const requested = initialGraphId ?? (embedded ? '' : decodeURIComponent(location.hash.slice(1)));
+        const id = initialGraphId !== undefined ? rows.find((graph) => graph.id === requested)?.id : context ? rows.find((graph) => graph.sourceBindings.some((binding) => binding.key === scopeKey(context)))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
         if (id) await load(id);
       } catch (reason) { setError(storageError(reason)); }
       finally { setBusy(false); }
@@ -63,6 +68,7 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
     window.addEventListener('beforeunload', prevent);
     return () => window.removeEventListener('beforeunload', prevent);
   }, [dirty]);
+  useEffect(() => { onBusyChange?.(busy || dirty); }, [busy, dirty, onBusyChange]);
 
   // Serialize local actions, but retain revision checks against other windows.
   // The UI only says Saved after the actual transaction and reread complete.
@@ -102,16 +108,28 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
   }
+  function applySources(action: Action) {
+    return perform(async (data) => {
+      const id = await action(data);
+      if (id) {
+        await load(id);
+        try { await arrangeMap(id, current.current!.graph.contentRevision, true); }
+        catch (reason) { throw new Error(`Sources were saved, but automatic layout failed: ${storageError(reason)}`); }
+        setCanvasVersion((value) => value + 1);
+      }
+      return id;
+    });
+  }
   const visibleNodes = snapshot?.nodes.filter((node) => !snapshot.itemEdits.some((e) => e.itemId === node.id && e.hidden)) ?? [];
   const selectedItem = selection?.itemType === 'node' ? snapshot?.nodes.find((n) => n.id === selection.itemId) : snapshot?.relationships.find((r) => r.id === selection?.itemId);
   const projection = snapshot ? projectGraph(snapshot, query, focusId, collapsedIds, graphPage) : null;
   const selectedNodeId = selection?.itemType === 'node' ? selection.itemId : undefined;
   const selectedHasChildren = selectedNodeId && snapshot?.relationships.some((edge) => edge.kind === 'contains' && edge.members.some((member) => member.nodeId === selectedNodeId && member.role === 'from'));
 
-  return <div className={`graphnav-editor${context ? ' embedded' : ''}${toolsOpen ? '' : ' tools-closed'}`}><main className="workspace">
+  return <div className={`graphnav-editor${embedded ? ' embedded' : ''}${toolsOpen ? '' : ' tools-closed'}`}><main className="workspace">
     <header className="workspace-header">
-      <a className="brand" href="workspace.html" hidden={!!context} onClick={(event) => { if (dirty || busy) event.preventDefault(); }}><GraphMark size={28} /><span>GraphNav</span></a>
-      <span className="workspace-kicker">MY MAPS</span>{context && <button aria-expanded={toolsOpen} onClick={() => { setToolsOpen(!toolsOpen); setCanvasVersion((value) => value + 1); }}>{toolsOpen ? 'Hide tools' : 'Sources & edit'}</button>}
+      <a className="brand" href="workspace.html" hidden={embedded} onClick={(event) => { if (dirty || busy) event.preventDefault(); }}><GraphMark size={28} /><span>GraphNav</span></a>
+      <span className="workspace-kicker">MY MAPS</span>{!embedded && <a className="source-link" href="reader.html" target="_blank" rel="noreferrer">Open a PDF ↗</a>}{embedded && <button aria-expanded={toolsOpen} onClick={() => { setToolsOpen(!toolsOpen); setCanvasVersion((value) => value + 1); }}>{toolsOpen ? 'Hide tools' : 'Sources & edit'}</button>}
       <span className="save-state" role="status">{busy ? 'Saving…' : dirty ? 'Unsaved edits' : error ? 'Needs attention' : 'Saved locally'}</span>
       <button disabled={busy || dirty || !snapshot} onClick={() => void exportMap()}>Export backup</button>
       <button disabled={busy || dirty} onClick={() => file.current?.click()}>Import backup</button>
@@ -125,16 +143,8 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
     {error && <div className="error-banner" role="alert"><span>{error}</span><button disabled={busy || dirty} onClick={() => void perform(async () => undefined)}>Reload saved map</button></div>}
     <div className="workspace-body">
       <aside className="sidebar" aria-label="Map editor">
-        {context && <SourcePicker context={context} snapshot={snapshot} selectedNode={selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined} busy={busy || dirty} authEpoch={authEpoch} apply={(action) => perform(async (data) => {
-          const id = await action(data);
-          if (id) {
-            await load(id);
-            try { await arrangeMap(id, current.current!.graph.contentRevision, true); }
-            catch (reason) { throw new Error(`Sources were saved, but automatic layout failed: ${storageError(reason)}`); }
-            setCanvasVersion((value) => value + 1);
-          }
-          return id;
-        })} />}
+        {context && <SourcePicker context={context} snapshot={snapshot} selectedNode={selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined} busy={busy || dirty} authEpoch={authEpoch} apply={applySources} />}
+        {sourceTools?.({ snapshot, selectedNode: selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined, busy: busy || dirty, apply: applySources })}
         <section className="map-picker">
           <h1>Your workspace</h1><p className="muted">Ideas, connections, and a place to return to.</p>
           {graphs.length > 0 && <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>}
@@ -159,12 +169,13 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
             <label>Connection label<input aria-label="Connection label" value={relationLabel} onChange={(e) => setRelationLabel(e.target.value)} maxLength={200} required /></label>
             <button disabled={busy || dirty || !from || !to || from === to || !relationLabel.trim()}>Connect nodes</button>
           </form></section>
-          {selectedItem && selection && <ItemEditor context={context} key={`${snapshot.graph.id}:${selection.itemId}`} snapshot={snapshot} selection={selection} busy={busy} dirty={dirty} onDirty={setDirty} perform={perform} onRemoved={() => setSelection(null)} />}
+          {selectedItem && selection && <ItemEditor onNavigatePdf={onNavigatePdf} context={context} key={`${snapshot.graph.id}:${selection.itemId}`} snapshot={snapshot} selection={selection} busy={busy} dirty={dirty} onDirty={setDirty} perform={perform} onRemoved={() => setSelection(null)} />}
           <section><label>Find a node<input aria-label="Find a node" type="search" value={query} onChange={(e) => { setQuery(e.target.value); setGraphPage(0); setCanvasVersion((value) => value + 1); }} placeholder="Search this map" /></label>
             <div className="node-list">{(projection?.nodes ?? []).map((node) => <button className={selection?.itemId === node.id ? 'selected' : ''} key={node.id} disabled={busy} onClick={() => select({ itemType: 'node', itemId: node.id })}>{effectiveLabel(node, snapshot.itemEdits)}</button>)}</div>
           </section>
         </>}
         <p className="local-note">Saved in this Chrome profile. Export a backup to keep a separate copy. Source changes are read only. Your edits change this map, not your Google files.</p>
+        {!!snapshot?.sources.some((source) => source.provider === 'local-pdf') && <p className="local-note">PDF backups contain the graph, not the original PDF bytes. Keep the original file for reattachment on another installation.</p>}
         {importName && <p className="local-note">Imported {importName} as a separate map.</p>}
       </aside>
       <section className="map-area" aria-label="Current map">
@@ -192,7 +203,7 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
   </main></div>;
 }
 
-function ItemEditor({ context, snapshot, selection, busy, dirty, onDirty, perform, onRemoved }: { context?: SourceContext; snapshot: GraphSnapshot; selection: Selection; busy: boolean; dirty: boolean; onDirty: (dirty: boolean) => void; perform: (action: Action) => Promise<boolean>; onRemoved: () => void }) {
+function ItemEditor({ onNavigatePdf, context, snapshot, selection, busy, dirty, onDirty, perform, onRemoved }: { onNavigatePdf?: (locator: PdfLocator) => Promise<void>; context?: SourceContext; snapshot: GraphSnapshot; selection: Selection; busy: boolean; dirty: boolean; onDirty: (dirty: boolean) => void; perform: (action: Action) => Promise<boolean>; onRemoved: () => void }) {
   const item = selection.itemType === 'node' ? snapshot.nodes.find((n) => n.id === selection.itemId)! : snapshot.relationships.find((r) => r.id === selection.itemId)!;
   const override = snapshot.itemEdits.find((e) => e.itemId === item.id);
   const sourceNode = 'sourceId' in item && !!item.sourceId;
@@ -205,7 +216,7 @@ function ItemEditor({ context, snapshot, selection, busy, dirty, onDirty, perfor
   useEffect(() => {
     if (!dirty) { setLabel(effectiveLabel(item, snapshot.itemEdits)); setNotes(originalText); setUrl(locator?.kind === 'web' ? locator.url : ''); }
   }, [snapshot, dirty, item, originalText, locator]);
-  const link = locator ? destinationUrl(locator) : undefined;
+  const link = locator?.kind === 'pdf' ? pdfReaderPath(locator, snapshot.graph.id) : locator ? destinationUrl(locator) : undefined;
   const changed = (action: () => void) => { action(); onDirty(true); };
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -224,12 +235,13 @@ function ItemEditor({ context, snapshot, selection, busy, dirty, onDirty, perfor
       <label>Notes<textarea aria-label="Notes" value={notes} onChange={(e) => changed(() => setNotes(e.target.value))} rows={3} maxLength={20_000} /></label>
       {selection.itemType === 'node' && item.origin === 'manual' && !sourceNode && <label>Destination link (optional)<input aria-label="Destination link (optional)" type="url" value={url} onChange={(e) => changed(() => setUrl(e.target.value))} placeholder="https://…" maxLength={4000} /></label>}
       {link && <a className="source-link" href={link} target="_blank" rel="noreferrer" onClick={(event) => {
+        if (locator?.kind === 'pdf' && onNavigatePdf) { event.preventDefault(); if (!dirty && !busy) void perform(async () => onNavigatePdf(locator)); return; }
         if (!context) return;
         event.preventDefault();
         if (dirty || busy) return;
         void perform(async () => { const result = await sendToBackground({ type: 'NAVIGATE', locator: locator! }); if (!result.ok) throw new Error(result.error); });
-      }}>{context?.kind === 'docs' && locator?.kind === 'docs' && locator.documentId === context.sourceId ? 'Go to tab in this document' : 'Open destination ↗'}</a>}
-      {locator?.kind === 'pdf' && <p className="muted">PDF destination saved. The reader is a later milestone.</p>}
+      }}>{locator?.kind === 'pdf' ? `Go to page ${locator.pageIndex + 1}` : context?.kind === 'docs' && locator?.kind === 'docs' && locator.documentId === context.sourceId ? 'Go to tab in this document' : 'Open destination ↗'}</a>}
+
       <button className="primary" disabled={busy || !label.trim()}>Save changes</button>
       <button type="button" disabled={busy} onClick={() => { setLabel(effectiveLabel(item, snapshot.itemEdits)); setNotes(originalText); setUrl(locator?.kind === 'web' ? locator.url : ''); onDirty(false); }}>Cancel edits</button>
       <button className="danger" type="button" disabled={busy} onClick={() => { void perform(async (data) => { if (data) await repository.removeItem({ graphId: data.graph.id, ...selection }, data.graph.contentRevision); onDirty(false); onRemoved(); }); }}>{item.origin === 'imported' ? 'Hide from map' : 'Remove from map'}</button>
