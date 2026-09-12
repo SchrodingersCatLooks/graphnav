@@ -2,21 +2,18 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** the M1-A extension shell is merged and accepted through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3).
-It adds a Graph button and reversible empty panel on My Drive, Drive folders, and Google Docs, plus a toolbar popup with launch instructions.
-Google data, interactive source graphs, sign-in, PDFs, and saved state are not implemented in this merged scaffold.
-Newer personal-editor/storage/auth work is available for review in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6); follow [its branch-specific build and acceptance instructions](https://github.com/SchrodingersCatLooks/graphnav/blob/3adc4da/README.md) to test that version.
-[TASK_LIST.md](./TASK_LIST.md) tracks the next work; [STATUS.md](./STATUS.md) records the merged result and M1-B handoff.
+**Current state:** [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) is merged on main as `4cfe83d`.
+Drive and Docs now open an editable graph on the page, with existing-source suggestions, selected imports, structural baselines, personal nodes/connections, ELK arrangement, local saving, and backups.
+The Docs graph sits on the left and opens document tabs in the same browser tab.
+The toolbar popup also opens an optional My maps workspace.
 
-**Release order:** V1 provides manual graph creation/editing, source navigation, and saving.
-V2 adds GPT-assisted drafts with evidence and accept/edit/reject controls.
-Both remain planned beyond the current shell on main, with partial implementation on the review branches.
-The shared target includes assisted manual creation, editable source baselines without GPT, and V2 evidence-backed generation.
+**Still open:** PDF reading, GPT generation/evidence review, source-authoring controls, and remaining larger-map/panel refinements.
+The PDF extractor is a tested foundation, not a reader.
+V1 and V2 remain in the requested MVP target; consult TASK_LIST for exact status rather than treating all planned features as shipped.
 
-**Acceptance:** the full second-machine checklist passes after correctly reloading the extension and Google tabs.
-Eddy corrected his earlier clipping/zoom report because a stale content script was still running.
-The accepted code includes the popover/visualViewport fix; both-laptop acceptance is recorded.
-See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
+**Verification:** typecheck, production build, and all 48 tests pass on Node 22.23.2 / npm 10.9.9.
+Installed browser tests use synthetic Google responses and temporary profiles; Eddy separately reports live Google reads/imports/navigation and restart success.
+A fresh live-account run on Rajvansh's account is not claimed.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
@@ -45,7 +42,7 @@ The clean-install check used Node 22.23.2 and npm 10.9.9 on macOS.
 If you use nvm, run `nvm install` and `nvm use` inside the clone; `.nvmrc` selects Node 22.
 Otherwise install Node 22 and confirm `node --version` before continuing.
 
-For a new local copy of the merged scaffold:
+For a new local copy of the current main build:
 
 ```bash
 git clone https://github.com/SchrodingersCatLooks/graphnav.git
@@ -63,30 +60,37 @@ Commit the configuration and lockfile; do not edit or commit generated output.
 
 ## Test in your Chrome profile
 
-These steps require each teammate's laptop and a Google account with access to the demo folder and Doc.
-No GraphNav OAuth setup is needed to test this empty shell.
+Use your own Chrome profile and an account authorized for the source you want to read.
+Repeated partner-laptop acceptance is not a routine gate; test the changed flow and report a specific failure if one occurs.
 
-1. Run the build commands above.
-2. Type `chrome://extensions` into Chrome's address bar.
-3. Turn on **Developer mode**, click **Load unpacked**, and select the clone's **`.output/chrome-mv3`** folder, not the repository root or the outer `.output` folder.
-   On macOS, press **Command+Shift+G** in the folder picker and enter the complete path if the hidden `.output` folder is not visible.
-4. Confirm **GraphNav 0.1.0** is enabled and has no extension errors.
-   Open Chrome's puzzle-piece menu and click GraphNav to check its instructions popup.
-5. Open [My Drive](https://drive.google.com/drive/my-drive), sign in if needed, and refresh the page after installing the extension.
-   Click **Graph** at the bottom right.
-   Expect a panel labeled **My Drive**, **Interface preview**, and **Google data is not connected yet**.
-6. Close it with **X**, open it again, and press **Escape** while focus is inside the panel.
-   The panel should close and keyboard focus should return to the Graph button.
-   The Graph button also toggles the panel.
-7. Open a real Drive folder and repeat.
-   Expect **Drive folder** in the header, one Graph button, and no changes to your files.
-   When changing folders without reloading, the panel closes so you can open it for the new folder.
-8. Open an existing Google Doc at a URL containing `/document/d/` or `/document/u/0/d/` and refresh it.
-   Open Graph and expect **Google Docs** and **Your document map starts here**.
-   Close the panel and verify ordinary typing, selection, and scrolling in an authorized test Doc.
-9. Narrow the window or increase Chrome zoom and confirm the panel header stays above Google's toolbar, the Graph and close buttons remain fully visible, and panel content scrolls when needed.
-   Open an unrelated website and confirm it has no Graph button.
-10. Both teammates should report the commit tested, Chrome version, Drive/Docs results, and any errors in the PR before M1-A is marked DONE.
+1. Build the latest main code using the commands above.
+   In an existing development branch, preserve local changes, fetch origin, and merge origin/main normally before building.
+2. Open `chrome://extensions` and turn on **Developer mode**.
+3. Load unpacked from **`.output/chrome-mv3`**, or click **Reload** on the existing GraphNav installation.
+   On macOS, use **Command+Shift+G** in the folder picker to enter its complete path.
+   Keep the existing installation to preserve local maps; export a backup before deliberately removing an old copy.
+4. Confirm extension ID **pidejkbkldalibjaehjfpjkcpjpcenpk**.
+   If an obsolete installation has a different ID, back it up and disable it so only the expected build runs.
+   The public manifest key is already configured; see GOOGLE_SETUP for the OAuth handoff.
+5. Refresh open Drive/Docs tabs after every extension reload.
+   Otherwise those tabs can retain an old content script even when Chrome shows the new extension build.
+6. Open [My Drive](https://drive.google.com/drive/my-drive) or a Drive folder, click **Graph**, then **Connect Google** if needed.
+   Sign-in/consent is an action on your account; use the expected GraphNav testing application and authorized account.
+7. Under **Add existing**, search or select sources, then use **Add selected**.
+   Names and destinations are filled in; duplicate names show parent paths.
+   **Build baseline** adds the listed structure automatically without GPT.
+   Browse a folder with its arrow to choose items inside it in the current map.
+8. Add a personal idea and a labeled connection, or select a personal idea and one source to **Attach destination**.
+   Use the inspector to edit labels/notes and open destinations.
+   **Arrange map** arranges unpinned nodes; dragging a node pins its position.
+   **Hide tools** gives the graph more room.
+9. Use **Refresh source**, close/reopen the panel, and verify your personal edits remain.
+   A selected-only map must not suddenly add unselected siblings.
+   Export/import a backup through the toolbar or the optional My maps workspace.
+10. Open a Doc, refresh it, and click **Graph**.
+    Select top-level/nested tabs or build a baseline; select a node and choose **Go to tab in this document**.
+    Confirm the original browser tab reaches the exact tab, the graph reopens on the left, and the current tab is highlighted.
+    Verify ordinary typing/scrolling and reachable close controls at your normal and increased browser zoom.
 
 The shell recognizes My Drive, individual Drive folders, and normal Docs document URLs, including numbered account paths.
 Drive Home, Recent, Shared drives overviews, Docs home, published Docs, Sheets, and Slides are outside this first shell's supported routes.
@@ -116,7 +120,7 @@ Use the production build for teammate acceptance testing.
 # One-time browser download for automated testing:
 npx playwright install chromium
 
-# Type-check, production build, and all six browser tests:
+# Type-check, production build, and the full current test suite:
 npm run check
 
 # Or run individual checks:
