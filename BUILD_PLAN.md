@@ -1,5 +1,11 @@
 # GraphNav: ordered implementation through V1 and V2
 
+The implemented UX4 interaction contract is in [UX4_HANDOFF.md](./UX4_HANDOFF.md), merged through [PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19).
+In the instructions below, source selection is available through Add; its More source options section retains bulk import, baseline, refresh and attachment.
+Click a source row to add/focus it and an arrow to browse children; use a card's separate Open action for navigation.
+Optional connection labels/direction and card dimensions are saved as personal overrides and layout, preserving source identity.
+This changes the editor interaction, not the remaining V1/V2 task scope or ownership.
+
 This is the implementation order for Rajvansh on `rajvansh-ui` and Eddy on `partner-data`.
 [FEATURE_SPEC](./FEATURE_SPEC.md) defines the detailed behavior, APIs, data invariants, and use cases.
 [TASK_LIST](./TASK_LIST.md) is the only task-status list; its Order column refers to the numbered steps below.

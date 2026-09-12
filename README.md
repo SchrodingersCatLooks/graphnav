@@ -9,8 +9,11 @@ Choose a saved map or finish creating a named map to expand the editor.
 Opening or backing out of the chooser creates nothing, and creating another graph preserves existing maps.
 The expanded graph keeps its saved size and placement.
 Following a source destination or refreshing an already open graph resumes that graph when available.
-**Edit graph** reveals Sources, Add idea and Connect, and allows node dragging; **Done editing** returns to navigation.
-Click source titles to navigate, use **This page** to recover the source map, and find map selection/backups under **More**.
+**Add** combines new ideas with a searchable source tree.
+Click a row to add or focus its node; click its arrow to browse children without adding them.
+The graph opens ready to edit, with draggable and resizable cards, optional connection labels, and minimize/fullscreen controls.
+Use **Done editing** for a read-only canvas.
+Use a card's separate **Open ↗** action to navigate, use **This page** to recover the source map, and find map selection/backups under **More**.
 Use **Back** to return to the compact menu; **Panel settings** remains available inside the expanded graph.
 
 **Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15).
@@ -26,10 +29,11 @@ PR #15 adds a visible project-map chooser, Add a PDF to this map, and map contin
 **Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Latest verification:** extension and relay typechecks, production build and all 139 tests (1.1 minutes) passed for UX3-A using Node 22.23.2 / npm 10.9.9.
-Installed tests cover compact menus, Back and keyboard focus, a small viewport, unchanged floating placement, saved-map opening, manual/AI creation, account isolation, source navigation and PDF/backup/AI regressions.
-The startup account-loading race was reproduced and fixed before the complete suite; three repeated checks passed for both overview navigation and the compact launcher.
-The actual Google screens remain for the user to review after extension reload and tab refresh.
+**Latest editor checkpoint:** UX4-A, [PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19).
+The unified Add menu, card dimensions, connection labels/direction and window controls use the existing saved graph and PersonalOverlay storage.
+Extension and relay typechecks, production build and all 142 tests (1.3 minutes) passed on Node 22.23.2 / npm 10.9.9.
+Installed tests use synthetic Google responses, authored PDF bytes and a local test AI provider.
+No new live Google-account acceptance or paid model call is claimed.
 
 **Earlier verification:** Node 22.23.2 / npm 10.9.9 extension/relay typechecks, production build and all 118 tests passed for PR #14.
 For PR #15, both typechecks/build and all 19 affected tests passed.
@@ -107,27 +111,35 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    **New Graph > Automated** leads to named graph creation and selected-content AI preview/generation.
    New Graph has its own Back button and no Google account controls.
    The panel expands after choosing or creating a map.
-   Pick existing items using **Add selected**, or choose **Build baseline** to import the listed structure without GPT.
+   Open **Add** and click source rows to add their names and destinations immediately.
+   Under **Add > More source options**, use **Build baseline** for the listed structure or **Add selected** for bulk selection without GPT.
    Drive Home uses your My Drive root, not Google's suggested or shared Home feed.
-7. Click a source node's title to open its destination.
+7. Use a source node's separate **Open ↗** button to open its destination.
    A folder opens in the same browser tab with its saved graph or the compact launcher; the overlay stays open.
    **This page** returns to this source's cached map if another project map is selected.
-   In a Doc, click a tab node to reach that exact tab in the same browser tab.
-8. Choose **Edit graph**, then click **Connect** on one node and **Connect** on another.
-   Edit the relationship label in the drawer and **Save changes**.
-   Click a connection label to edit it later; click **Edit** on a node for its label, notes and destination details.
-   **Add idea** creates a personal node, and **Arrange map** arranges unpinned nodes.
-   Dragging only changes the saved layout, never the source files.
-   Choose **Done editing** to return to navigation, or **Back** for the compact menu.
-9. Under **Edit graph**, open **Sources** to choose additional files, folders or document tabs without typing their names or URLs.
-   **Add selected** imports your choices; **Build baseline** adds the listed structure.
-   Browse a folder's arrow to add its children into the current map.
-   **New Graph > Manual** creates another map; its source chooser fills known names and destinations for you.
-   **Refresh source** preserves personal edits and selected-only membership.
+   In a Doc, use a tab node's **Open ↗** action to reach that exact tab in the same browser tab.
+8. Click **Connect** on one node and **Connect** on another, or click/drag their connection handles.
+   The line is saved immediately; labeling is optional.
+   Click its **Add label** pill, existing tag or line to edit the connection.
+   Choose **Supports**, **References**, **Depends on**, **Related to**, or enter your own label.
+   **Done / Enter** saves; **Escape** cancels the popup draft.
+   **Remove label**, then **Done**, keeps the line; **Reverse direction** swaps its arrow and endpoints, while **No arrow** makes it undirected.
+   Click **Edit** on a node for its label, notes and destination details.
+   Drag a node or resize its corner handles to save its position and dimensions.
+   **Arrange map** respects dragged/resized pins and their sizes.
+   Choose **Done editing** to pause dragging, or **Back** for the compact menu.
+9. **Add** contains both a new-idea form and existing folders, documents, tabs or PDF sections.
+   Click a row to add that item; an already-added row focuses its existing node.
+   Click an arrow to expand children without adding them.
+   Drive folder and recognized Doc children load when expanded; name search ranks exact, prefix and typo matches among loaded choices.
+   **More source options** retains bulk selection, baseline, destination attachment and **Refresh source**.
+   Refresh preserves personal edits, connection labels/direction, card sizes and selected-only membership.
 10. Use **More** for saved-map selection, adding a PDF, and backup import/export.
     **Map options** contains focus, collapse, pagination and destination checks.
     **Panel settings** contains width, dock, float and reset controls.
-    Float mode exposes Move and Resize controls with pointer and keyboard support; Escape cancels a placement drag or closes the panel.
+    The expanded editor provides **Minimize**, **Fullscreen** and **Resize** controls.
+    Resize also works from a docked panel and saves your normal rectangle; fullscreen is temporary.
+    Float mode also exposes Move with pointer/keyboard support; Escape cancels a placement drag, exits fullscreen, or closes the panel.
     Use **Back > Manage Google connection** for the available account label, **Change Google account**, **Disconnect Google**, and **Check connection**.
     Chrome controls which account sign-in offers; another Chrome profile may be needed to use a different Google account.
     Close/reopen the panel, choose **Use Existing Graph**, select your map, then refresh the page and check that your notes, connections and dragged positions remain.
@@ -151,12 +163,12 @@ See Chrome's [official unpacked-extension instructions](https://developer.chrome
    Bookmarked sections or detected heading suggestions have names and page destinations already filled in.
    **All pages** provides page destinations if the outline is unsuitable.
 3. If the paper has no saved graph, choose **Manual**, name the graph and **Create map**.
-   Use **Edit graph > Sources**, select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
+   Use **Add > More source options**, select sections and choose **Add selected**, or use **Build baseline** for the whole listed outline.
    This works without GPT or an API key.
 4. Click a source node title to reach its page or section.
    Use its **Edit** button to add notes or inspect the destination.
    Section destinations include a visible marker; two sections on one page can have different anchors.
-   Close the tool drawer to see the whole graph; **Edit graph > Sources** reopens the source chooser.
+   Close the tool drawer to see the whole graph; **Add > More source options** reopens the source chooser.
 5. Close/reopen the reader or restart Chrome, then choose the paper under **Saved PDFs**.
    The original file, graph and personal edits stay in this Chrome profile.
 6. Open **More** to export/import a graph backup as a separate map copy.
@@ -172,10 +184,10 @@ V2 generation controls and the final demo acceptance are still open in TASK_LIST
 ## Combine a Doc and PDF in one map
 
 1. In the Doc graph, open **More** to create a map or choose one under **Open a map**.
-2. Open **Sources**, select the wanted Doc tabs and choose **Add selected**.
+2. Open **Add > More source options**, select the wanted Doc tabs and choose **Add selected**.
 3. Under **More**, choose **Add a PDF to this map**, then open a file or choose one under **Saved PDFs**.
    The reader shows the target map before any PDF nodes are added.
-4. Open **Sources**, select the wanted PDF sections/pages and choose **Add selected**.
+4. Open **Add > More source options**, select the wanted PDF sections/pages and choose **Add selected**.
 5. Connect a Doc tab to a PDF section with a personal label.
    Following either destination keeps the same map beside the correct Doc tab or PDF page.
 6. Refresh the Doc source and PDF outline separately, then reopen the reader to verify the connection remains.

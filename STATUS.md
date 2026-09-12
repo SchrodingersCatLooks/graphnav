@@ -1,8 +1,23 @@
 # Current project status
 
-Last shared update: 2026-09-12, UX3 compact launcher and functional step navigation.
+Last shared update: 2026-09-12, UX4 unified Add and saved direct graph editing.
 
 ## Working on main
+
+[PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19) (3266257, runtime 12f238d) implements the requested Add, card and connection editor behavior.
+Add combines personal ideas with a scrollable source tree and ranked name search.
+Rows add immediately or focus existing nodes; arrows only load/browse children, including recognized Google Docs and nested tabs.
+PDF choices also add or focus immediately; bulk selection, baseline, refresh and attachment remain under More source options.
+The selected graph opens ready to edit in an expanded panel with minimize, resize and temporary fullscreen controls.
+Cards have corner resizing and separate Open actions; connection handles support click/drag with highlighted destinations.
+Line/tag popups support optional labels, presets, custom text, Done/Enter, Escape, reverse direction and no arrow.
+Personal label/direction overrides and card dimensions persist through source refresh, restart and backup without replacing source identity or Eddy's proposal backend.
+The saved-graph chooser no longer contains New Graph.
+Extension and relay typechecks, production build and all 142 tests (1.3 minutes) passed on Node 22.23.2 / npm 10.9.9.
+Installed verification uses synthetic Google APIs, authored PDFs and a local test AI provider; screenshots were inspected.
+The local relay was restored after tests and its authenticated health returned 200/ready.
+No new live Google-account acceptance or paid model request is claimed.
+The exact storage seam and bounds are recorded in UX4_HANDOFF.
 
 [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) (8aa97c0, runtime fa2c58c) implements the user's compact launcher mockups.
 Clicking Graph opens Manage Google connection, New Graph and Use Existing Graph in a compact panel.
@@ -13,7 +28,8 @@ The connection screen uses real sign-in, reconnect and disconnect actions; accou
 That sequencing fixes a reproduced startup click race when entering a folder from a Drive overview.
 An open graph still resumes through source navigation and page refresh when its saved map is available.
 UX3 supersedes UX2's immediate full-size saved-map opening on an explicit Graph click.
-Edit graph reveals source autofill, ideas, connections and dragging; Done editing returns to navigation.
+UX4 now opens the chosen graph ready to edit and combines source autofill and ideas under Add.
+Done editing remains available to pause dragging.
 Drive's Automated path selects one recognized Google Doc at the current folder level and previews only selected tab text in the overlay.
 It does not crawl Drive or infer content from folder names.
 The graph container is saved, while generated suggestions remain unsaved previews until G3-A.
@@ -28,7 +44,7 @@ No new live Google acceptance or paid model call is claimed.
 UX2 supersedes UX1 automatic first-open baseline creation; baseline import remains an explicit source action.
 This page returns from another chosen project map; page preferences persist per account and source across Chrome restarting.
 Folder navigation keeps the same browser tab and open overlay, including after arriving from an overview through Drive's same-page navigation.
-Source node titles navigate directly; two node Connect clicks create an editable personal relationship.
+UX4 makes Open a separate node action; two node Connect clicks create an editable personal relationship.
 Once opened, the graph fills the expanded panel; focused drawers contain editing and advanced map actions.
 Backup, advanced graph tools, panel placement and account settings are moved out of the default graph view.
 New personal nodes are placed clear of existing nodes; ordinary containment labels no longer crowd the canvas, and parallel connections have separate paths.
@@ -42,7 +58,7 @@ Chrome remains responsible for the account offered by sign-in.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
 [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
-The current main runtime includes UX3 at fa2c58c and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
+The current main runtime includes UX4 at 12f238d and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -83,7 +99,8 @@ Eddy's application work through 179d98f is included through normal merges.
 
 ## Verification and limits
 
-Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds.
+The current UX4 runtime passed both typechecks, production build and all 142 tests in 1.3 minutes.
+Earlier checkpoint: Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds.
 Screenshots of the Drive, Docs and PDF layouts were inspected.
 The user still needs to reload the existing extension, refresh Google tabs and retest the reported live Google screens using REVIEW_WALKTHROUGH.
 No repeat partner-laptop gate or new live-account acceptance is claimed.
@@ -122,9 +139,9 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh claims UX4-A for the user's unified Add and direct graph editing mockups.
-The requested behavior, additive overlay/layout fields and shared-file boundary are in UX4_HANDOFF.
-This claim does not describe the new runtime as merged or verified yet.
+UX4-A is merged and verified in PR #19.
+Read UX4_HANDOFF for the additive overlay/layout fields before editing the shared schema.
+Rajvansh next continues G3-A's persistent AI review UI using Eddy's existing proposal store.
 
 UX3-A is merged in [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) and remains REVIEW for user feedback on the actual Google screens.
 Reload GraphNav on chrome://extensions and refresh open Drive/Docs tabs before following REVIEW_WALKTHROUGH.
@@ -274,3 +291,10 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
   Implemented the compact launcher, real saved-map/account actions, separate Manual/Automated naming steps and Back navigation with preserved graph placement.
   Fixed the reproduced startup account-loading race; both typechecks, production build and all 139 tests (1.1 minutes) passed.
   Compact and small-viewport screenshots inspected; real Google reload feedback and G3 persistent review remain open.
+
+- 2026-09-12: UX4-A merged in PR #19 as 3266257, runtime 12f238d.
+  Unified Add, adjustable cards/panel, forgiving connections and optional label/direction editing are verified.
+  Extension and relay typechecks, production build and all 142 tests (1.3 minutes) passed on Node 22.23.2 / npm 10.9.9.
+  The popup draft reset was reproduced and fixed by retaining draft state outside the edge renderer.
+  The updated PDF test helper now waits for the editor before deciding which creation control to use.
+  Main tracker, README, walkthrough and UX4 storage handoff were updated.

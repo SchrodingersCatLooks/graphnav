@@ -2,6 +2,7 @@
 
 The [PR #16 checkpoint](https://github.com/SchrodingersCatLooks/graphnav/pull/16) addresses the reported Drive Home, contextual overlay, navigation, connection editing and crowded-control problems.
 The [UX3 compact-launcher checkpoint](https://github.com/SchrodingersCatLooks/graphnav/pull/18) starts with a small menu, then expands the graph after a choice.
+The UX4 editor checkpoint ([PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19)) adds a unified Add tree, adjustable cards and optional connection labels.
 The graph editor keeps one focused tool drawer open at a time.
 AI generation still returns a preview; the accept/edit/reject UI is the separate open G3-A task.
 This is not full V1/V2 MVP acceptance.
@@ -22,36 +23,41 @@ The extension folder is .output/chrome-mv3 inside the intended clone.
    Expect a compact menu with Manage Google connection, New Graph and Use Existing Graph.
    Open Manage Google connection for sign-in if needed, then Back.
    Choose New Graph and expect Manual/Automated, Back at the top left, and no Google controls.
-   Choose Manual, name it, Create map, then Build baseline to fill listed names and destinations without GPT.
+   Choose Manual, name it, Create map, then Add > More source options > Build baseline to fill listed names and destinations without GPT.
    The panel should expand only after creating the map.
    Close and reopen Graph, choose Use Existing Graph, then your saved map.
-   Expect the graph in navigation mode with its tool drawer hidden.
+   Expect an editable graph with its tool drawer hidden.
    Back should return to the compact menu; back out of either creation method and confirm no unwanted graph was created.
    Home does not mirror Google's suggested/shared feed.
    Open a real folder, including from Recent or Shared with me, and use its compact launcher or resumed graph without the old panel-state error.
 
 2. **A useful fixed overlay.**
-   Keep the graph open and click a folder node's title.
+   Keep the graph open and use a folder node's Open ↗ button.
    Expect that folder in the same browser tab, the overlay still open, and its saved map or compact launcher.
    Go back and expect the previous map with your edits.
    If a personal project such as gg is selected, click This page for the current source's cached map.
    More still lets you choose your personal project again.
 
 3. **Connect and edit with little effort.**
-   Choose Edit graph, then click Connect on one node and Connect on another.
-   A connection appears and its label editor opens.
-   Give it a useful label, Save changes, and close the drawer with its X.
-   Click the connection label to edit it again.
-   Add idea creates a personal node in clear space; Edit on a node opens its label and notes.
-   Arrange map helps with existing crowded layouts while preserving dragged pins.
-   Done editing hides these controls and stops node dragging while leaving source navigation available.
+   Open Add, expand a folder or Doc with its arrow, and confirm expansion adds no nodes.
+   Click a source row to add it; click it again to focus the same node without a duplicate.
+   Search a slightly misspelled name and check that close matches appear among loaded choices.
+   Use Add's New idea field for a personal node.
+   Click Connect on one node and Connect on another, or click/drag their handles.
+   Label the new line with a preset or your own words, then Done or Enter.
+   Clicking the line or tag reopens the popup; Escape cancels an unsaved label change.
+   Drag and corner-resize nodes and confirm the label follows the line.
+   Reverse direction, save, close/reopen Chrome and refresh the source; confirm the label, arrow and card dimensions survive.
+   Remove label then Done must leave the connection intact.
+   Minimize and restore the graph, resize the panel and try fullscreen; exiting fullscreen must restore its normal size.
+   Arrange map preserves dragged/resized pins, and Done editing pauses node dragging.
 
 4. **Navigate inside a Doc.**
    Open a Doc and click Graph.
    Expect the compact launcher on the left and choose Use Existing Graph to open its map.
-   If no map exists, choose New Graph > Manual, name it and Build baseline first.
+   If no map exists, choose New Graph > Manual, name it and use Add > More source options > Build baseline first.
    Once opened or created, the canvas should take most of the expanded panel.
-   Click a top-level or nested tab node's title and expect that exact tab in the same browser tab.
+   Use a top-level or nested tab node's Open ↗ button and expect that exact tab in the same browser tab.
    Type and scroll in the Doc while the panel is open, then try normal and increased browser zoom.
    Close and panel controls must remain reachable.
 
@@ -64,7 +70,8 @@ The extension folder is .output/chrome-mv3 inside the intended clone.
 
 ## Where the less frequent actions moved
 
-- Edit graph > Sources: existing-file/tab/section suggestions, selected imports, baseline creation and Refresh source.
+- Add: create an idea or add/focus a source row; arrows browse and search ranks loaded names.
+- Add > More source options: bulk selection, destination attachment, baseline creation and Refresh source.
 - New Graph: Manual or Automated; naming and creating another map preserves the old one.
 - Use Existing Graph: open a saved map; graphs for this page are labeled.
 - Back: return through creation steps or from the expanded graph to the launcher.
@@ -76,8 +83,8 @@ The extension folder is .output/chrome-mv3 inside the intended clone.
 ## Check PDFs and AI after the overlay
 
 Under More, choose Add a PDF to this map and open demo/GraphNav-demo-paper.pdf.
-In the reader, create a manual graph if none exists, then use Edit graph > Sources to select sections or build the listed outline.
-Click source nodes to navigate to exact pages or section markers, and connect a Doc node with a PDF node.
+In the reader, create a manual graph if none exists, then use Add > More source options to select sections or build the listed outline.
+Use Open ↗ on source nodes to navigate to exact pages or section markers, and connect a Doc node with a PDF node.
 Following a Doc or PDF destination retains the chosen project map.
 Export/import under More creates a separate graph copy; keep the original PDF because graph backups exclude its bytes.
 
