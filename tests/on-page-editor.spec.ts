@@ -177,3 +177,50 @@ test('panel preferences survive a complete restart and unavailable sources keep 
   await restored.getByRole('button', { name: 'Hide tools', exact: true }).click();
   await restored.screenshot({ path: testInfo.outputPath('compact-panel.png') });
 });
+
+test('floating move and resize survive Chrome restart without changing nodes, then dock and reset recover defaults', async ({ installed }, testInfo) => {
+  const url = 'https://drive.google.com/drive/folders/root-folder';
+  const page = await open(installed.context, url);
+  await page.getByRole('button', { name: 'Build baseline (4)', exact: true }).click(); await saved(page);
+  await page.getByRole('button', { name: 'Hide tools', exact: true }).click();
+  const worker = installed.context.serviceWorkers()[0]!;
+  const graphRows = () => worker.evaluate(async () => {
+    const db = await new Promise<IDBDatabase>((resolve, reject) => { const request = indexedDB.open('graphnav'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
+    try { return await Promise.all(['nodes', 'relationships', 'layoutItems', 'itemEdits'].map((table) => new Promise((resolve, reject) => { const request = db.transaction(table).objectStore(table).getAll(); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }))); }
+    finally { db.close(); }
+  });
+  const original = await graphRows();
+  await page.getByRole('button', { name: 'Float panel', exact: true }).click();
+  const panel = page.getByRole('dialog');
+  async function drag(name: string, dx: number, dy: number) {
+    const handle = (await page.getByRole('button', { name, exact: true }).boundingBox())!;
+    const x = handle.x + handle.width / 2, y = handle.y + handle.height / 2;
+    await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + dx, y + dy, { steps: 8 }); await page.mouse.up();
+  }
+  const start = (await panel.boundingBox())!;
+  await drag('Move graph panel', -210, 70);
+  await drag('Resize graph panel', -90, 40);
+  const result = (await panel.boundingBox())!;
+  expect(result).toEqual({ x: start.x - 210, y: start.y + 70, width: start.width - 90, height: start.height + 40 });
+  await expect.poll(() => worker.evaluate(async () => (await (globalThis as any).chrome.storage.local.get('panel-placement:v1:drive'))['panel-placement:v1:drive'])).toEqual({ mode: 'floating', rect: result });
+  expect(await graphRows()).toEqual(original);
+  await expect.poll(() => page.locator('.canvas').evaluate((canvas) => {
+    const bounds = canvas.getBoundingClientRect();
+    return [...canvas.querySelectorAll('.react-flow__node')].every((node) => { const box = node.getBoundingClientRect(); return box.x >= bounds.x && box.y >= bounds.y && box.right <= bounds.right && box.bottom <= bounds.bottom; });
+  })).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('floating-map.png') });
+
+  const context = await installed.restart();
+  const restored = await open(context, url); await saved(restored);
+  await expect.poll(() => restored.getByRole('dialog').boundingBox()).toEqual(result);
+  await expect(restored.locator('.react-flow__node')).toHaveCount(4);
+  await restored.getByRole('button', { name: 'Dock left', exact: true }).click();
+  await expect.poll(async () => (await restored.getByRole('dialog').boundingBox())!.x).toBe(16);
+  await expect(restored.getByLabel('Panel width', { exact: true })).toHaveValue('780');
+  await restored.getByRole('button', { name: 'Float panel', exact: true }).click();
+  await expect.poll(() => restored.getByRole('dialog').boundingBox()).toEqual(result);
+  await restored.getByRole('button', { name: 'Reset position', exact: true }).click();
+  await expect(restored.getByRole('button', { name: 'Float panel', exact: true })).toBeVisible();
+  await expect.poll(() => restored.getByRole('dialog').boundingBox()).toEqual({ x: 604, y: 16, width: 780, height: 904 });
+  await expect(restored.getByRole('button', { name: 'Dock left', exact: true })).toBeVisible();
+});
