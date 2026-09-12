@@ -171,3 +171,37 @@ test('extracted sections store as a real graph with nesting and stable IDs', asy
     await db.delete();
   }
 });
+
+test('the demo paper itself extracts with three levels of nesting', async () => {
+  // demo/GraphNav-demo-paper.pdf is the artifact used in the walkthrough, so it
+  // is checked here rather than trusted from a one-off run.
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const demoPath = fileURLToPath(new URL('../demo/GraphNav-demo-paper.pdf', import.meta.url));
+  const bytes = new Uint8Array(await readFile(demoPath));
+  const document = await pdfjs.getDocument({ data: bytes.slice(), useWorkerFetch: false }).promise;
+
+  const extraction = await extractSections(document as unknown as PdfDocumentLike, await fingerprintPdf(bytes));
+
+  expect(extraction.origin).toBe('outline');
+  expect(extraction.pageCount).toBe(6);
+  expect(extraction.mergedDuplicates).toBe(0);
+
+  const byTitle = new Map(extraction.sections.map((s) => [s.title, s]));
+  const byId = new Map(extraction.sections.map((s) => [s.id, s]));
+
+  // Well past the three jump targets M4-B requires.
+  expect(extraction.sections.length).toBeGreaterThanOrEqual(3);
+
+  // Three levels deep: Methods > Findings > The Single Sign Intervention.
+  const findings = byTitle.get('Findings')!;
+  const intervention = byTitle.get('The Single Sign Intervention')!;
+  expect(byId.get(findings.parentId!)!.title).toBe('Methods');
+  expect(byId.get(intervention.parentId!)!.title).toBe('Findings');
+
+  // Each section lands on its own page, so the jumps are distinguishable.
+  const pages = extraction.sections.map((s) => s.pageIndex);
+  expect(new Set(pages).size).toBe(pages.length);
+
+  // A top-level section has no parent.
+  expect(byTitle.get('Overview')!.parentId).toBeUndefined();
+});

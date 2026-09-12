@@ -134,3 +134,32 @@ test('backup excludes bytes, missing originals are explicit, and exact reattachm
   expect(new URL(copy.url()).searchParams.get('y')).toBe(new URL(originalUrl).searchParams.get('y'));
   await expect(copy.locator('.react-flow__node')).toHaveCount(5);
 });
+
+test('PDF AI preview processes only selected pages and leaves the manual graph unchanged', async ({ installed }, testInfo) => {
+  const page = await installed.context.newPage();
+  const remoteRequests: string[] = [];
+  page.on('request', (request) => { if (/^https?:/.test(request.url())) remoteRequests.push(request.url()); });
+  await page.goto(`${origin}/reader.html`);
+  await page.getByLabel('Choose PDF file').setInputFiles(fixture);
+  await ready(page); await baseline(page);
+  await page.getByRole('button', { name: 'Select content for AI', exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Analyze Page 2', exact: true }).check();
+  await page.getByRole('button', { name: 'Preview selected text', exact: true }).click();
+  // The preview is a labeled group rather than a page-level landmark.
+  const content = page.locator('[aria-label="Selected text preview"]');
+  await expect(content).toBeVisible();
+  await expect(content.locator('.generation-passages')).toContainText('Twenty-four participants');
+  await expect(content.locator('.generation-passages')).not.toContainText('One added sign');
+  await expect(content.locator('.generation-passages')).not.toContainText('Signage budget');
+  await expect(page.getByRole('button', { name: 'Generate with AI', exact: true })).toBeDisabled();
+  expect(remoteRequests).toEqual([]);
+  await expect(page.locator('.react-flow__node')).toHaveCount(5);
+  await page.screenshot({ path: testInfo.outputPath('pdf-text-preview.png') });
+  await page.getByRole('checkbox', { name: 'Analyze Page 3', exact: true }).check();
+  await expect(content).toHaveCount(0);
+  await page.getByRole('button', { name: 'Preview selected text', exact: true }).click();
+  await expect(content.locator('.generation-passages')).toContainText('One added sign');
+  await page.getByLabel('AI purpose').selectOption('navigation-overview');
+  await expect(content).toHaveCount(0);
+  await expect(page.locator('.react-flow__node')).toHaveCount(5);
+});
