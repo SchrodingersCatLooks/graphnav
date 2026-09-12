@@ -25,6 +25,7 @@ Source suggestions, autofill, selected-item creation, and editable baselines wit
 | DOC-5 | Rajvansh | Audit all use cases and specify tools, behavior, data, owners, and acceptance | DONE | FEATURE_SPEC and supporting contracts published to main through PR #7; 16 use cases, exact tools/data/UI contracts, and acceptance references verified |
 | DOC-6 | Rajvansh | Order the implementation and make source-assisted manual creation mandatory | DONE | Ordered plan, N1 tasks, and mandatory source-assisted manual/baseline behavior published to main through PR #7; task IDs/owners/dependencies/links validated |
 | DOC-7 | Rajvansh | Publish shared planning documents to main | DONE | PR #7 merged as 19e23fd; nine Markdown files published; main runtime/config/dependencies/tests unchanged; PR #6 remains open for runtime review |
+| DOC-8 | Rajvansh | Keep shared planning and tracking updates directly on main | DOING | User requested a standing workflow rule; update shared instructions on a clean main-based checkout, preserve runtime and teammate evidence |
 | M1-A | Rajvansh | Scaffold extension and Graph panel | DONE | PR #3 merged as 92a76ce; both-laptop acceptance and original six browser tests passed; historical record below |
 
 ## Implementation in execution order
