@@ -130,3 +130,6 @@
 .graphnav-editor .map-tools span { font-size: 10px; color: #658071; }
 .graphnav-editor .react-flow__node.current-node { border-color: #247a60; box-shadow: 0 0 0 3px #439b7940; }
 .graphnav-editor .react-flow__node.current-node::after { content: 'Current tab'; position: absolute; top: -22px; left: 8px; color: #1d7154; font-size: 11px; font-weight: 650; }
+@container (max-width: 640px) {
+  .graphnav-editor.embedded .sidebar { flex: 0 0 42%; height: 42%; max-height: 42%; min-height: 0; }
+}

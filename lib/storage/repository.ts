@@ -107,7 +107,7 @@ export class GraphRepository {
   async markSourceAvailability(sourceKey: string, availability: Source['availability']) {
     const source = await this.db.sources.where('sourceKey').equals(sourceKey).first();
     if (!source || source.availability === availability) return false;
-    await this.db.sources.put({ ...source, availability, updatedAt: Date.now() });
+    await this.db.sources.update(source.id, { availability, updatedAt: Date.now() });
     return true;
   }
 

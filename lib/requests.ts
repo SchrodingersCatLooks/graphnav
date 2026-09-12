@@ -8,7 +8,6 @@
  */
 
 import { z } from 'zod';
-import { browser } from 'wxt/browser';
 import { locatorSchema } from './graph/types';
 
 const id = z.string().min(1).max(300);
@@ -37,16 +36,16 @@ const ALLOWED_PAGE_ORIGINS = ['https://drive.google.com', 'https://docs.google.c
  * `externally_connectable` is not declared, so a web page cannot reach this
  * listener directly; this rejects anything that still arrives unexpected.
  */
-export function isTrustedSender(sender: unknown): boolean {
+export function isTrustedSender(sender: unknown, extensionId: string): boolean {
   const from = sender as { id?: string; url?: string; origin?: string } | undefined;
-  if (!from || from.id !== browser.runtime.id) return false;
+  if (!from || from.id !== extensionId) return false;
 
   // An extension page has no tab and an extension-scheme URL.
   const source = from.origin ?? from.url;
   if (!source) return false;
   try {
     const url = new URL(source);
-    if (url.protocol === 'chrome-extension:') return url.hostname === browser.runtime.id;
+    if (url.protocol === 'chrome-extension:') return url.hostname === extensionId;
     return ALLOWED_PAGE_ORIGINS.includes(url.origin);
   } catch { return false; }
 }

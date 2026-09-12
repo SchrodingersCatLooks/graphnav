@@ -106,6 +106,7 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       return { ok: true, data: await repository.readGraph(request.graphId) };
     case 'CHECK_TARGETS': {
       const snapshot = await repository.readGraph(request.graphId);
+      if (snapshot.graph.accountScope && snapshot.graph.accountScope !== await getAccountKey()) return { ok: false, error: 'Connect the Google account that owns this map before checking its targets.' };
       // Only Google-backed sources can be checked; a local PDF has no server.
       const targets = snapshot.sources
         .filter((source) => source.provider !== 'local-pdf')
@@ -148,7 +149,7 @@ export default defineBackground(() => {
   browser.tabs.onRemoved.addListener((tabId) => { void browser.storage.session.remove(`panel:${tabId}`); });
   // Registered synchronously so Chrome can revive the worker to serve a message.
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (!isTrustedSender(sender)) {
+    if (!isTrustedSender(sender, browser.runtime.id)) {
       sendResponse({ ok: false, error: 'Untrusted sender.' } satisfies Response);
       return true;
     }
