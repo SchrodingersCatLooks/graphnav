@@ -18,7 +18,7 @@ All application work is TODO. Hours are elapsed from the start of the proposed b
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
 | M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | TODO | Same installed shell on both laptops; scripts and lockfile committed |
-| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
+| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | DOING | Demo folder and Doc read through the extension, or auth gate recorded |
 | M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
 | M2-B | 2–4h | Partner | Drive adapter, navigation, initial cache | TODO | Real children/files load and reopen correctly |
@@ -41,6 +41,6 @@ M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both row
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
 | Rajvansh | Unclaimed | No application work started | Setup unverified | Claim M1-A after M0 |
-| Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
+| Partner | M1-B / `partner-data` | Read all six project documents. Node 26.8.2 / npm 11.19.1 installed on this laptop. Stable extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk` generated from a public manifest key; private key kept outside the repository. Scope choice and console steps recorded in [GOOGLE_SETUP.md](./GOOGLE_SETUP.md). | Google Cloud console setup not yet performed and no API call attempted. Background auth code is blocked until the M1-A scaffold merges. M0 demo folder and Doc are still unchosen. | Run the console steps in GOOGLE_SETUP.md, hand the manifest key and OAuth client ID to Rajvansh, then implement the background auth handler on the merged scaffold. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
