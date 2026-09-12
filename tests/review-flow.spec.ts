@@ -83,6 +83,15 @@ test('reviewing a draft adds, renames and dismisses suggestions, and remembers t
     await expect(page.locator('.react-flow__node')).toHaveCount(0);
 
     const cards = draft.locator('.draft-card');
+
+    // Bulk controls: one click marks every open suggestion, and clearing resets.
+    await draft.getByRole('button', { name: /^Add all \d+$/ }).click();
+    await expect(draft).toContainText('3 to add · 0 to dismiss');
+    // Accepting everything also satisfies the connection's endpoints.
+    await expect(draft.getByRole('button', { name: /^Save \d+ decision/ })).toBeEnabled();
+    await draft.getByRole('button', { name: 'Clear choices', exact: true }).click();
+    await expect(draft).not.toContainText('to add ·');
+
     // Accept the first idea, renaming it on the way in.
     await cards.nth(0).getByRole('button', { name: 'Add to map', exact: true }).click();
     await cards.nth(0).getByRole('textbox').fill('Junction decision points');

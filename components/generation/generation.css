@@ -49,3 +49,9 @@
 .graphnav-editor .draft-decided { border-top: 1px solid #eeeaf4; margin-top: 10px; padding-top: 10px; color: #77658d; font-size: 11px; }
 .graphnav-editor .draft-apply { display: grid; gap: 8px; border-top: 1px solid #dbd6e8; padding-top: 12px; }
 .graphnav-editor .draft-apply .local-note { font-size: 10px; }
+
+/* The save action must stay reachable: a long draft pushes it far off-screen,
+   which reads as "Add to map did nothing". */
+.graphnav-editor .draft-apply { position: sticky; bottom: 0; z-index: 2; background: #f9f8fc; box-shadow: 0 -8px 12px -8px #162d3b26; }
+.graphnav-editor .draft-pending { margin: 8px 0 0; padding: 7px 10px; border: 1px solid #d8cfe8; border-radius: 8px; background: #f3effa; color: #5b5170; font-size: 11px; }
+.graphnav-editor .draft-bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }

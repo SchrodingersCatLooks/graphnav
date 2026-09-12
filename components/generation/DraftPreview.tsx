@@ -52,6 +52,14 @@ export function DraftPreview({
   const setVerdict = (key: string, verdict: Verdict) =>
     setVerdicts((previous) => ({ ...previous, [key]: previous[key] === verdict ? 'undecided' : verdict }));
 
+  /** Suggestions still open: anything already decided in an earlier draft is left alone. */
+  const undecidedKeys = [
+    ...draft.nodes.filter((n) => !prior.nodes[n.tempId]).map((n) => `node:${n.tempId}`),
+    ...draft.relationships.filter((r) => !prior.relationships[r.tempId]).map((r) => `edge:${r.tempId}`),
+  ];
+  const setAll = (verdict: Verdict) =>
+    setVerdicts(Object.fromEntries(undecidedKeys.map((key) => [key, verdict])));
+
   const acceptedNodes = draft.nodes.filter((n) => verdictOf(`node:${n.tempId}`) === 'accept');
   const acceptedEdges = draft.relationships.filter((r) => verdictOf(`edge:${r.tempId}`) === 'accept');
   const rejectedNodes = draft.nodes.filter((n) => verdictOf(`node:${n.tempId}`) === 'reject');
@@ -117,10 +125,10 @@ export function DraftPreview({
     return <div className="draft-controls">
       <button type="button" className={`draft-verdict${verdict === 'accept' ? ' is-chosen' : ''}`}
         aria-pressed={verdict === 'accept'} disabled={applying || !graphId}
-        onClick={() => setVerdict(key, 'accept')}>Add to map</button>
+        onClick={() => setVerdict(key, 'accept')}>{verdict === 'accept' ? '✓ Will add' : 'Add to map'}</button>
       <button type="button" className={`draft-verdict${verdict === 'reject' ? ' is-chosen' : ''}`}
         aria-pressed={verdict === 'reject'} disabled={applying || !graphId}
-        onClick={() => setVerdict(key, 'reject')}>Dismiss</button>
+        onClick={() => setVerdict(key, 'reject')}>{verdict === 'reject' ? '✓ Will dismiss' : 'Dismiss'}</button>
       {verdict === 'accept' && <label className="draft-rename">
         <span>Label</span>
         <input value={labels[key] ?? proposedLabel} disabled={applying}
@@ -143,6 +151,19 @@ export function DraftPreview({
           {applied.alreadyAccepted > 0 ? ` ${applied.alreadyAccepted} were already in your map.` : ''}
         </p>
       : <p className="local-note">Review each suggestion against its supporting text. Nothing changes your map until you save.</p>}
+
+    {!applied && graphId && undecidedKeys.length > 1 && <div className="draft-bulk">
+      <button type="button" className="draft-verdict" disabled={applying}
+        onClick={() => setAll('accept')}>Add all {undecidedKeys.length}</button>
+      <button type="button" className="draft-verdict" disabled={applying}
+        onClick={() => setAll('reject')}>Dismiss all</button>
+      {decidedCount > 0 && <button type="button" className="text-button" disabled={applying}
+        onClick={() => setVerdicts({})}>Clear choices</button>}
+    </div>}
+
+    {!applied && decidedCount > 0 && <p className="draft-pending" role="status">
+      {acceptedNodes.length + acceptedEdges.length} to add · {rejectedNodes.length + rejectedEdges.length} to dismiss · not saved yet
+    </p>}
 
     {!graphId && <p className="source-notice">Open or create a map before saving suggestions.</p>}
     {error && <p role="alert" className="source-notice">{error}</p>}
