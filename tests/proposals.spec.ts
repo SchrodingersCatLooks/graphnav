@@ -265,3 +265,70 @@ test('proposal identity ignores rewording of the rationale but not of the claim'
   expect(b.nodes.get('x')).toBe(a.nodes.get('n1'));
   expect(c.nodes.get('y')).not.toBe(a.nodes.get('n1'));
 });
+
+test('a backup carries decisions, and a version 1 backup still imports', async () => {
+  const graph = await newGraph();
+  await applyProposals(db, {
+    graphId: graph.id, revision: graph.contentRevision, draft: draft(), inputHash: HASH, passages, sourceTitle: 'GraphNav demo paper',
+    acceptNodes: [{ tempId: 'n1' }], acceptRelationships: [],
+    rejectNodeTempIds: [], rejectRelationshipTempIds: [],
+  });
+
+  const exported = await repo.exportGraph(graph.id);
+  const parsed = JSON.parse(exported);
+  expect(parsed.version).toBe(2);
+  expect(parsed.snapshot.decisions).toHaveLength(1);
+
+  // Importing the backup restores the decision, pointed at the copied record.
+  const copyId = await repo.importGraph(exported);
+  const restored = await listDecisions(db, copyId);
+  expect(restored).toHaveLength(1);
+  expect(restored[0]!.decision).toBe('accepted');
+
+  const copy = await repo.readGraph(copyId);
+  expect(copy.nodes).toHaveLength(1);
+  // The decision points at the copy's node, not the original's.
+  expect(restored[0]!.itemId).toBe(copy.nodes[0]!.id);
+  expect(restored[0]!.itemId).not.toBe(
+    (await repo.readGraph(graph.id)).nodes[0]!.id,
+  );
+
+  // The copy already knows this suggestion was accepted, so regenerating there
+  // does not re-offer it.
+  const prior = await recallDecisions(db, copyId, draft());
+  expect(prior.nodes.get('n1')?.decision).toBe('accepted');
+
+  // A backup written before decisions existed must still load.
+  const legacy = JSON.stringify({
+    format: 'graphnav', version: 1,
+    snapshot: { ...parsed.snapshot, decisions: undefined },
+  });
+  const legacyId = await repo.importGraph(legacy);
+  expect(await listDecisions(db, legacyId)).toHaveLength(0);
+  expect((await repo.readGraph(legacyId)).nodes).toHaveLength(1);
+});
+
+test('accepting cannot attach a second Google account to a map', async () => {
+  const graph = await newGraph();
+  await applyProposals(db, {
+    graphId: graph.id, revision: graph.contentRevision, draft: draft(), inputHash: HASH, passages, sourceTitle: 'GraphNav demo paper',
+    acceptNodes: [{ tempId: 'n1' }], acceptRelationships: [],
+    rejectNodeTempIds: [], rejectRelationshipTempIds: [],
+  });
+
+  const snapshot = await repo.readGraph(graph.id);
+  expect(snapshot.graph.accountScope).toBe('acct');
+
+  const otherAccount: SourcePassage[] = [{ ...passages[0]!, accountKey: 'someone-else' }];
+  await expect(applyProposals(db, {
+    graphId: graph.id, revision: snapshot.graph.contentRevision,
+    draft: draft({ nodes: [{ tempId: 'n2', label: 'From another account', kind: 'idea', rationale: '', evidencePassageIds: ['t.0:0'] }] }),
+    inputHash: HASH, passages: otherAccount, sourceTitle: 'Other doc',
+    acceptNodes: [{ tempId: 'n2' }], acceptRelationships: [],
+    rejectNodeTempIds: [], rejectRelationshipTempIds: [],
+  })).rejects.toThrow(/different Google account/i);
+
+  const after = await repo.readGraph(graph.id);
+  expect(after.graph.accountScope).toBe('acct');
+  expect(after.nodes).toHaveLength(1);
+});

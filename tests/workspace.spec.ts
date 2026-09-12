@@ -110,7 +110,8 @@ test('node notes and safe destination persist; exported backup imports as a sepa
   const download = await downloadPromise;
   const filePath = (await download.path())!;
   const backup = JSON.parse(await readFile(filePath, 'utf8'));
-  expect(backup.version).toBe(1);
+  // Version 2 since G3-B: backups now carry proposal decisions. Version 1 files still import.
+  expect(backup.version).toBe(2);
   expect(backup.snapshot.nodes[0].body).toBe('Read the methodology');
   expect(backup.snapshot.nodes[0].locator.url).toBe('https://example.com/paper');
   await expect(page.getByRole('status')).toHaveText('Saved locally');

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { GraphDatabase } from './database';
 import {
-  LIMITS, backupSchema, graphSchema, snapshotSchema, itemKeySchema, editValuesSchema,
+  LIMITS, BACKUP_VERSION, backupSchema, graphSchema, snapshotSchema, itemKeySchema, editValuesSchema,
   newNodeSchema, newRelationshipSchema, connectionValuesSchema, geometrySchema, pointSchema, viewSchema, membersSchema,
   sourceInputSchema, locatorSchema, sourceKey, locatorKey, bindingSelectionSchema,
   type Graph, type GraphNode, type GraphSnapshot, type ItemKey,
@@ -83,7 +83,8 @@ export function validateSnapshot(value: unknown): GraphSnapshot {
 export class GraphRepository {
   readonly db: GraphDatabase;
   constructor(db = new GraphDatabase()) { this.db = db; }
-  private tables() { return [this.db.graphs, this.db.sources, this.db.nodes, this.db.relationships, this.db.itemEdits, this.db.layoutItems]; }
+  // proposalDecisions is included so reads and imports can carry decisions.
+  private tables() { return [this.db.graphs, this.db.sources, this.db.nodes, this.db.relationships, this.db.itemEdits, this.db.layoutItems, this.db.proposalDecisions]; }
   private async graph(id: string) { return requireValue(await this.db.graphs.get(id), 'This map no longer exists.'); }
   private async mutate<T>(id: string, revision: number, action: (graph: Graph) => Promise<T>): Promise<T> {
     return this.db.transaction('rw', this.tables(), async () => {
@@ -122,7 +123,7 @@ export class GraphRepository {
       const sourceIds = new Set(nodes.flatMap((n) => n.sourceId ? [n.sourceId] : []));
       for (const item of [...nodes, ...relationships]) for (const evidence of item.evidence) sourceIds.add(evidence.sourceId);
       const sources = (await this.db.sources.bulkGet([...sourceIds])).map((s) => requireValue(s, 'A saved source is missing.'));
-      return { graph, nodes, sources, relationships, itemEdits: await this.db.itemEdits.where('graphId').equals(id).toArray(), layoutItems: await this.db.layoutItems.where('graphId').equals(id).toArray() };
+      return { graph, nodes, sources, relationships, itemEdits: await this.db.itemEdits.where('graphId').equals(id).toArray(), layoutItems: await this.db.layoutItems.where('graphId').equals(id).toArray(), decisions: await this.db.proposalDecisions.where('graphId').equals(id).toArray() };
     });
   }
   async renameGraph(id: string, revision: number, title: string) {
@@ -319,7 +320,8 @@ export class GraphRepository {
   }
   async exportGraph(id: string): Promise<string> {
     const snapshot = validateSnapshot(await this.readGraph(id));
-    const json = JSON.stringify({ format: 'graphnav', version: 1, snapshot }, null, 2);
+    // Version 2 carries proposal decisions; version 1 backups still import.
+    const json = JSON.stringify({ format: 'graphnav', version: BACKUP_VERSION, snapshot }, null, 2);
     if (new TextEncoder().encode(json).byteLength > LIMITS.exportBytes) throw new Error('This map exceeds the current 5 MB backup limit.');
     return json;
   }
@@ -349,6 +351,18 @@ export class GraphRepository {
       await this.db.relationships.bulkAdd(relationships);
       await this.db.itemEdits.bulkAdd(snapshot.itemEdits.map((edit) => ({ ...edit, graphId, itemId: ids.get(edit.itemId)!, ...stamp() })));
       await this.db.layoutItems.bulkAdd(snapshot.layoutItems.map((layout) => ({ ...layout, graphId, itemId: ids.get(layout.itemId)!, ...stamp() })));
+      // Decisions come back so an imported copy does not re-offer suggestions the
+      // user already rejected, or duplicate ones already accepted. A decision
+      // whose item did not survive keeps its verdict without a dangling pointer.
+      await this.db.proposalDecisions.bulkAdd((snapshot.decisions ?? []).map((decision) => {
+        const itemId = decision.itemId ? ids.get(decision.itemId) : undefined;
+        const { itemId: _dropped, itemType, ...rest } = decision;
+        return {
+          ...rest, graphId,
+          ...(itemId ? { itemType, itemId } : {}),
+          ...stamp(),
+        };
+      }));
       return graphId;
     });
   }

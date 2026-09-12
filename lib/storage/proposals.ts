@@ -171,6 +171,24 @@ export async function applyProposals(
       throw new Error('This map changed in another tab. Reload the saved map before accepting again.');
     }
 
+    // A map holds one account's sources. Adopt the account on first use and
+    // refuse a mismatch, exactly as importing a source scope does. Without this
+    // an accepted suggestion could attach a source from another account and
+    // quietly make the map fail its own export invariant.
+    const googleAccounts = new Set(
+      request.passages
+        .filter((passage) => passage.locator.kind !== 'pdf')
+        .map((passage) => passage.accountKey),
+    );
+    if (googleAccounts.size > 1) throw new Error('These passages mix Google accounts.');
+    const [passageAccount] = [...googleAccounts];
+    if (passageAccount) {
+      if (graph.accountScope && graph.accountScope !== passageAccount) {
+        throw new Error('This map belongs to a different Google account.');
+      }
+      graph.accountScope = passageAccount;
+    }
+
     // Reuse an existing source row where one exists, so accepting a suggestion
     // never creates a second record for a document already in the map.
     const sourceRowIds = new Map<string, string>();
