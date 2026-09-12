@@ -5,6 +5,8 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
 ## What is working
 
 - Private GitHub repository and shared AI workflow documents.
+- The current 15-step implementation plan, feature specification, owner/task tracker, and supporting contracts are on main through [PR #7](https://github.com/SchrodingersCatLooks/graphnav/pull/7), merged as `19e23fd`.
+  This publication changes documentation only; the application work remains in PR #6.
 - M1-A scaffold merged through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) as `92a76ce`.
   Main contains WXT/React/TypeScript/Tailwind, package scripts, lockfile, Chrome installation instructions, and automated browser checks.
 - Graph button and reversible empty panel on My Drive, real Drive folders, and Google Docs.
@@ -103,7 +105,8 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - 2026-09-12: DOC-6 records the user's source-assisted manual workflow and replaces expired feature slots with concrete ordered lane instructions, tools, handoffs, and gates.
   Added N1-A/N1-B, reordered the existing task rows without resetting evidence, and preserved Eddy's latest reported handoff; documentation only.
 
-- 2026-09-12: DOC-7 prepares the shared plan/tracker/specification for a documentation-only PR to main at the user's request.
-  Runtime, dependencies, configuration, and tests remain unchanged; PR #6 still holds the unmerged application work.
+- 2026-09-12: DOC-7 merged PR #7 as `19e23fd`, publishing nine shared planning/reference Markdown files to main.
+  Verified the main diff is documentation only, relative links/anchors resolve, all 52 task IDs are unique, and Eddy's handoff is preserved.
+  DOC-4 through DOC-7 are DONE for documentation publication; runtime tasks keep their prior statuses and PR #6 remains open.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.
