@@ -1,44 +1,46 @@
-:root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #20383b; background: #f5f8f6; font-synthesis: none; color-scheme: light; }
+@import '../../assets/theme.css';
+
+:root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--ink); background: var(--canvas); font-synthesis: none; color-scheme: light; }
 body { margin: 0; }
 .reader-app * { box-sizing: border-box; }
 .reader-app { height: 100dvh; display: flex; flex-direction: column; font-size: 14px; line-height: 1.5; }
 .reader-app button, .reader-app select, .reader-app input { font: inherit; }
-.reader-app > :not(.reader-body) button, .page-toolbar button, .reader-footer button { border: 1px solid #cbded6; border-radius: 9px; color: #24594e; background: #fff; padding: 8px 12px; cursor: pointer; font-weight: 600; }
+.reader-app > :not(.reader-body) button, .page-toolbar button, .reader-footer button { border: 1px solid var(--line-strong); border-radius: var(--r-sm); color: var(--brand-800); background: var(--surface); padding: 8px 12px; cursor: pointer; font-weight: 600; }
 .reader-app button:disabled { opacity: .5; cursor: default; }
-.reader-app button:focus-visible, .reader-app input:focus-visible, .reader-app select:focus-visible, .reader-app a:focus-visible { outline: 3px solid #42a18b; outline-offset: 2px; }
-.reader-header { display: flex; align-items: center; gap: 20px; padding: 14px 24px; min-height: 80px; border-bottom: 1px solid #dbe6e0; background: white; flex-shrink: 0; }
-.reader-brand { display: inline-flex; align-items: center; gap: 10px; color: #174e49; font-size: 21px; font-weight: 750; text-decoration: none; white-space: nowrap; }
-.reader-brand span { border-left: 1px solid #d5e3dc; padding-left: 14px; margin-left: 4px; font-size: 11px; letter-spacing: 1px; font-weight: 600; text-transform: uppercase; }
-.reader-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #617a72; font-size: 12px; }
-.library-select { display: grid; gap: 3px; color: #617a72; font-size: 10px; }
-.library-select select { max-width: 180px; padding: 5px 8px; border: 1px solid #d5e3dc; background: white; color: #315b50; border-radius: 6px; }
-.reader-map-link { color: #315b50; font-size: 12px; white-space: nowrap; }
+.reader-app button:focus-visible, .reader-app input:focus-visible, .reader-app select:focus-visible, .reader-app a:focus-visible { outline: 3px solid var(--brand-500); outline-offset: 2px; }
+.reader-header { display: flex; align-items: center; gap: 20px; padding: 14px 24px; min-height: 80px; border-bottom: 1px solid var(--line); background: white; flex-shrink: 0; }
+.reader-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--brand-800); font-size: 21px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+.reader-brand span { border-left: 1px solid var(--line-strong); padding-left: 14px; margin-left: 4px; font-size: 11px; letter-spacing: 1px; font-weight: 600; text-transform: uppercase; }
+.reader-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-muted); font-size: 12px; }
+.library-select { display: grid; gap: 3px; color: var(--ink-muted); font-size: 10px; }
+.library-select select { max-width: 180px; padding: 5px 8px; border: 1px solid var(--line-strong); background: white; color: var(--brand-700); border-radius: var(--r-xs); }
+.reader-map-link { color: var(--brand-700); font-size: 12px; white-space: nowrap; }
 .hidden-file { display: none; }
 .reader-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(420px, 44%) minmax(0, 1fr); }
-.paper-graph { display: flex; flex-direction: column; min-height: 0; min-width: 0; container-type: inline-size; border-right: 1px solid #cdded5; }
+.paper-graph { display: flex; flex-direction: column; min-height: 0; min-width: 0; container-type: inline-size; border-right: 1px solid var(--line-strong); }
 .paper-graph .graphnav-editor { flex: 1; min-height: 0; }
 .paper-reading { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.page-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; border-bottom: 1px solid #d6e1db; padding: 10px 16px; background: #fcfdfc; }
-.page-toolbar label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #567266; }
-.page-toolbar input, .page-toolbar select { padding: 6px 8px; border: 1px solid #d3e0d9; border-radius: 7px; color: #345c4e; background: white; }
+.page-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; border-bottom: 1px solid var(--line); padding: 10px 16px; background: var(--surface-raised); }
+.page-toolbar label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-muted); }
+.page-toolbar input, .page-toolbar select { padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: var(--r-xs); color: var(--brand-700); background: white; }
 .page-toolbar input { width: 64px; }
-.page-toolbar > span { font-size: 12px; color: #648073; }
+.page-toolbar > span { font-size: 12px; color: var(--ink-muted); }
 .page-toolbar button { font-size: 12px; }
 .pdf-viewer { flex: 1; min-height: 0; display: flex; flex-direction: column; }
-.pdf-scroll { flex: 1; min-height: 0; overflow: auto; padding: 24px; background: #e7eeeb; overscroll-behavior: contain; }
-.pdf-paper { position: relative; margin: 0 auto; background: white; box-shadow: 0 5px 24px #203e2c18; }
+.pdf-scroll { flex: 1; min-height: 0; overflow: auto; padding: 24px; background: var(--surface-sunken); overscroll-behavior: contain; }
+.pdf-paper { position: relative; margin: 0 auto; background: white; box-shadow: var(--shadow-2); }
 .pdf-paper canvas { display: block; }
-.pdf-anchor { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #26795f; background: #4acb9b44; box-shadow: 0 0 0 5px #4acb9b22; pointer-events: none; }
-.reader-footer { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 9px 16px; font-size: 10px; color: #658073; background: #fafcfb; border-top: 1px solid #d6e3dc; }
+.pdf-anchor { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--brand-600); background: var(--ring-active); box-shadow: 0 0 0 5px var(--ring-current); pointer-events: none; }
+.reader-footer { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 9px 16px; font-size: 10px; color: var(--ink-muted); background: var(--surface-raised); border-top: 1px solid var(--line); }
 .reader-footer button { font-size: 10px; padding: 4px 8px; white-space: nowrap; }
-.reader-notice { margin: 0; padding: 8px 18px; background: #eff6f0; color: #55725d; font-size: 12px; }
-.reader-error { display: flex; gap: 16px; justify-content: space-between; align-items: center; background: #fff1e5; color: #89512b; padding: 10px 20px; font-size: 12px; }
+.reader-notice { margin: 0; padding: 8px 18px; background: var(--brand-50); color: var(--ink-muted); font-size: 12px; }
+.reader-error { display: flex; gap: 16px; justify-content: space-between; align-items: center; background: var(--warn-50); color: var(--warn-700); padding: 10px 20px; font-size: 12px; }
 .reader-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; gap: 20px; }
-.reader-welcome > svg { color: #397a67; background: #e2f0e9; padding: 24px; box-sizing: content-box; border-radius: 28px; }
+.reader-welcome > svg { color: var(--brand-600); background: var(--brand-100); padding: 24px; box-sizing: content-box; border-radius: 28px; }
 .reader-welcome h1 { font-size: clamp(24px, 3vw, 38px); margin: 8px 0 0; letter-spacing: -.8px; }
-.reader-welcome p { max-width: 500px; color: #668075; margin: 0; line-height: 1.8; }
-.reader-welcome button { background: #174e49 !important; color: white !important; padding: 12px 22px !important; }
-.reader-welcome a { color: #286c57; }
+.reader-welcome p { max-width: 500px; color: var(--ink-muted); margin: 0; line-height: 1.8; }
+.reader-welcome button { background: var(--brand-800) !important; color: white !important; padding: 12px 22px !important; }
+.reader-welcome a { color: var(--brand-700); }
 .reader-welcome .reader-limits { font-size: 11px; max-width: 430px; margin-top: 12px; }
 @media (max-width: 1000px) {
   .reader-header { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
@@ -57,3 +59,60 @@ body { margin: 0; }
   .library-select select { max-width: 150px; }
   .reader-map-link { margin-left: auto; }
 }
+
+/* ---------------------------------------------------------------------------
+   Refinement layer for the PDF reader.
+   --------------------------------------------------------------------------- */
+
+.reader-app button, .reader-app input, .reader-app select, .reader-app a {
+  transition: background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-base) var(--ease),
+              color var(--t-fast) var(--ease);
+}
+.reader-app > :not(.reader-body) button, .page-toolbar button, .reader-footer button {
+  border-radius: var(--r-sm); box-shadow: var(--shadow-1);
+}
+.reader-app > :not(.reader-body) button:hover:not(:disabled),
+.page-toolbar button:hover:not(:disabled) { box-shadow: var(--shadow-2); background: var(--brand-50); }
+.reader-app button:active:not(:disabled) { box-shadow: none; }
+.reader-app button:disabled {
+  opacity: 1; box-shadow: none; color: var(--ink-subtle);
+  background: var(--surface-sunken); border-color: var(--line);
+}
+.reader-app button:focus-visible, .reader-app input:focus-visible,
+.reader-app select:focus-visible, .reader-app a:focus-visible {
+  outline: 2px solid var(--focus-color); outline-offset: 2px; box-shadow: var(--focus-ring);
+}
+
+/* The page is the subject of this screen, so it gets the deepest elevation and
+   a hairline — a pure shadow leaves white paper on a pale ground undefined. */
+.pdf-paper { box-shadow: var(--shadow-3); border: 1px solid var(--line); border-radius: 2px; }
+.pdf-scroll { background: var(--surface-sunken); }
+
+/* A jump target has to be findable the moment the page settles. */
+.pdf-anchor { box-shadow: 0 0 0 5px var(--ring-current), var(--shadow-1); }
+
+.page-toolbar input, .page-toolbar select { border-radius: var(--r-xs); }
+.page-toolbar input { font-variant-numeric: tabular-nums; text-align: center; }
+.reader-notice { border-left: 3px solid var(--brand-300); }
+.reader-error { border-left: 3px solid var(--warn-600); }
+.reader-welcome button { border-radius: var(--r-md) !important; box-shadow: var(--shadow-2); }
+
+.pdf-scroll { scrollbar-width: thin; scrollbar-color: var(--brand-200) transparent; }
+.pdf-scroll::-webkit-scrollbar { width: 12px; }
+.pdf-scroll::-webkit-scrollbar-thumb {
+  background: var(--brand-200); border-radius: var(--r-pill);
+  border: 3px solid transparent; background-clip: content-box;
+}
+
+/* Navigation links carry an arrow and sit in the header, so they read as
+   controls; the default underline made the header look like body text. */
+.reader-map-link, .reader-brand {
+  text-decoration: none; font-weight: 600;
+}
+.reader-map-link {
+  padding: 6px 10px; border-radius: var(--r-sm); color: var(--brand-700);
+}
+.reader-map-link:hover { background: var(--brand-50); }
+.library-select select { border-radius: var(--r-xs); }

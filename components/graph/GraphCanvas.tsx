@@ -233,7 +233,14 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onOpen, onDelete,
   return <div className="canvas" aria-label="Graph canvas">
     <ReactFlow<FlowNode>
       onInit={(instance) => { flowRef.current = instance; }}
-      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes} onEdgesChange={(changes) => setEdges((previous) => applyEdgeChanges(changes, previous))}
+      fitViewOptions={{ padding: .15, minZoom: .1, maxZoom: 1 }} nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} onNodesChange={changeNodes} onEdgesChange={(changes) => setEdges((previous) =>
+        // Which connections exist is decided by stored data, never by the view.
+        // React Flow drops an edge whose endpoints it has not measured yet and
+        // emits a remove for it; while edges were a plain prop the next render
+        // put them back, but now that this state is the source of truth such a
+        // removal would stick and take the connection with it. Selection is the
+        // one thing the canvas legitimately owns.
+        applyEdgeChanges(changes.filter((change) => change.type === 'select'), previous))}
       onNodeClick={(_, node) => { if (node.data.itemType === 'relationship') onSelect({ itemType: 'relationship', itemId: node.data.itemId }); else if (connectingFrom) onChooseConnection?.(node.id); }}
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
       onConnect={onConnect} connectionMode={ConnectionMode.Loose} connectOnClick connectionRadius={40} isValidConnection={(connection) => connection.source !== connection.target}

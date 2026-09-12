@@ -1,4 +1,5 @@
 @import 'tailwindcss' source(none);
+@import './theme.css';
 @source '../components';
 
 /* Pixel-based tokens keep host-page rem settings from resizing the extension. */
@@ -23,7 +24,7 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #1d303b;
+  color: var(--ink);
   color-scheme: light;
   text-align: left;
 }
@@ -32,7 +33,7 @@
 
 .graphnav-shell * { box-sizing: border-box; }
 .graphnav-shell button { font: inherit; cursor: pointer; }
-.graphnav-shell button:focus-visible { outline: 3px solid #20a392; outline-offset: 4px; }
+.graphnav-shell button:focus-visible { outline: 3px solid var(--brand-500); outline-offset: 4px; }
 
 .graph-trigger {
   position: absolute;
@@ -41,14 +42,14 @@
   pointer-events: auto;
   min-height: 48px;
   padding: 0 20px;
-  border: 1px solid #154e49;
+  border: 1px solid var(--brand-800);
   border-radius: 16px;
-  color: #fff;
-  background: #174e49;
-  box-shadow: 0 4px 16px #162d3b26;
+  color: var(--surface);
+  background: var(--brand-800);
+  box-shadow: var(--shadow-2);
   font-weight: 650 !important;
 }
-.graph-trigger:hover { background: #103f3b; }
+.graph-trigger:hover { background: var(--brand-900); }
 
 .graphnav-panel {
   position: absolute;
@@ -59,29 +60,29 @@
   max-height: 600px;
   pointer-events: auto;
   overflow: hidden;
-  border: 1px solid #dbe4e6;
+  border: 1px solid var(--line);
   border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 12px 48px #162d3b29;
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
 }
-.panel-header { padding: 16px 20px; border-bottom: 1px solid #e8eded; flex-shrink: 0; }
-.brand-mark { width: 42px; height: 42px; border-radius: 12px; background: #e6f2ef; color: #174e49; }
+.panel-header { padding: 16px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.brand-mark { width: 42px; height: 42px; border-radius: var(--r-lg); background: var(--brand-100); color: var(--brand-800); }
 .panel-header h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
-.source-label { margin: 0; color: #5d707b; font-size: 12px; }
-.close-button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 10px; color: #455c67; background: #f3f6f6; }
-.close-button:hover { background: #e5edec; }
-.panel-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; background-image: radial-gradient(#cbd8d8 0.7px, transparent 0.7px); background-size: 20px 20px; }
-.eyebrow { color: #526b74; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; }
-.preview-badge { border: 1px solid #d8e5e2; border-radius: 20px; padding: 4px 9px; color: #406359; background: #f0f7f4; font-size: 11px; white-space: nowrap; }
+.source-label { margin: 0; color: var(--ink-muted); font-size: 12px; }
+.close-button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: var(--r-md); color: var(--ink-muted); background: var(--surface-sunken); }
+.close-button:hover { background: var(--brand-100); }
+.panel-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; background-image: radial-gradient(var(--line-strong) 0.7px, transparent 0.7px); background-size: 20px 20px; }
+.eyebrow { color: var(--ink-muted); font-size: 10px; font-weight: 700; letter-spacing: 1.3px; }
+.preview-badge { border: 1px solid var(--line-strong); border-radius: 20px; padding: 4px 9px; color: var(--brand-700); background: var(--brand-50); font-size: 11px; white-space: nowrap; }
 .empty-state { flex: 1 0 auto; padding: 24px 0 12px; text-align: center; }
-.empty-mark { width: 72px; height: 72px; flex-shrink: 0; margin-bottom: 20px; border: 1px solid #d6e9e3; border-radius: 22px; color: #467c6d; background: #edf6f1; transform: rotate(-5deg); }
+.empty-mark { width: 72px; height: 72px; flex-shrink: 0; margin-bottom: 20px; border: 1px solid var(--line-strong); border-radius: 22px; color: var(--brand-600); background: var(--brand-50); transform: rotate(-5deg); }
 .empty-state h2 { max-width: 280px; margin: 0 0 10px; font-size: 24px; font-weight: 650; line-height: 1.25; letter-spacing: -0.7px; }
-.empty-state p { max-width: 260px; margin: 0; color: #5d707b; line-height: 1.65; }
-.connection-notice { display: flex; align-items: center; gap: 7px; margin-top: 20px; padding: 9px 12px; border: 1px solid #e2e8e6; border-radius: 9px; background: #fff; font-size: 12px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: #b17d25; }
+.empty-state p { max-width: 260px; margin: 0; color: var(--ink-muted); line-height: 1.65; }
+.connection-notice { display: flex; align-items: center; gap: 7px; margin-top: 20px; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); font-size: 12px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--warn-600); }
 .empty-state .next-step { margin-top: 12px; font-size: 12px; }
-.panel-footer { padding: 15px 20px; border-top: 1px solid #e8eded; color: #5d707b; font-size: 11px; flex-shrink: 0; }
-.panel-footer kbd { padding: 2px 6px; border: 1px solid #dce4e4; border-radius: 5px; font: inherit; }
+.panel-footer { padding: 15px 20px; border-top: 1px solid var(--line); color: var(--ink-muted); font-size: 11px; flex-shrink: 0; }
+.panel-footer kbd { padding: 2px 6px; border: 1px solid var(--line); border-radius: var(--r-xs); font: inherit; }
 
 @media (max-width: 480px) {
   .graphnav-panel { top: 12px; right: 12px; bottom: 80px; width: calc(100% - 24px); }
@@ -98,56 +99,51 @@
 
 .google-connection { max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .connection-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.connect-button, .auth-refresh { padding: 8px 12px; border: 1px solid #c9dad4; border-radius: 9px; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; cursor: pointer; }
-.connect-button { color: white; background: #174e49; border-color: #174e49; }
-.auth-refresh { background: #f5faf8; color: #315c50; }
+.connect-button, .auth-refresh { padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; cursor: pointer; }
+.connect-button { color: white; background: var(--brand-800); border-color: var(--brand-800); }
+.auth-refresh { background: var(--brand-50); color: var(--brand-700); }
 .connect-button:disabled, .auth-refresh:disabled { opacity: .55; cursor: default; }
-.connect-button:focus-visible, .auth-refresh:focus-visible { outline: 3px solid #20a392; outline-offset: 2px; }
-.status-dot.connected { background: #338065; }
-.empty-state .auth-error { color: #a34c38; font-size: 12px; line-height: 1.5; max-width: 320px; overflow-wrap: anywhere; }
+.connect-button:focus-visible, .auth-refresh:focus-visible { outline: 3px solid var(--brand-500); outline-offset: 2px; }
+.status-dot.connected { background: var(--brand-600); }
+.empty-state .auth-error { color: var(--danger); font-size: 12px; line-height: 1.5; max-width: 320px; overflow-wrap: anywhere; }
 
 .graphnav-panel.editor-panel { width: min(780px, calc(100% - 32px)); max-height: none; }
 .graphnav-panel.editor-panel.docs-panel { left: 16px; right: auto; width: min(580px, calc(100% - 32px)); }
-.editor-panel .panel-header { padding: 10px 16px; }
-.editor-panel .brand-mark { width: 32px; height: 32px; }
-.editor-panel .panel-footer { padding: 8px 14px; font-size: 10px; flex-wrap: wrap; gap: 8px; }
-.panel-auth { flex-shrink: 0; padding: 7px 14px; border-bottom: 1px solid #e8eded; background: #f9fcfa; }
+.editor-panel .panel-footer { padding: 6px 12px; font-size: 10px; flex-wrap: wrap; gap: 8px; }
+.panel-auth { flex-shrink: 0; padding: 4px 12px; border-bottom: 1px solid var(--line); background: var(--brand-50); }
 .panel-auth .google-connection { flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: center; }
 .panel-auth .connection-notice { margin: 0; border: 0; padding: 2px 0; background: transparent; font-size: 11px; }
 .panel-auth .connection-actions { margin-left: auto; gap: 6px; }
 .panel-auth .connect-button, .panel-auth .auth-refresh { font-size: 11px; padding: 5px 8px; }
-.panel-auth .auth-error { width: 100%; color: #a34c38; font-size: 11px; overflow-wrap: anywhere; }
+.panel-auth .auth-error { width: 100%; color: var(--danger); font-size: 11px; overflow-wrap: anywhere; }
 @container (max-height: 430px) {
   .editor-panel .panel-footer { display: none; }
   .editor-panel .panel-header { padding: 4px 12px; }
   .editor-panel .brand-mark { display: none; }
 }
 .panel-width-label { display: flex; gap: 6px; align-items: center; }
-.panel-width-label select { font: inherit; width: 82px; border: 1px solid #d2dfd7; border-radius: 5px; padding: 4px; color: #34584c; background: white; }
-.dock-button { border: 1px solid #d2dfd7; border-radius: 6px; padding: 4px 8px; background: white; color: #34584c; }
+.panel-width-label select { font: inherit; width: 82px; border: 1px solid var(--line-strong); border-radius: var(--r-xs); padding: 4px; color: var(--brand-700); background: white; }
+.dock-button { border: 1px solid var(--line-strong); border-radius: var(--r-xs); padding: 4px 8px; background: white; color: var(--brand-700); }
 .panel-header-actions { display: flex; align-items: center; gap: 8px; }
-.panel-move, .panel-resize { display: flex; align-items: center; gap: 6px; border: 1px solid #d2dfd7; border-radius: 6px; padding: 6px 8px; background: #f5faf8; color: #34584c; touch-action: none; user-select: none; }
+.panel-move, .panel-resize { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line-strong); border-radius: var(--r-xs); padding: 6px 8px; background: var(--brand-50); color: var(--brand-700); touch-action: none; user-select: none; }
 .graphnav-shell .panel-move { font-size: 11px; cursor: grab; }
 .graphnav-shell .panel-move:active { cursor: grabbing; }
 .graphnav-shell .panel-resize { cursor: nwse-resize; margin-left: auto; }
 .panel-move span { font-size: 19px; line-height: 1; }
 .panel-resize span { font-size: 15px; line-height: 1; }
-.panel-preference-error { flex-basis: 100%; color: #a34c38; }
+.panel-preference-error { flex-basis: 100%; color: var(--danger); }
 .panel-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-.account-settings { width: 100%; padding: 8px; border: 1px solid #dce8e1; border-radius: 8px; background: white; }
-.account-settings p { margin: 4px 0 10px; color: #536e62; font-size: 11px; line-height: 1.5; }
+.account-settings { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--r-sm); background: white; }
+.account-settings p { margin: 4px 0 10px; color: var(--ink-muted); font-size: 11px; line-height: 1.5; }
 .panel-auth .account-settings .connection-actions { margin: 0; justify-content: flex-start; }
 .panel-settings { position: relative; margin-left: auto; }
-.panel-settings summary { cursor: pointer; padding: 3px 6px; color: #376753; }
-.panel-settings-controls { position: absolute; z-index: 30; bottom: 30px; right: 0; width: 235px; max-height: 50vh; overflow: auto; background: white; padding: 14px; border: 1px solid #d3e1d8; border-radius: 10px; box-shadow: 0 8px 30px #173f3426; display: grid; gap: 10px; }
-.home-map-note { margin: 0; padding: 5px 14px; font-size: 11px; color: #637c6e; background: #f5faf6; }
+.panel-settings summary { cursor: pointer; padding: 3px 6px; color: var(--brand-700); }
+.panel-settings-controls { position: absolute; z-index: 30; bottom: 30px; right: 0; width: 235px; max-height: 50vh; overflow: auto; background: white; padding: 14px; border: 1px solid var(--line-strong); border-radius: var(--r-md); box-shadow: var(--shadow-3); display: grid; gap: 10px; }
+.home-map-note { margin: 0; padding: 3px 12px; font-size: 11px; color: var(--ink-muted); background: var(--brand-50); }
 .editor-panel .panel-header { padding: 6px 12px; }
 .editor-panel .close-button { width: 32px; height: 32px; }
 .editor-panel .brand-mark { width: 28px; height: 28px; }
-.panel-auth { padding: 4px 12px; }
 .panel-auth .auth-refresh, .panel-auth .connect-button { padding: 4px 8px; font-size: 11px; }
-.editor-panel .panel-footer { padding: 6px 12px; }
-.home-map-note { padding: 3px 12px; }
 
 .graphnav-shell [hidden] { display: none !important; }
 .launcher-panel .panel-header { min-height: 64px; padding: 14px 18px; display: grid; grid-template-columns: 72px minmax(0, 1fr) 32px; gap: 8px; }
@@ -155,17 +151,16 @@
 .launcher-panel .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; }
 .launcher-panel .panel-header h1 { font-size: 18px; line-height: 1.3; }
 .launcher-panel .panel-step-title { text-align: center; }
-.panel-step-title { min-width: 0; }
-.graphnav-shell .panel-back { display: flex; align-items: center; gap: 6px; padding: 6px 0; border: 0; background: transparent; color: #24564c; font-size: 13px; }
+.graphnav-shell .panel-back { display: flex; align-items: center; gap: 6px; padding: 6px 0; border: 0; background: transparent; color: var(--brand-800); font-size: 13px; }
 .panel-back span { font-size: 21px; line-height: 1; }
 .panel-back:disabled { opacity: .45; cursor: default; }
 .launcher-home { overflow: auto; }
-.graphnav-shell .manage-connection { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 20px; background: white; color: #243f3b; border: 0; border-bottom: 1px solid #e5ece8; text-align: left; font-size: 14px; }
+.graphnav-shell .manage-connection { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 20px; background: white; color: var(--brand-900); border: 0; border-bottom: 1px solid var(--line); text-align: left; font-size: 14px; }
 .manage-connection > span:nth-child(2) { flex: 1; }
 .manage-connection > span:last-child { font-size: 24px; line-height: 1; }
 .manage-connection:disabled { opacity: .5; cursor: default; }
-.graphnav-shell .manage-connection:hover:not(:disabled) { background: #f4f8f6; }
-.google-letter { font-size: 23px; line-height: 1; font-weight: 750; color: #4285f4; }
+.graphnav-shell .manage-connection:hover:not(:disabled) { background: var(--surface-sunken); }
+.google-letter { font-size: 23px; line-height: 1; font-weight: 750; color: var(--google-blue); }
 .launcher-choices { display: grid; gap: 12px; padding: 14px; }
 .launcher-account { padding: 18px; border: 0; overflow: auto; background: white; }
 .launcher-account .google-connection { gap: 14px; }
@@ -175,7 +170,99 @@
 .launcher-account .connect-button, .launcher-account .auth-refresh { font-size: 12px; padding: 8px 10px; }
 .panel-editor-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .launcher-panel .panel-editor-container { flex: 0 1 auto; overflow-y: auto; }
-.window-control { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #315e51; font-size: 22px !important; }
-.window-control:hover { background: #edf5f0; }
+.window-control { width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--brand-700); font-size: 22px !important; }
+.window-control:hover { background: var(--brand-100); }
 .panel-step-title { min-width: 0; }
 .panel-step-title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------------------------------------------------------------------------
+   Refinement layer for the on-page panel.
+
+   This surface sits on top of Google Drive and Docs, so it has to look
+   deliberately like a separate, finished object rather than an injected div.
+   Elevation and edge treatment do most of that work.
+   --------------------------------------------------------------------------- */
+
+.graphnav-shell button,
+.graphnav-shell a,
+.graphnav-shell summary {
+  transition: background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-base) var(--ease),
+              color var(--t-fast) var(--ease);
+}
+
+/* The trigger is the only part of GraphNav visible on an untouched Google
+   page. It should read as a solid, pressable object at a glance. */
+.graph-trigger {
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-2);
+  letter-spacing: .01em;
+}
+.graph-trigger:hover { box-shadow: var(--shadow-3); }
+.graph-trigger:active { box-shadow: var(--shadow-1); }
+
+/* A floating panel needs a hairline as well as a shadow: over a white Google
+   page the shadow alone leaves the edge undefined. */
+.graphnav-panel {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-3);
+}
+.panel-header { background: var(--surface); }
+
+.graphnav-shell button:focus-visible,
+.graphnav-shell a:focus-visible,
+.graphnav-shell summary:focus-visible,
+.graphnav-shell input:focus-visible,
+.graphnav-shell select:focus-visible {
+  outline: 2px solid var(--focus-color); outline-offset: 2px; box-shadow: var(--focus-ring);
+}
+
+.connect-button, .auth-refresh, .dock-button, .panel-move, .panel-resize {
+  border-radius: var(--r-sm); box-shadow: var(--shadow-1);
+}
+.connect-button:hover:not(:disabled), .auth-refresh:hover:not(:disabled) { box-shadow: var(--shadow-2); }
+.connect-button:active:not(:disabled), .auth-refresh:active:not(:disabled) { box-shadow: none; }
+.connect-button:disabled, .auth-refresh:disabled {
+  opacity: 1; box-shadow: none; color: var(--ink-subtle);
+  background: var(--surface-sunken); border-color: var(--line);
+}
+
+.preview-badge, .connection-notice { font-variant-numeric: tabular-nums; }
+.preview-badge { border-radius: var(--r-pill); font-weight: 600; }
+.connection-notice { border-radius: var(--r-sm); }
+
+/* The status dot is the smallest element carrying state, so it gets a ring to
+   make the colour readable at 6px. */
+.status-dot { box-shadow: 0 0 0 3px #a1652c1f; }
+.status-dot.connected { box-shadow: 0 0 0 3px var(--ring-current); }
+
+.panel-content { scrollbar-width: thin; scrollbar-color: var(--brand-200) transparent; }
+.panel-content::-webkit-scrollbar { width: 10px; }
+.panel-content::-webkit-scrollbar-thumb {
+  background: var(--brand-200); border-radius: var(--r-pill);
+  border: 3px solid transparent; background-clip: content-box;
+}
+
+.graphnav-shell .manage-connection, .graphnav-shell .graph-entry-choice {
+  border-radius: var(--r-lg);
+}
+.graphnav-shell .manage-connection { border-radius: 0; }
+.graphnav-shell .graph-entry-choice { box-shadow: var(--shadow-1); }
+.graphnav-shell .graph-entry-choice:hover:not(:disabled) { box-shadow: var(--shadow-2); }
+.window-control, .close-button { border-radius: var(--r-sm); }
+
+/* The same chevron treatment as the editor, so a disclosure looks identical
+   wherever it appears. */
+.graphnav-shell summary {
+  display: flex; align-items: center; gap: 8px; list-style: none;
+  border-radius: var(--r-xs); transition: color var(--t-fast) var(--ease);
+}
+.graphnav-shell summary::-webkit-details-marker { display: none; }
+.graphnav-shell summary::before {
+  content: ''; flex: 0 0 auto; width: 6px; height: 6px;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg); transition: transform var(--t-base) var(--ease);
+}
+.graphnav-shell details[open] > summary::before { transform: rotate(45deg); }
+.graphnav-shell summary:hover { color: var(--brand-600); }

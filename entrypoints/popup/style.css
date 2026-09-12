@@ -1,14 +1,23 @@
-:root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1d303b; background: #fafcfb; color-scheme: light; }
+@import '../../assets/theme.css';
+
+:root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--ink); background: var(--surface-raised); color-scheme: light; }
 * { box-sizing: border-box; }
 body { margin: 0; width: 340px; font-size: 14px; line-height: 1.6; }
 main { padding: 24px; }
-header { display: flex; align-items: center; gap: 10px; color: #174e49; margin-bottom: 20px; }
+header { display: flex; align-items: center; gap: 10px; color: var(--brand-800); margin-bottom: 20px; }
 h1 { margin: 0; font-size: 21px; }
 h2 { margin: 16px 0 8px; font-size: 23px; line-height: 1.3; letter-spacing: -0.5px; }
-p { margin: 0 0 20px; color: #536a74; }
-.badge { font-size: 11px; padding: 4px 9px; background: #e6f2ef; color: #315c50; border-radius: 20px; }
+p { margin: 0 0 20px; color: var(--ink-muted); }
+.badge { font-size: 11px; padding: 4px 9px; background: var(--brand-100); color: var(--brand-700); border-radius: 20px; }
 nav { display: grid; gap: 8px; }
-a { display: flex; justify-content: space-between; padding: 10px 14px; border: 1px solid #d4e1dc; border-radius: 10px; color: #174e49; text-decoration: none; font-weight: 600; }
-a:hover { background: #e6f2ef; }
-a:focus-visible { outline: 3px solid #20a392; outline-offset: 2px; }
+a { display: flex; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--r-md); color: var(--brand-800); text-decoration: none; font-weight: 600; }
+a:hover { background: var(--brand-100); }
+a:focus-visible { outline: 3px solid var(--brand-500); outline-offset: 2px; }
 .note { margin: 18px 0 0; font-size: 12px; }
+
+/* Refinement layer: the popup is four links, so the links are the product. */
+a { transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), box-shadow var(--t-base) var(--ease); box-shadow: var(--shadow-1); border-radius: var(--r-md); }
+a:hover { border-color: var(--brand-300); box-shadow: var(--shadow-2); }
+a:active { box-shadow: none; }
+a:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; box-shadow: var(--focus-ring); }
+.badge { font-weight: 600; font-variant-numeric: tabular-nums; border: 1px solid var(--brand-200); }

@@ -1,29 +1,49 @@
-:root { font-family: system-ui, sans-serif; color: #203c3a; background: #f3f7f6; font-synthesis: none; }
+@import '../../assets/theme.css';
+
+:root { font-family: system-ui, sans-serif; color: var(--ink); background: var(--surface-sunken); font-synthesis: none; }
 * { box-sizing: border-box; }
 body { margin: 0; }
 main { max-width: 720px; padding: 32px 20px; margin: auto; }
 header { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
 header strong { font-size: 24px; }
-header span { margin-left: auto; color: #627b75; font-size: 13px; }
-.connection-card { background: white; border: 1px solid #d9e6e1; border-radius: 22px; padding: clamp(20px, 4vw, 38px); box-shadow: 0 12px 36px #24473d08; }
-.eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #6c9185; }
+header span { margin-left: auto; color: var(--ink-muted); font-size: 13px; }
+.connection-card { background: white; border: 1px solid var(--line); border-radius: 22px; padding: clamp(20px, 4vw, 38px); box-shadow: var(--shadow-3); }
+.eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 700; color: var(--ink-muted); }
 h1 { font-size: clamp(24px, 4vw, 32px); letter-spacing: -1px; margin: 12px 0; }
-p, li { line-height: 1.6; font-size: 14px; color: #526d65; }
+p, li { line-height: 1.6; font-size: 14px; color: var(--ink-muted); }
 ol { padding-left: 24px; margin: 24px 0; }
 li + li { margin-top: 6px; }
-.connection-state { display: inline-flex; gap: 8px; align-items: center; background: #f0f2f1; border-radius: 20px; padding: 9px 14px; font-size: 13px; font-weight: 600; margin: 10px 0 0; }
-.connection-state span { width: 7px; height: 7px; border-radius: 50%; background: #99a6a1; }
-.connection-state.ready { background: #eaf6ee; color: #237449; }
-.connection-state.ready span { background: #32965b; }
+.connection-state { display: inline-flex; gap: 8px; align-items: center; background: var(--surface-sunken); border-radius: 20px; padding: 9px 14px; font-size: 13px; font-weight: 600; margin: 10px 0 0; }
+.connection-state span { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-subtle); }
+.connection-state.ready { background: var(--brand-100); color: var(--brand-600); }
+.connection-state.ready span { background: var(--brand-500); }
 label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-input { width: 100%; border: 1px solid #cdded7; padding: 13px; border-radius: 9px; font: inherit; }
-input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid #94cbb9; outline-offset: 3px; }
-.detail { font-size: 12px; color: #73877f; }
+input { width: 100%; border: 1px solid var(--line-strong); padding: 13px; border-radius: var(--r-sm); font: inherit; }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--brand-300); outline-offset: 3px; }
+.detail { font-size: 12px; color: var(--ink-subtle); }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
-button { font: inherit; font-size: 13px; padding: 11px 16px; border: 1px solid #cfdfd8; border-radius: 8px; background: white; color: #275d4f; cursor: pointer; }
-button.primary { background: #20594f; color: white; border-color: #20594f; }
+button { font: inherit; font-size: 13px; padding: 11px 16px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: white; color: var(--brand-700); cursor: pointer; }
+button.primary { background: var(--brand-800); color: white; border-color: var(--brand-800); }
 button:disabled { opacity: .5; cursor: default; }
 .text-button { border: 0; padding-left: 0; text-decoration: underline; }
-.notice { padding: 12px; background: #fff7e9; border: 1px solid #f0ddb5; border-radius: 8px; color: #85571e; overflow-wrap: anywhere; }
+.notice { padding: 12px; background: var(--warn-50); border: 1px solid var(--warn-300); border-radius: var(--r-sm); color: var(--warn-700); overflow-wrap: anywhere; }
 footer { display: flex; justify-content: center; gap: 30px; padding: 24px; font-size: 12px; }
-a { color: #34675b; }
+a { color: var(--brand-700); }
+
+/* Refinement layer: the options page is a single card, so its finish is all
+   surface and type. */
+button, input, a { transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), box-shadow var(--t-base) var(--ease), color var(--t-fast) var(--ease); }
+.connection-card { box-shadow: var(--shadow-3); border-color: var(--line); }
+button { border-radius: var(--r-sm); box-shadow: var(--shadow-1); }
+button:hover:not(:disabled) { background: var(--brand-50); box-shadow: var(--shadow-2); }
+button.primary:hover:not(:disabled) { background: var(--brand-700); }
+button:active:not(:disabled) { box-shadow: none; }
+button:disabled { opacity: 1; box-shadow: none; color: var(--ink-subtle); background: var(--surface-sunken); border-color: var(--line); }
+.text-button, .text-button:hover:not(:disabled) { box-shadow: none; background: transparent; }
+input { border-radius: var(--r-sm); }
+input:focus { border-color: var(--brand-500); }
+input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--focus-color); outline-offset: 2px; box-shadow: var(--focus-ring); }
+.connection-state { font-variant-numeric: tabular-nums; }
+.connection-state span { box-shadow: 0 0 0 3px #7d908c26; }
+.connection-state.ready span { box-shadow: 0 0 0 3px var(--ring-current); }
+.notice { border-left-width: 3px; }

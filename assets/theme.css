@@ -1,0 +1,109 @@
+/**
+ * GraphNav design tokens.
+ *
+ * The stylesheets grew one colour at a time and ended up with 246 distinct
+ * hex values across 713 lines — a dozen near-identical greens, four greys that
+ * differ by a point or two, and a shadow invented per component. Nothing was
+ * wrong individually; together they read as unfinished, because a surface that
+ * is #fcfdfc in one panel and #fafcfb in the next looks like a mistake even
+ * when nobody can name it.
+ *
+ * These are the values everything else refers to. Each ramp is one hue at
+ * consistent steps, so a lighter or darker variant of anything already exists
+ * rather than being mixed on the spot.
+ *
+ * Tokens are declared on every root the extension renders into. The content
+ * script lives in a shadow root inside a Google page, so it cannot inherit
+ * from that page's :root; the reader, workspace, options and popup are
+ * ordinary documents. Declaring on all of them keeps one source of truth
+ * without depending on where the styles happen to be injected.
+ */
+
+:root,
+.graphnav-shell,
+.graphnav-editor,
+.reader-app {
+  /* Brand — deep teal-green, the colour the product already had. */
+  --brand-900: #0f332f;
+  --brand-800: #174e49;
+  --brand-700: #1d5f57;
+  --brand-600: #26786b;
+  --brand-500: #2f9280;
+  --brand-400: #56ab97;
+  --brand-300: #8ac5b5;
+  --brand-200: #b4dace;
+  --brand-100: #d8ece4;
+  --brand-50:  #eff7f3;
+
+  /* Neutrals, tinted slightly green so they sit with the brand rather than
+     fighting it. Pure greys read cold next to this palette. */
+  --ink:        #1b2f32;
+  --ink-muted:  #5c7079;
+  --ink-subtle: #7d908c;
+  --line:        #dde7e3;
+  --line-strong: #c7d7d1;
+  --surface:        #ffffff;
+  --surface-raised: #fbfdfc;
+  --surface-sunken: #f4f8f6;
+  --canvas:         #f5f8f6;
+
+  /* AI and generation surfaces keep their own violet so a suggestion is never
+     mistaken for something already in the map. */
+  --ai-700: #524569;
+  --ai-600: #62527e;
+  --ai-500: #7b6a99;
+  --ai-400: #9c8db5;
+  --ai-200: #ddd6ea;
+  --ai-100: #ece7f4;
+  --ai-50:  #f8f6fc;
+
+  /* Attention and failure. Warm, never red-alert: most of these are notices
+     about a source being unavailable, not errors the user caused. */
+  --warn-700: #85511f;
+  --warn-600: #a1652c;
+  --warn-300: #e4c79a;
+  --warn-100: #f6e7cf;
+  --warn-50:  #fdf5e9;
+  --danger:   #9c4b3d;
+  --danger-strong: #833c30;
+
+  /* Radii. Four steps and a pill; anything else was an accident. */
+  --r-xs:   6px;
+  --r-sm:   8px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
+  --r-pill: 999px;
+
+  /* Elevation. Two-layer shadows read as light falling on a surface; the
+     single large blur these files used before reads as a smudge. */
+  --shadow-1: 0 1px 2px #123c3810, 0 1px 3px #123c380a;
+  --shadow-2: 0 2px 4px #123c380d, 0 6px 16px #123c3812;
+  --shadow-3: 0 8px 18px #123c3814, 0 18px 44px #123c381f;
+  --shadow-pop: 0 10px 26px #123c3824, 0 2px 6px #123c3814;
+
+  /* Rings state what is happening on the canvas: what you picked, what is
+     live under the pointer, and where you already are. Three meanings, three
+     colours — previously six near-identical translucent greens. */
+  --ring-selected: #26786b40;
+  --ring-active:   #2f928066;
+  --ring-current:  #26786b3d;
+
+  /* A translucent wash of the canvas, for captions that sit over the graph. */
+  --scrim: #f5f8f6de;
+  /* Google's own blue, used only where we name Google. Not ours to restyle. */
+  --google-blue: #4285f4;
+
+  /* One focus ring everywhere, so keyboard users learn it once. */
+  --focus-ring: 0 0 0 3px #2f928059;
+  --focus-color: var(--brand-500);
+
+  /* Motion: short enough to feel like response, not animation. */
+  --ease: cubic-bezier(.2, .7, .3, 1);
+  --t-fast: .12s;
+  --t-base: .18s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root, .graphnav-shell, .graphnav-editor, .reader-app { --t-fast: 0s; --t-base: 0s; }
+}

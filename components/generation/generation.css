@@ -1,57 +1,113 @@
-.graphnav-editor .generation-panel { border: 1px solid #d8d8e8; border-radius: 12px; padding: 14px 12px; background: #f9f8fc; }
+.graphnav-editor .generation-panel { border: 1px solid var(--ai-200); border-radius: var(--r-lg); padding: 14px 12px; background: var(--ai-50); }
 .graphnav-editor .generation-heading { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-.graphnav-editor .generation-heading h2 { margin: 0; color: #4b4768; }
-.graphnav-editor .generation-badge { font-size: 9px; background: #eeebf6; color: #716885; border-radius: 20px; padding: 3px 7px; }
+.graphnav-editor .generation-heading h2 { margin: 0; color: var(--ai-700); }
+.graphnav-editor .generation-badge { font-size: 9px; background: var(--ai-100); color: var(--ai-500); border-radius: 20px; padding: 3px 7px; }
 .graphnav-editor .generation-panel .muted { font-size: 11px; margin: 8px 0 12px; }
 .graphnav-editor .generation-toggle { width: 100%; }
 .graphnav-editor .generation-content { display: grid; gap: 12px; margin-top: 8px; }
 .graphnav-editor .generation-content .local-note { margin: 0; }
 .graphnav-editor .generation-choice-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
 .graphnav-editor .generation-choices { max-height: 200px; overflow: auto; display: grid; gap: 5px; }
-.graphnav-editor .generation-choice { display: flex; align-items: flex-start; gap: 8px; border: 1px solid #e4e1eb; background: white; border-radius: 7px; padding: 8px; cursor: pointer; }
-.graphnav-editor .generation-choice input { width: 15px; height: 15px; margin: 2px 0 0; flex-shrink: 0; accent-color: #62527e; }
+.graphnav-editor .generation-choice { display: flex; align-items: flex-start; gap: 8px; border: 1px solid var(--ai-200); background: white; border-radius: var(--r-xs); padding: 8px; cursor: pointer; }
+.graphnav-editor .generation-choice input { width: 15px; height: 15px; margin: 2px 0 0; flex-shrink: 0; accent-color: var(--ai-600); }
 .graphnav-editor .generation-choice span { min-width: 0; overflow-wrap: anywhere; }
-.graphnav-editor .generation-choice small { display: block; font-size: 10px; font-weight: 400; color: #7b7485; }
+.graphnav-editor .generation-choice small { display: block; font-size: 10px; font-weight: 400; color: var(--ai-500); }
 .graphnav-editor .generation-actions { display: flex; flex-wrap: wrap; gap: 6px; }
-.graphnav-editor .generation-preview { display: grid; gap: 10px; font-size: 11px; border-top: 1px solid #dbd6e8; padding-top: 14px; }
-.graphnav-editor .generation-preview h3, .graphnav-editor .generation-preview h4 { margin: 0; color: #494060; }
-.graphnav-editor .generation-passages { max-height: 320px; overflow: auto; border: 1px solid #e0ddea; border-radius: 8px; background: white; padding: 10px; }
-.graphnav-editor .generation-passages article + article { margin-top: 14px; border-top: 1px solid #ece8f1; padding-top: 14px; }
+.graphnav-editor .generation-preview { display: grid; gap: 10px; font-size: 11px; border-top: 1px solid var(--ai-200); padding-top: 14px; }
+.graphnav-editor .generation-preview h3, .graphnav-editor .generation-preview h4 { margin: 0; color: var(--ai-700); }
+.graphnav-editor .generation-passages { max-height: 320px; overflow: auto; border: 1px solid var(--ai-200); border-radius: var(--r-sm); background: white; padding: 10px; }
+.graphnav-editor .generation-passages article + article { margin-top: 14px; border-top: 1px solid var(--ai-100); padding-top: 14px; }
 .graphnav-editor .generation-passages p { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; margin-top: 5px; }
-.graphnav-editor .generation-connection { background: #f0edf7; border-radius: 8px; padding: 10px; font-size: 11px; }
-.graphnav-editor .draft-preview { display: grid; gap: 10px; border-top: 1px solid #dcd6eb; padding-top: 14px; }
-.graphnav-editor .draft-card { border: 1px solid #ded9eb; border-radius: 9px; padding: 12px; background: #fff; overflow-wrap: anywhere; }
-.graphnav-editor .draft-kind { display: block; text-transform: uppercase; color: #8b7e9e; font-size: 9px; letter-spacing: 1px; margin-bottom: 6px; }
+.graphnav-editor .generation-connection { background: var(--ai-100); border-radius: var(--r-sm); padding: 10px; font-size: 11px; }
+.graphnav-editor .draft-preview { display: grid; gap: 10px; border-top: 1px solid var(--ai-200); padding-top: 14px; }
+.graphnav-editor .draft-card { border: 1px solid var(--ai-200); border-radius: var(--r-sm); padding: 12px; background: var(--surface); overflow-wrap: anywhere; }
+.graphnav-editor .draft-kind { display: block; text-transform: uppercase; color: var(--ai-400); font-size: 9px; letter-spacing: 1px; margin-bottom: 6px; }
 .graphnav-editor .draft-card h4 { font-size: 13px; line-height: 1.6; }
-.graphnav-editor .draft-card p { color: #786e86; font-size: 11px; line-height: 1.6; }
-.graphnav-editor .draft-relation { display: inline-block; margin-top: 6px; background: #f0edf6; border-radius: 6px; padding: 3px 7px; color: #6d5a88; }
-.graphnav-editor .draft-arrow { color: #9c8fb0; }
-.graphnav-editor .draft-evidence { border-top: 1px solid #eeeaf4; padding-top: 9px; }
-.graphnav-editor .draft-evidence summary { cursor: pointer; color: #77658d; }
+.graphnav-editor .draft-card p { color: var(--ai-500); font-size: 11px; line-height: 1.6; }
+.graphnav-editor .draft-relation { display: inline-block; margin-top: 6px; background: var(--ai-100); border-radius: var(--r-xs); padding: 3px 7px; color: var(--ai-600); }
+.graphnav-editor .draft-arrow { color: var(--ai-400); }
+.graphnav-editor .draft-evidence { border-top: 1px solid var(--ai-100); padding-top: 9px; }
+.graphnav-editor .draft-evidence summary { cursor: pointer; color: var(--ai-500); }
 .graphnav-editor .draft-evidence article { margin-top: 12px; }
-.graphnav-editor .draft-evidence blockquote { max-height: 180px; overflow: auto; white-space: pre-wrap; margin: 8px 0; border-left: 2px solid #c9c0db; padding-left: 10px; line-height: 1.6; }
+.graphnav-editor .draft-evidence blockquote { max-height: 180px; overflow: auto; white-space: pre-wrap; margin: 8px 0; border-left: 2px solid var(--ai-200); padding-left: 10px; line-height: 1.6; }
 
 @container (max-width: 640px) {
   .graphnav-editor.embedded:has(.generation-content) .sidebar { flex: 0 0 65%; height: 65%; max-height: 65%; }
 }
 
 /* G3-A review controls. Palette follows the surrounding generation panel. */
-.graphnav-editor .draft-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-top: 1px solid #eeeaf4; margin-top: 10px; padding-top: 10px; }
-.graphnav-editor .draft-verdict { border: 1px solid #ded9eb; border-radius: 7px; background: #fff; color: #5b5170; font-size: 11px; padding: 5px 10px; cursor: pointer; }
-.graphnav-editor .draft-verdict:hover:not(:disabled) { border-color: #c3b8d8; }
+.graphnav-editor .draft-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-top: 1px solid var(--ai-100); margin-top: 10px; padding-top: 10px; }
+.graphnav-editor .draft-verdict { border: 1px solid var(--ai-200); border-radius: var(--r-xs); background: var(--surface); color: var(--ai-700); font-size: 11px; padding: 5px 10px; cursor: pointer; }
+.graphnav-editor .draft-verdict:hover:not(:disabled) { border-color: var(--ai-200); }
 .graphnav-editor .draft-verdict:disabled { opacity: 0.5; cursor: default; }
 /* A chosen verdict has to be obvious at a glance while reviewing a list. */
-.graphnav-editor .draft-verdict.is-chosen { background: #62527e; border-color: #62527e; color: #fff; }
-.graphnav-editor .draft-rename { display: flex; align-items: center; gap: 6px; flex: 1 1 100%; font-size: 10px; color: #77658d; }
-.graphnav-editor .draft-rename input { flex: 1; min-width: 0; border: 1px solid #ded9eb; border-radius: 6px; padding: 5px 7px; font: inherit; font-size: 11px; }
+.graphnav-editor .draft-verdict.is-chosen { background: var(--ai-600); border-color: var(--ai-600); color: var(--surface); }
+.graphnav-editor .draft-rename { display: flex; align-items: center; gap: 6px; flex: 1 1 100%; font-size: 10px; color: var(--ai-500); }
+.graphnav-editor .draft-rename input { flex: 1; min-width: 0; border: 1px solid var(--ai-200); border-radius: var(--r-xs); padding: 5px 7px; font: inherit; font-size: 11px; }
 /* Dismissed cards stay readable but recede, so the list still shows what was decided. */
 .graphnav-editor .draft-card.is-dismissed { opacity: 0.55; }
-.graphnav-editor .draft-decided { border-top: 1px solid #eeeaf4; margin-top: 10px; padding-top: 10px; color: #77658d; font-size: 11px; }
-.graphnav-editor .draft-apply { display: grid; gap: 8px; border-top: 1px solid #dbd6e8; padding-top: 12px; }
+.graphnav-editor .draft-decided { border-top: 1px solid var(--ai-100); margin-top: 10px; padding-top: 10px; color: var(--ai-500); font-size: 11px; }
+.graphnav-editor .draft-apply { display: grid; gap: 8px; border-top: 1px solid var(--ai-200); padding-top: 12px; }
 .graphnav-editor .draft-apply .local-note { font-size: 10px; }
 
 /* The save action must stay reachable: a long draft pushes it far off-screen,
    which reads as "Add to map did nothing". */
-.graphnav-editor .draft-apply { position: sticky; bottom: 0; z-index: 2; background: #f9f8fc; box-shadow: 0 -8px 12px -8px #162d3b26; }
-.graphnav-editor .draft-pending { margin: 8px 0 0; padding: 7px 10px; border: 1px solid #d8cfe8; border-radius: 8px; background: #f3effa; color: #5b5170; font-size: 11px; }
+.graphnav-editor .draft-apply { position: sticky; bottom: 0; z-index: 2; background: var(--ai-50); box-shadow: 0 -8px 12px -8px #123c381f; }
+.graphnav-editor .draft-pending { margin: 8px 0 0; padding: 7px 10px; border: 1px solid var(--ai-200); border-radius: var(--r-sm); background: var(--ai-100); color: var(--ai-700); font-size: 11px; }
 .graphnav-editor .draft-bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+
+/* ---------------------------------------------------------------------------
+   Refinement layer for suggestions.
+
+   This panel is violet throughout so a suggestion never reads as something
+   already in the map. The finish follows the editor's, one hue over.
+   --------------------------------------------------------------------------- */
+
+.graphnav-editor .generation-panel { box-shadow: var(--shadow-1); }
+.graphnav-editor .generation-badge {
+  border: 1px solid var(--ai-200); background: var(--ai-100); color: var(--ai-700);
+  padding: 3px 9px; font-weight: 600;
+}
+
+.graphnav-editor .draft-card {
+  box-shadow: var(--shadow-1);
+  transition: box-shadow var(--t-base) var(--ease), border-color var(--t-fast) var(--ease), opacity var(--t-base) var(--ease);
+}
+.graphnav-editor .draft-card:hover { box-shadow: var(--shadow-2); border-color: var(--ai-400); }
+
+/* A verdict is the one decision on each card, so its buttons carry the most
+   weight in the panel and the chosen one has to win at a glance. */
+.graphnav-editor .draft-verdict {
+  border-radius: var(--r-xs); font-weight: 600; box-shadow: var(--shadow-1);
+  transition: background-color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-base) var(--ease), color var(--t-fast) var(--ease);
+}
+.graphnav-editor .draft-verdict:hover:not(:disabled) { box-shadow: var(--shadow-2); background: var(--ai-50); }
+.graphnav-editor .draft-verdict:active:not(:disabled) { box-shadow: none; }
+.graphnav-editor .draft-verdict.is-chosen { box-shadow: var(--shadow-1); }
+.graphnav-editor .draft-verdict.is-chosen:hover:not(:disabled) { background: var(--ai-700); border-color: var(--ai-700); }
+.graphnav-editor .draft-verdict:disabled {
+  opacity: 1; box-shadow: none; color: var(--ink-subtle);
+  background: var(--surface-sunken); border-color: var(--line);
+}
+.graphnav-editor .draft-verdict:focus-visible {
+  outline: 2px solid var(--ai-500); outline-offset: 2px; box-shadow: 0 0 0 3px #62527e40;
+}
+
+/* The running tally is the answer to "did that register?", so it is quoted in
+   tabular digits that do not shift as the numbers change. */
+.graphnav-editor .draft-pending, .graphnav-editor .generation-badge { font-variant-numeric: tabular-nums; }
+.graphnav-editor .draft-pending { border-left: 3px solid var(--ai-400); }
+
+/* Evidence is the reason to trust a suggestion; make the quote look like one. */
+.graphnav-editor .draft-evidence blockquote {
+  border-left: 3px solid var(--ai-200); background: var(--ai-50);
+  padding: 8px 12px; border-radius: 0 var(--r-xs) var(--r-xs) 0; color: var(--ai-700);
+}
+.graphnav-editor .draft-evidence summary { font-weight: 600; }
+
+.graphnav-editor .generation-choices, .graphnav-editor .generation-passages,
+.graphnav-editor .draft-evidence blockquote { scrollbar-width: thin; scrollbar-color: var(--ai-200) transparent; }
+
+/* The sticky save bar is the floor of the panel, so it needs a real edge. */
+.graphnav-editor .draft-apply { border-top: 1px solid var(--ai-200); }
