@@ -6,13 +6,15 @@ import { effectiveLabel, LIMITS, type GraphSnapshot, type ItemKey } from '../../
 export type Selection = Pick<ItemKey, 'itemType' | 'itemId'>;
 type FlowNode = Node<{ label: string; itemType: 'node' | 'relationship'; itemId: string }>;
 type Props = {
+  fit?: boolean;
+  activeTabId?: string;
   snapshot: GraphSnapshot; query: string; busy: boolean;
   onSelect: (selection: Selection) => void;
   onConnect: (connection: Connection) => void;
   onPosition: (selection: Selection, point: { x: number; y: number }) => void;
   onView: (view: Viewport) => void;
 };
-export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosition, onView }: Props) {
+export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosition, onView, fit = false, activeTabId }: Props) {
   const [nodes, setNodes] = useState<FlowNode[]>([]);
   const { initialNodes, edges, total } = useMemo(() => {
     const hidden = new Set(snapshot.itemEdits.filter((edit) => edit.hidden).map((edit) => edit.itemId));
@@ -24,8 +26,9 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosi
       return saved ? { x: saved.x, y: saved.y } : fallback;
     };
     const initialNodes: FlowNode[] = visible.map((node, index) => ({
-      id: node.id, sourcePosition: Position.Right, targetPosition: Position.Left, position: position(node.id, { x: 80 + (index % 4) * 240, y: 80 + Math.floor(index / 4) * 150 }),
+      id: node.id, sourcePosition: Position.Bottom, targetPosition: Position.Top, position: position(node.id, { x: 80 + (index % 4) * 240, y: 80 + Math.floor(index / 4) * 150 }),
       data: { label: effectiveLabel(node, snapshot.itemEdits), itemType: 'node', itemId: node.id },
+      className: `${node.origin === 'imported' ? 'source-node' : 'personal-node'}${node.locator?.kind === 'docs' && node.locator.tabId && node.locator.tabId === activeTabId ? ' current-node' : ''}`,
       ariaLabel: `Node: ${effectiveLabel(node, snapshot.itemEdits)}`,
     }));
     const edges: Edge[] = [];
@@ -35,7 +38,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosi
       if (relation.members.length === 2) {
         const from = relation.members.find((m) => m.role === 'from') ?? relation.members[0]!;
         const to = relation.members.find((m) => m.role === 'to') ?? relation.members[1]!;
-        edges.push({ id: relation.id, source: from.nodeId, target: to.nodeId, label, data: { itemId: relation.id }, markerEnd: to.role === 'to' ? { type: MarkerType.ArrowClosed } : undefined });
+        edges.push({ id: relation.id, source: from.nodeId, target: to.nodeId, label, className: relation.kind === 'contains' ? 'contains-edge' : 'personal-edge', data: { itemId: relation.id }, markerEnd: to.role === 'to' ? { type: MarkerType.ArrowClosed } : undefined });
       } else {
         const id = `relationship:${relation.id}`;
         initialNodes.push({ id, sourcePosition: Position.Right, targetPosition: Position.Left, position: position(relation.id, { x: 340, y: 270 }), data: { label, itemType: 'relationship', itemId: relation.id }, className: 'relationship-junction', connectable: false, ariaLabel: `Group connection: ${label}` });
@@ -43,7 +46,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosi
       }
     }
     return { initialNodes, edges, total: available.length };
-  }, [snapshot, query]);
+  }, [snapshot, query, activeTabId]);
   useEffect(() => {
     setNodes((previous) => initialNodes.map((node) => ({ ...node, selected: previous.find((old) => old.id === node.id)?.selected ?? false })));
   }, [initialNodes]);
@@ -63,6 +66,7 @@ export function GraphCanvas({ snapshot, query, busy, onSelect, onConnect, onPosi
       onEdgeClick={(_, edge) => onSelect({ itemType: 'relationship', itemId: String(edge.data?.itemId) })}
       onConnect={onConnect} nodesDraggable={!busy} nodesConnectable={!busy}
       defaultViewport={snapshot.graph.view} minZoom={0.1} maxZoom={4}
+      fitView={fit || (snapshot.graph.createdVia === 'import' && !snapshot.layoutItems.some((item) => item.pinned) && snapshot.graph.view.zoom === 1 && snapshot.graph.view.x === 0 && snapshot.graph.view.y === 0)}
       onMoveEnd={(_, view) => onView(view)}
       deleteKeyCode={null} multiSelectionKeyCode={null} selectionOnDrag={false}
     >

@@ -20,10 +20,15 @@ export const locatorSchema = z.discriminatedUnion('kind', [
 ]);
 export type Locator = z.infer<typeof locatorSchema>;
 const evidenceSchema = z.object({ sourceId: id, locator: locatorSchema, sourceVersion: id, quote: z.string().max(2000) }).strict();
+export const bindingSelectionSchema = z.object({
+  mode: z.enum(['selected', 'baseline']),
+  memberKeys: z.array(z.string().max(1500)).max(LIMITS.nodes),
+  missingKeys: z.array(z.string().max(1500)).max(LIMITS.nodes),
+}).strict();
 export const graphSchema = z.object({
   id, title: label, createdVia: z.enum(['manual', 'import']), accountScope: id.nullable(),
   contentRevision: z.number().int().nonnegative(), view: viewSchema,
-  sourceBindings: z.array(z.object({ key: id, complete: z.boolean(), refreshedAt: timestamp }).strict()).max(100),
+  sourceBindings: z.array(z.object({ key: id, complete: z.boolean(), refreshedAt: timestamp, ...bindingSelectionSchema.partial().shape }).strict()).max(100),
   ...stamps,
 }).strict();
 export type Graph = z.infer<typeof graphSchema>;

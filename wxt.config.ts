@@ -14,7 +14,8 @@ export default defineConfig({
     // Public key only. It pins the extension ID so the OAuth client registered
     // for that ID works on both laptops. The private key is not in this repo.
     key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn0YD9FY1HWmLrcjucefItnzQgPAWkSHbntf/k26IqmkzhDFnBOVh7iZXPwlTv0S889ls4JJhcdOkqCyogQX6KtBCVSX4jTdWmkywXeG/powRNgmC+DydHzBktV2i4ehoxmFewPKIx19RjyQPH6luM+Z2VypqnL/WGeyplM6f0A9Vx3fdR4H5o4l1KrrmJ5xpEByiWbKJ/c/FF7TIfes5XL02thDm3+ct4u8MCOgavpFLYVed72lwIeORlWp/0KVyQAd9hS/YtNb0VfkhkhFGLFGUKHtO+Xh6I5gES8N93NuwEQckIYO8g1H9O/gxYZGH3AzlrhNRk3bWKyrrgkb0pQIDAQAB',
-    permissions: ['identity'],
+    // Storage keeps transient panel state in the extension, never on Google pages.
+    permissions: ['identity', 'storage'],
     // Drive API is on www.googleapis.com; the Docs API is on docs.googleapis.com.
     host_permissions: ['https://www.googleapis.com/*', 'https://docs.googleapis.com/*'],
     oauth2: {

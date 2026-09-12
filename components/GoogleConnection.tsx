@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { sendToBackground, type AuthStatus } from '../lib/messages';
 
-export function GoogleConnection() {
+export function GoogleConnection({ onConnected }: { onConnected?: (connected: boolean) => void }) {
   const [state, setState] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const [error, setError] = useState('');
   const mounted = useRef(true);
@@ -19,6 +19,7 @@ export function GoogleConnection() {
       if (!response || !response.ok) throw new Error(response && !response.ok ? response.error : 'The Google connection could not be checked.');
       if (typeof response.data?.connected !== 'boolean') throw new Error('The Google connection returned an unexpected response.');
       setState(response.data.connected ? 'connected' : 'disconnected');
+      onConnected?.(response.data.connected);
     } catch (reason) {
       if (!mounted.current || requestId.current !== id) return;
       setState('error'); setError(reason instanceof Error ? reason.message : 'Google sign-in did not complete.');

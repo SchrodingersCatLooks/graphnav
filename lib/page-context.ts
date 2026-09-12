@@ -3,6 +3,7 @@ export type PageContext = {
   kind: 'drive' | 'docs';
   label: 'Drive folder' | 'My Drive' | 'Google Docs';
   sourceId: string;
+  tabId?: string;
 };
 
 export function getPageContext(href: string): PageContext | null {
@@ -20,7 +21,7 @@ export function getPageContext(href: string): PageContext | null {
   if (url.hostname === 'docs.google.com') {
     const doc = url.pathname.match(/^\/document\/(?:u\/\d+\/)?d\/([^/]+)(?:\/|$)/);
     // Published documents are a different surface from the normal editor.
-    if (doc?.[1] && doc[1] !== 'e') return { kind: 'docs', label: 'Google Docs', sourceId: doc[1] };
+    if (doc?.[1] && doc[1] !== 'e') return { kind: 'docs', label: 'Google Docs', sourceId: doc[1], ...(url.searchParams.get('tab') ? { tabId: url.searchParams.get('tab')! } : {}) };
   }
 
   return null;

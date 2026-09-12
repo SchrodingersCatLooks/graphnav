@@ -89,7 +89,7 @@ test('Docs shell uses document context and supports keyboard opening', async ({ 
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByText('Google Docs', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Your document map starts here' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add existing', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
   await page.getByRole('textbox').fill('Still editable');

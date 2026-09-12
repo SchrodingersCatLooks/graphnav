@@ -1,94 +1,68 @@
 # Current project status
 
-Last documentation update: 2026-09-12 (Eddy's partner-data runtime status at `4738cb2`). Update this file after a merged milestone or a shared blocker changes. This file describes the shared branch; individual work in progress belongs in TASK_LIST.
+Last shared update: 2026-09-12, after runtime PR #6 merged as `4cfe83d`.
 
-## What is working
+## Working on main
 
-- Private GitHub repository and shared AI workflow documents.
-- The current 15-step implementation plan, feature specification, owner/task tracker, and supporting contracts are on main through [PR #7](https://github.com/SchrodingersCatLooks/graphnav/pull/7), merged as `19e23fd`.
-  This publication changes documentation only; the application work remains in PR #6.
-- M1-A scaffold merged through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) as `92a76ce`.
-  Main contains WXT/React/TypeScript/Tailwind, package scripts, lockfile, Chrome installation instructions, and automated browser checks.
-- Graph button and reversible empty panel on My Drive, real Drive folders, and Google Docs.
-  Context changes, Graph/X toggle, Escape focus restoration, host editing, and the popover/viewport layout are covered by the acceptance record.
-- Node 22.23.2/npm 10.9.9: type-check, production build, and six synthetic browser tests passed.
-  Eddy reports a clean build on Node 22.23.2/npm 10.9.8 and the full Chrome 152.0.7977.84/macOS 26.5.2 checklist passing after a proper reload.
-  His accepted content-script hash matches the M1-A merge checkpoint.
+[PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) merged the saved editor, Google integration, and on-page Drive/Docs graphs.
+Its runtime matches the tested `5b03671` checkpoint.
+Eddy's application work through `4738cb2` is included through normal merges.
 
-## What is not implemented or verified
+- Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
+- Browse nested Drive folders into the current map, add personal ideas and labeled connections, edit notes/labels, and attach an existing source to a personal node.
+- The shared React Flow editor runs on the Google page and in the optional My maps workspace.
+- ELK arranges nodes; manual drags become saved pins.
+  Imported containment and personal connections have different line styles.
+- The Docs panel sits on the left, navigates exact document tabs in the same browser tab, highlights the current tab, and restores the panel after navigation.
+- The extension background owns Dexie storage and validated edit commands.
+  Selected-only refresh retains the selected membership and personal edits; baselines and expanded folders have separate scope bindings.
+- Maps, annotations, positions, viewport, and JSON backups survive reopening.
+  Google source identity includes the verified account key.
+- Eddy's direct target-availability checker and PDF section extractor are merged foundations.
+  PDF reading is not implemented yet.
 
-- No Google authentication or real API reads, manual graph editor, PDF reader, source actions, persistence, or GPT generator in the merged scaffold.
-- Eddy now reports real folder and nested-Doc reads passing at M1-B checkpoint `a83d545`, with the expected extension ID.
-  That code and Rajvansh's local-storage/editor work are integrated on `rajvansh-ui` for [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) review, not merged into main.
-- Demo source IDs are recorded in GOOGLE_SETUP.md; access and real reads on Rajvansh's account remain unverified.
-- Eddy's `partner-data` tip is now `4738cb2`, seven commits past `c6e6b5e`. Reported from that branch, not merged and not independently verified here:
-  live Drive/Docs import with account scope, exact destination opening including a nested Doc tab, saved maps reopening intact after a full Chrome quit and relaunch,
-  expansion adding into the open map instead of creating a second one, PDF section extraction against a labeled synthetic fixture, and unavailable-target reporting.
-  Node 22.23.2 type-check, production build, and 40 automated tests pass on that branch.
-  The current navigation still opens a new browser tab, so same-document tab navigation remains M3-B work.
-  PDF extraction has never run against a real paper and has no reader entrypoint, so M4-B is partial.
-  `CHECK_TARGETS` marking is tested but has not been run against a genuinely deleted file.
-  Rajvansh's screenshots show connected status, the expected extension ID, and a small personal map; raw source reads and the full acceptance sequence remain pending.
+## Verification and limits
 
-## Version status
+Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 48 tests passed for `5b03671`.
+Installed Chromium tests use isolated profiles and synthetic Google API responses.
+They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
+Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
+Screenshots were inspected and graph-control rendering was corrected.
+The build reports a large ELK chunk warning; the PDF fixture emits a standard-font configuration warning that must be resolved when adding the reader.
+Eddy separately reports real Google reads/imports/navigation and a full Chrome restart passing.
+No new live-account run on Rajvansh's laptop is claimed here.
+Repeated partner-laptop checks are not a routine merge gate.
 
-- **V1 manual:** the shell is merged and accepted; manual graph creation/editing, source navigation, and saving are the next implementation work.
-  Imported structure is allowed, and personal ideas with meaningful labeled relationships remain core.
-- **V2 GPT-assisted:** planned next stage, implementation not started.
-  It will generate grounded, editable drafts through the same graph/navigation/storage system.
-  The user now requires V2 in the current MVP effort rather than leaving it optional after the hackathon.
+The graph stores at most 500 nodes and 2,000 relationships; the current canvas shows at most 50 matching nodes.
+Source reads follow at most five Drive pages and report a partial result rather than deleting unseen items.
+Focus/collapse controls, broader performance validation, panel width/docking preferences, group membership controls, PDF reading, source authoring, and AI generation/review remain open.
+Backups currently exclude PDF bytes and future AI decisions.
+No complete-MVP or production-scale acceptance is claimed.
 
-## Current shared milestone
+## Next work and account action
 
-**M1-B and M1-C: prove real Google reads and agree the shared graph format.**
+Rajvansh continues the remaining graph controls and panel usability, then shared PDF-reader and generation UI tasks.
+Eddy should bring main into `partner-data`, read EDITOR_HANDOFF and the current tracker, and continue G0-B/G1-B: the relay and selected-content extraction contract.
+The UI integration now supplies the selected-source service and same-Doc navigation; do not build a second scaffold or competing editor worker.
+The latest partner documentation checkpoint is `a5e7192`; its statement that main has no runtime is superseded by this merge.
 
-- Eddy owns the implemented manifest/auth/read worker and the next Drive adapter integration.
-  Rajvansh still needs to confirm extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk` and the real demo reads in his own Chrome profile.
-- The user approved Dexie/IndexedDB without AWS and assigned the initial storage implementation to Rajvansh.
-  Rajvansh retains visible UI ownership; Eddy reviews the concrete contract and supplies verified account context and source adapters.
-  [M1C_HANDOFF.md](./M1C_HANDOFF.md) records the response to his proposal and ownership; TASK_LIST tracks unmerged work.
-- Next shared checkpoint: the installed extension reads the shared folder and tabbed Doc, and both lanes agree stable graph/node/edge IDs, source destinations, relationship labels/origins, and editing commands.
-- The complete forward route is in [BUILD_PLAN.md](./BUILD_PLAN.md), with individual A/B tasks in TASK_LIST.
-  Target code freeze is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan reserves sleep, meals, deck/demo preparation, and submission buffer.
+The user is unsure who has an OpenAI API project/key.
+G0-A remains blocked on identifying the account owner and configuring a server-held credential and test-spend limit privately.
+Do not put a key in chat, GitHub, extension storage, or the browser bundle.
+This does not block manual/source-assisted maps or PDF reading.
+A meaningful authorized text PDF and document passages supporting useful connections are still needed for final demos.
 
-## Blockers
+V1 and V2 both remain in the requested target.
+The 6 AM code-freeze target and 4 PM Eastern submission, including sleep, meals, pitch work, and submission buffer, remain in BUILD_PLAN.
+The remaining open rows are requirements, not silently approved cuts.
 
-The scaffold handoff no longer blocks M1-B.
-Eddy corrected the previous second-machine failure report: an improperly reloaded extension left a stale content script in the tab.
-After a proper reload, the popover/visualViewport fix passes the full checklist, including header/X reachability and increased zoom.
-No further UI defect is established by that earlier report, and no new runtime patch was needed.
-Google API reads, imports, navigation and restart persistence pass on Eddy's laptop according to his handoff.
-Repeated partner-laptop acceptance is no longer a routine gate, so M1-B is not blocked on a second-machine rerun; a second account is worth using only if a specific issue needs it.
-The real remaining risk is integration rather than verification: no runtime work from either lane is on main, so `main` still contains only the M1-A scaffold while both branches carry substantial unmerged code.
-M0 demo content is partly settled: the shared folder and four-tab Doc exist and are shared, but no authorized text PDF has been selected yet.
+## Shared rules
 
-## Decision record
-
-- Independent Drive, Docs, and paper graphs share one extension and graph component.
-- Rajvansh and partner now work on UI and data within each common milestone. This replaces the earlier split that assigned the whole PDF experience to one person.
-- Manual Refresh and local personal state are the prototype persistence model.
-- Local graph storage uses extension-owned IndexedDB through Dexie, with no AWS or cloud sync in V1.
-  Personal edits and source identity remain separate; exact shared types are awaiting Eddy's integration review.
-- Current release order: first prove V1 on-page manual editing/navigation/saving, then V2 editable drafts over selected content, and reuse both for the PDF experience.
-  V2 is required by the current target but remains unimplemented.
-  Docs uses a left graph with same-document tab navigation; the personal workspace is optional for Google workflows.
-  The 6 AM target is aggressive; any reduction of the complete MVP requires an explicit scope decision and accurate feature claims.
-- Code and task updates must be committed and pushed at working checkpoints, with a returned GitHub commit or PR link. Users' graph data remains separate.
-- Larger-source design requires incremental loading, a bounded visible graph, separate adapters/storage, and versioned personal state. Performance remains untested until implementation.
-
-- Feature coverage audit: FEATURE_SPEC now traces manual planning, on-page Drive/Docs, content-aware AI, PDF reading, many/group connections, selected source combinations, author actions, placement, persistence, and expansion boundaries.
-  Original completion requirements have explicit X tasks; the earlier blanket deferral is not treated as a user-approved scope reduction.
-  The deadline needs actual checkpoint reassessment, and the account owner must approve any Google write grant before real authoring actions.
-
-- Source-assisted V1 is now explicit: ready-to-add suggestions and autofilled source nodes, Add selected, and editable structural baselines must work without GPT.
-  BUILD_PLAN supplies 15 dependency-ordered steps, and N1 assigns the shared chooser/contract before Drive, Docs, PDF, and AI integration.
-  Current runtime/main acceptance is unchanged by this planning clarification.
-
-- Standing workflow decision: shared planning/tracking/reference documents are updated directly on main at claims and checkpoints from a clean main-based checkout.
-  Both assistants must preserve concurrent teammate edits; runtime code continues on feature branches and reaches main through its separate review/acceptance process.
-
-- Validation policy updated by the user: repeated partner-laptop validation is no longer a routine gate.
-  Continue focused automated/code checks and targeted installed-Chrome acceptance; retain explicit limits on unverified real accounts without blocking unrelated implementation.
+GitHub holds code and shared planning; private maps, Google data, PDF bytes, and tokens do not sync through GitHub.
+Planning and tracking updates go directly to main from a current clean documentation checkout.
+Application code stays in the assigned branch until a checked working checkpoint is merged normally.
+The assistants must fetch/read current main and the published handoffs; a committed instruction does not prove another assistant has read it.
+Google files remain read only in the current UI; changing a graph never renames or moves source files.
 
 ## Completed action log
 
@@ -124,3 +98,7 @@ M0 demo content is partly settled: the shared folder and four-tab Doc exist and 
   Verified documentation links/diff and preserved existing application statuses and partner handoff; no runtime changes.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.
+
+- 2026-09-12: Merged PR #6 as `4cfe83d` after typecheck, build, and 48 passing tests.
+  Main now contains the shared local editor and source-assisted on-page Drive/Docs integration, including Eddy's work through `4738cb2`.
+  Updated README, tracker, and editor handoff directly on main; remaining V1/V2 requirements remain open.

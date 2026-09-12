@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-// lib/requests resolves WXT's `browser` from the extension globals, which do not
-// exist in a node test context. Stub the one field it reads before importing.
+import { requestSchema, isTrustedSender as validateSender } from '../lib/requests';
 const EXTENSION_ID = 'pidejkbkldalibjaehjfpjkcpjpcenpk';
-(globalThis as Record<string, unknown>).chrome = { runtime: { id: EXTENSION_ID } };
-const { requestSchema, isTrustedSender } = await import('../lib/requests');
+const isTrustedSender = (sender: unknown) => validateSender(sender, EXTENSION_ID);
 
 const accepts = (value: unknown) => requestSchema.safeParse(value).success;
 
@@ -45,6 +43,8 @@ test('only our own pages and our declared content scripts are trusted', () => {
 
 test('untrusted senders are refused', () => {
   expect(isTrustedSender({ id: EXTENSION_ID, origin: 'https://evil.example' })).toBe(false);
+  expect(isTrustedSender({ id: EXTENSION_ID, origin: 'https://drive.google.com.evil.example' })).toBe(false);
+  expect(isTrustedSender({ id: EXTENSION_ID, origin: `chrome-extension://${EXTENSION_ID}extra` })).toBe(false);
   // Another extension reusing our origin shape must not pass.
   expect(isTrustedSender({ id: 'some-other-extension', origin: 'https://drive.google.com' })).toBe(false);
   expect(isTrustedSender({ id: EXTENSION_ID, origin: 'chrome-extension://another-extension-id' })).toBe(false);

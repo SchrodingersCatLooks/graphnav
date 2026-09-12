@@ -6,15 +6,18 @@ import { checkTargets } from '../lib/google/availability';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
-import { GraphRepository } from '../lib/storage/repository';
+import { GraphRepository, storageError } from '../lib/storage/repository';
 import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema } from '../lib/requests';
 import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
+import { EditorService } from '../lib/editor/service';
+import { getPageContext } from '../lib/page-context';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
 // state worth losing. The database lives in the extension origin; content
 // scripts reach it only through these messages.
 const repository = new GraphRepository();
+const editor = new EditorService(repository);
 
 /**
  * Chooses the map this scope belongs to.
@@ -36,7 +39,7 @@ async function targetGraph(scoped: ScopedImport, intoGraphId?: string) {
     return requested;
   }
 
-  const bound = graphs.find((graph) => graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
+  const bound = graphs.find((graph) => graph.accountScope === scoped.accountKey && graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
   return bound ?? (await repository.createGraph(scoped.title, crypto.randomUUID(), 'import'));
 }
 
@@ -58,7 +61,11 @@ async function storeImport(scoped: ScopedImport, intoGraphId?: string): Promise<
   };
 }
 
-async function handle(raw: unknown): Promise<Response> {
+async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number } }): Promise<Response> {
+  if (typeof raw === 'object' && raw !== null && 'type' in raw && raw.type === 'EDITOR') {
+    const ownPage = !!sender.url?.startsWith(`chrome-extension://${browser.runtime.id}/`);
+    return { ok: true, data: await editor.handle(raw, ownPage) };
+  }
   // Parsed, not cast: an unknown or malformed message is rejected before any
   // token is touched or any source operation runs.
   const parsed = requestSchema.safeParse(raw);
@@ -80,6 +87,15 @@ async function handle(raw: unknown): Promise<Response> {
       return { ok: true, data: await listFolderChildren(request.folderId) };
     case 'GET_DOC_TABS':
       return { ok: true, data: await getDocumentTabs(request.documentId) };
+    case 'PANEL_STATE': {
+      const context = sender.url ? getPageContext(sender.url) : null;
+      if (!context || sender.tab?.id === undefined || !request.source.startsWith(`${context.kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };
+      const key = `panel:${sender.tab.id}`;
+      // sender.url may retain the URL from content-script injection during SPA navigation.
+      if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
+      const value = (await browser.storage.session.get(key))[key];
+      return { ok: true, data: { open: !!value && typeof value === 'object' && 'source' in value && 'open' in value && value.source === request.source && value.open === true } };
+    }
     case 'IMPORT_DRIVE_FOLDER':
       return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey()), request.intoGraphId) };
     case 'IMPORT_DOC_TABS':
@@ -90,6 +106,7 @@ async function handle(raw: unknown): Promise<Response> {
       return { ok: true, data: await repository.readGraph(request.graphId) };
     case 'CHECK_TARGETS': {
       const snapshot = await repository.readGraph(request.graphId);
+      if (snapshot.graph.accountScope && snapshot.graph.accountScope !== await getAccountKey()) return { ok: false, error: 'Connect the Google account that owns this map before checking its targets.' };
       // Only Google-backed sources can be checked; a local PDF has no server.
       const targets = snapshot.sources
         .filter((source) => source.provider !== 'local-pdf')
@@ -119,26 +136,30 @@ async function handle(raw: unknown): Promise<Response> {
       const url = destinationUrl(request.locator);
       if (!url) return { ok: false, error: 'This destination opens in the PDF reader, which is M4.' };
       // Content scripts cannot open tabs themselves, so the worker does it.
-      await browser.tabs.create({ url, active: true });
+      const context = sender.url ? getPageContext(sender.url) : null;
+      if (request.locator.kind === 'docs' && context?.kind === 'docs' && context.sourceId === request.locator.documentId && sender.tab?.id !== undefined) {
+        await browser.tabs.update(sender.tab.id, { url });
+      } else await browser.tabs.create({ url, active: true });
       return { ok: true, data: { url } };
     }
   }
 }
 
 export default defineBackground(() => {
+  browser.tabs.onRemoved.addListener((tabId) => { void browser.storage.session.remove(`panel:${tabId}`); });
   // Registered synchronously so Chrome can revive the worker to serve a message.
   browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (!isTrustedSender(sender)) {
+    if (!isTrustedSender(sender, browser.runtime.id)) {
       sendResponse({ ok: false, error: 'Untrusted sender.' } satisfies Response);
       return true;
     }
-    handle(request)
+    handle(request, sender)
       .then(sendResponse)
       .catch((error: unknown) => {
         const needsAuth = error instanceof AuthRequiredError;
         sendResponse({
           ok: false,
-          error: error instanceof Error ? error.message : String(error),
+          error: storageError(error),
           ...(needsAuth ? { needsAuth: true } : {}),
         } satisfies Response);
       });
