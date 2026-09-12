@@ -94,3 +94,31 @@
   .empty-state { padding-top: 16px; }
   .empty-state h2 { font-size: 21px; }
 }
+
+
+.google-connection { max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.connection-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.connect-button, .auth-refresh { padding: 8px 12px; border: 1px solid #c9dad4; border-radius: 9px; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; cursor: pointer; }
+.connect-button { color: white; background: #174e49; border-color: #174e49; }
+.auth-refresh { background: #f5faf8; color: #315c50; }
+.connect-button:disabled, .auth-refresh:disabled { opacity: .55; cursor: default; }
+.connect-button:focus-visible, .auth-refresh:focus-visible { outline: 3px solid #20a392; outline-offset: 2px; }
+.status-dot.connected { background: #338065; }
+.empty-state .auth-error { color: #a34c38; font-size: 12px; line-height: 1.5; max-width: 320px; overflow-wrap: anywhere; }
+
+.graphnav-panel.editor-panel { width: min(780px, calc(100% - 32px)); max-height: none; }
+.graphnav-panel.editor-panel.docs-panel { left: 16px; right: auto; width: min(580px, calc(100% - 32px)); }
+.editor-panel .panel-header { padding: 10px 16px; }
+.editor-panel .brand-mark { width: 32px; height: 32px; }
+.editor-panel .panel-footer { padding: 8px 14px; font-size: 10px; }
+.panel-auth { flex-shrink: 0; padding: 7px 14px; border-bottom: 1px solid #e8eded; background: #f9fcfa; }
+.panel-auth .google-connection { flex-direction: row; flex-wrap: wrap; gap: 8px; align-items: center; }
+.panel-auth .connection-notice { margin: 0; border: 0; padding: 2px 0; background: transparent; font-size: 11px; }
+.panel-auth .connection-actions { margin-left: auto; gap: 6px; }
+.panel-auth .connect-button, .panel-auth .auth-refresh { font-size: 11px; padding: 5px 8px; }
+.panel-auth .auth-error { width: 100%; color: #a34c38; font-size: 11px; overflow-wrap: anywhere; }
+@container (max-height: 430px) {
+  .editor-panel .panel-footer { display: none; }
+  .editor-panel .panel-header { padding: 4px 12px; }
+  .editor-panel .brand-mark { display: none; }
+}

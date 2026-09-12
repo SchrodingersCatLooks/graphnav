@@ -89,7 +89,7 @@ test('Docs shell uses document context and supports keyboard opening', async ({ 
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByText('Google Docs', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Your document map starts here' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Add existing', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
   await page.getByRole('textbox').fill('Still editable');
@@ -184,4 +184,38 @@ test('Docs controls stay above host toolbars and inside the visible viewport', a
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
   await cdp.detach();
+});
+
+test('panel uses worker auth state, connects only on click, and shows a cancelled sign-in', async ({ page, extensionContext }) => {
+  const worker = extensionContext.serviceWorkers()[0] ?? await extensionContext.waitForEvent('serviceworker');
+  // Synthetic Identity replies inside the isolated test profile. No real token,
+  // account, consent, or API-read acceptance is implied by this UI test.
+  await worker.evaluate(() => {
+    const chrome = (globalThis as unknown as { chrome: { identity: { getAuthToken: (details: { interactive?: boolean }) => Promise<{ token?: string }> } } }).chrome;
+    let connected = false;
+    chrome.identity.getAuthToken = (async (details: { interactive?: boolean }) => {
+      if (details.interactive) connected = true;
+      return { token: connected ? 'synthetic-test-only' : undefined };
+    }) as typeof chrome.identity.getAuthToken;
+  });
+  await page.goto('https://drive.google.com/drive/my-drive');
+  await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
+  await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Close graph panel' }).click();
+  await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await expect(page.getByText('Google connected', { exact: true })).toBeVisible();
+  await worker.evaluate(() => {
+    const chrome = (globalThis as unknown as { chrome: { identity: { getAuthToken: (details: { interactive?: boolean }) => Promise<{ token?: string }> } } }).chrome;
+    chrome.identity.getAuthToken = (async (details: { interactive?: boolean }) => {
+      if (details.interactive) throw new Error('Synthetic sign-in cancelled');
+      return {};
+    }) as typeof chrome.identity.getAuthToken;
+  });
+  await page.getByRole('button', { name: 'Check connection', exact: true }).click();
+  await expect(page.getByText('Google data is not connected yet', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Connect Google', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Synthetic sign-in cancelled');
+  await expect(page.getByText('Google connected', { exact: true })).toHaveCount(0);
 });
