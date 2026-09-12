@@ -145,8 +145,16 @@ repository; content scripts never open IndexedDB on a Google origin.
 - `IMPORT_DOC_TABS` on the demo Doc stored 5 nodes (four tabs plus the document) with
   `complete: true`.
 
-Not yet verified: node click-through to a real destination, and reopening a stored graph in the
-workspace after a browser restart.
+Navigation verified the same session:
+
+- `NAVIGATE` with the nested sub-tab locator opened the demo Doc with **Scope and Definitions**
+  selected, not merely the document.
+- `NAVIGATE` with a Drive folder locator opened **04 Raw Data**.
+
+Destinations come from the stored locator, so navigation does not depend on node position or on
+re-reading the source.
+
+Not yet verified: reopening a stored graph in the workspace after a full browser restart.
 
 ## 6. Which steps need whom
 
