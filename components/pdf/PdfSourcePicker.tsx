@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { pdfCatalog, type PdfLibrary, type PdfCatalogMode } from '../../lib/pdf/library';
 import { importedKey } from '../../lib/storage/repository';
 import type { PdfExtraction } from '../../lib/pdf/extract';
@@ -8,6 +8,7 @@ export function PdfSourcePicker({ extraction, title, library, snapshot, busy, ap
   const [mode, setMode] = useState<PdfCatalogMode>('sections');
   const [selected, setSelected] = useState<string[]>([]), [query, setQuery] = useState('');
   const [limit, setLimit] = useState(20);
+  useEffect(() => { setSelected([]); }, [snapshot?.graph.id]);
   const catalog = pdfCatalog(extraction, title, mode);
   const added = new Set(snapshot?.nodes.flatMap((node) => node.importKey ? [node.importKey] : []) ?? []);
   const binding = snapshot?.graph.sourceBindings.find((value) => value.key === catalog.scopeKey);

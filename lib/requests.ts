@@ -30,14 +30,15 @@ export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('LIST_FOLDER'), folderId: id }).strict(),
   z.object({ type: z.literal('GET_DOC_TABS'), documentId: id }).strict(),
   z.object({ type: z.literal('DOC_TEXT_PREVIEW'), documentId: id, tabIds: z.array(id).min(1).max(200).refine((ids) => new Set(ids).size === ids.length) }).strict(),
-  z.object({ type: z.literal('PANEL_STATE'), source: z.string().regex(/^(drive|docs):[A-Za-z0-9_-]{1,200}$/), open: z.boolean().optional() }).strict(),
+  z.object({ type: z.literal('PANEL_STATE'), source: z.string().regex(/^(drive|docs):[A-Za-z0-9_-]{1,200}$/), open: z.boolean().optional(), graphId: id.optional() }).strict(),
   z.object({ type: z.literal('PANEL_PREFERENCES'), kind: z.enum(['drive', 'docs']), preferences: panelPreferencesSchema.optional() }).strict(),
   z.object({ type: z.literal('PANEL_PLACEMENT'), kind: z.enum(['drive', 'docs']), placement: panelPlacementSchema.optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DRIVE_FOLDER'), folderId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('IMPORT_DOC_TABS'), documentId: id, intoGraphId: id.optional() }).strict(),
   z.object({ type: z.literal('LIST_GRAPHS') }).strict(),
   z.object({ type: z.literal('READ_GRAPH'), graphId: id }).strict(),
-  z.object({ type: z.literal('NAVIGATE'), locator: locatorSchema }).strict(),
+  z.object({ type: z.literal('OPEN_PDF_READER'), graphId: id.optional() }).strict(),
+  z.object({ type: z.literal('NAVIGATE'), locator: locatorSchema, graphId: id.optional() }).strict(),
   z.object({ type: z.literal('CHECK_TARGETS'), graphId: id }).strict(),
 ]);
 

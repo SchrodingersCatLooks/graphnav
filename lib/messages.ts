@@ -51,7 +51,7 @@ export type Request =
   | { type: 'LIST_FOLDER'; folderId: string }
   | { type: 'GET_DOC_TABS'; documentId: string }
   | { type: 'DOC_TEXT_PREVIEW'; documentId: string; tabIds: string[] }
-  | { type: 'PANEL_STATE'; source: string; open?: boolean }
+  | { type: 'PANEL_STATE'; source: string; open?: boolean; graphId?: string }
   | { type: 'PANEL_PREFERENCES'; kind: 'drive' | 'docs'; preferences?: PanelPreferences }
   | { type: 'PANEL_PLACEMENT'; kind: 'drive' | 'docs'; placement?: PanelPlacement }
   /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */
@@ -59,7 +59,8 @@ export type Request =
   | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }
   | { type: 'LIST_GRAPHS' }
   | { type: 'READ_GRAPH'; graphId: string }
-  | { type: 'NAVIGATE'; locator: Locator }
+  | { type: 'OPEN_PDF_READER'; graphId?: string }
+  | { type: 'NAVIGATE'; locator: Locator; graphId?: string }
   | { type: 'CHECK_TARGETS'; graphId: string };
 
 export type Response<T = unknown> =
@@ -67,6 +68,7 @@ export type Response<T = unknown> =
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type AuthStatus = { connected: boolean };
+export type PanelState = { open: boolean; graphId?: string };
 export type PanelPreferences = { width: 420 | 580 | 780; dock: 'left' | 'right' };
 export type AccountKeyResult = { accountKey: string };
 /** Returned after an import so the caller can open the stored graph. */

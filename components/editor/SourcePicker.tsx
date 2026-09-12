@@ -11,6 +11,7 @@ export function SourcePicker({ context, snapshot, selectedNode, busy, authEpoch,
   const [loading, setLoading] = useState(true), [error, setError] = useState('');
   const [selected, setSelected] = useState<string[]>([]), [query, setQuery] = useState('');
   const [limit, setLimit] = useState(30), [reload, setReload] = useState(0);
+  useEffect(() => { setSelected([]); }, [snapshot?.graph.id]);
   useEffect(() => {
     let alive = true;
     setLoading(true); setCatalog(null); setError(''); setSelected([]); setQuery(''); setLimit(30);

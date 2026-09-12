@@ -5,7 +5,7 @@ import { destinationUrl, effectiveLabel, LIMITS, type Graph, type GraphSnapshot,
 import { editorClient as repository, createContextMap, arrangeMap } from '../../lib/editor/client';
 import { scopeKey, type SourceContext } from '../../lib/editor/protocol';
 import { SourcePicker } from './SourcePicker';
-import { sendToBackground, type CheckTargetsResult } from '../../lib/messages';
+import { sendToBackground, type CheckTargetsResult, type PanelState } from '../../lib/messages';
 import { projectGraph } from '../../lib/graph/view';
 import { pdfReaderPath, type PdfLocator } from '../../lib/pdf/navigation';
 import { GenerationPanel } from '../generation/GenerationPanel';
@@ -30,6 +30,7 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, activeTa
   const [graphs, setGraphs] = useState<Graph[]>([]);
   const [snapshot, setSnapshot] = useState<GraphSnapshot | null>(null);
   const current = useRef<GraphSnapshot | null>(null);
+  const selectedMap = useRef<string | null>(null);
   const [busy, setBusy] = useState(true);
   const queue = useRef(Promise.resolve());
   const pending = useRef(0);
@@ -38,6 +39,7 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, activeTa
   const [selection, setSelection] = useState<Selection | null>(null);
   const [dirty, setDirty] = useState(false);
   const [newMap, setNewMap] = useState('');
+  const newMapInput = useRef<HTMLInputElement>(null);
   const [newNode, setNewNode] = useState('');
   const [query, setQuery] = useState('');
   const [from, setFrom] = useState('');
@@ -53,6 +55,11 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, activeTa
       setQuery(''); setFrom(''); setTo(''); setTargetStatus('');
     }
     current.current = value; setSnapshot(value);
+    if (context && selectedMap.current !== id) {
+      const result = await sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, graphId: id });
+      if (!result.ok) throw new Error(result.error);
+      selectedMap.current = id;
+    }
     if (!embedded) history.replaceState(null, '', `#${encodeURIComponent(id)}`);
     onGraphChange?.(id);
   }
@@ -60,8 +67,10 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, activeTa
     void (async () => {
       try {
         const rows = await repository.listGraphs(); setGraphs(rows);
-        const requested = initialGraphId ?? (embedded ? '' : decodeURIComponent(location.hash.slice(1)));
-        const id = initialGraphId !== undefined ? rows.find((graph) => graph.id === requested)?.id : context ? rows.find((graph) => graph.sourceBindings.some((binding) => binding.key === scopeKey(context)))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
+        const panel = context ? await sendToBackground<PanelState>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }) : null;
+        const remembered = panel?.ok ? panel.data.graphId : undefined;
+        const requested = initialGraphId ?? remembered ?? (embedded ? '' : decodeURIComponent(location.hash.slice(1)));
+        const id = initialGraphId !== undefined ? rows.find((graph) => graph.id === requested)?.id : context ? rows.find((graph) => graph.id === remembered)?.id ?? rows.find((graph) => graph.sourceBindings.some((binding) => binding.key === scopeKey(context)))?.id : rows.find((graph) => graph.id === requested)?.id ?? rows[0]?.id;
         if (id) await load(id);
       } catch (reason) { setError(storageError(reason)); }
       finally { setBusy(false); }
@@ -147,14 +156,20 @@ export function GraphEditor({ generationSource, context, authEpoch = 0, activeTa
     {error && <div className="error-banner" role="alert"><span>{error}</span><button disabled={busy || dirty} onClick={() => void perform(async () => undefined)}>Reload saved map</button></div>}
     <div className="workspace-body">
       <aside className="sidebar" aria-label="Map editor">
+        {graphs.length > 0 && <section className="map-target" aria-label="Choose the map to work on">
+          <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>
+          {embedded && <p className="local-note">Add sources to this map, or choose another. Each map keeps its own connections.</p>}
+          <div className="map-target-actions"><button type="button" disabled={busy || dirty} onClick={() => newMapInput.current?.focus()}>New map</button>
+            {context && snapshot && <button type="button" disabled={busy || dirty} onClick={() => void perform(async (data) => { if (data) { const result = await sendToBackground({ type: 'OPEN_PDF_READER', graphId: data.graph.id }); if (!result.ok) throw new Error(result.error); } })}>Add a PDF to this map</button>}
+          </div>
+        </section>}
         {context && <SourcePicker context={context} snapshot={snapshot} selectedNode={selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined} busy={busy || dirty} authEpoch={authEpoch} apply={applySources} />}
         {sourceTools?.({ snapshot, selectedNode: selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined, busy: busy || dirty, apply: applySources })}
-        {aiSource && <GenerationPanel source={aiSource} graphKey={`${snapshot?.graph.id ?? 'new'}:${snapshot?.graph.contentRevision ?? 0}`} graphId={snapshot?.graph.id} revision={snapshot?.graph.contentRevision} busy={busy || dirty} onNavigate={async (locator) => { if (locator.kind === 'pdf' && onNavigatePdf) await onNavigatePdf(locator); else { const result = await sendToBackground({ type: 'NAVIGATE', locator }); if (!result.ok) throw new Error(result.error); } }} />}
+        {aiSource && <GenerationPanel source={aiSource} graphKey={`${snapshot?.graph.id ?? 'new'}:${snapshot?.graph.contentRevision ?? 0}`} graphId={snapshot?.graph.id} revision={snapshot?.graph.contentRevision} busy={busy || dirty} onNavigate={async (locator) => { if (locator.kind === 'pdf' && onNavigatePdf) await onNavigatePdf(locator); else { const result = await sendToBackground({ type: 'NAVIGATE', locator, graphId: snapshot?.graph.id }); if (!result.ok) throw new Error(result.error); } }} />}
         <section className="map-picker">
           <h1>Your workspace</h1><p className="muted">Ideas, connections, and a place to return to.</p>
-          {graphs.length > 0 && <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>}
           <form onSubmit={(event) => { event.preventDefault(); void perform(async () => { const id = context ? await createContextMap(newMap, context) : (await repository.createGraph(newMap)).id; setNewMap(''); setSelection(null); setQuery(''); return id; }); }}>
-            <label>New map name<input aria-label="New map name" value={newMap} onChange={(e) => setNewMap(e.target.value)} maxLength={200} placeholder="e.g. Research plan" required /></label>
+            <label>New map name<input ref={newMapInput} aria-label="New map name" value={newMap} onChange={(e) => setNewMap(e.target.value)} maxLength={200} placeholder="e.g. Research plan" required /></label>
             <button className="primary" disabled={busy || dirty || !newMap.trim()}>Create map</button>
           </form>
         </section>
@@ -241,10 +256,12 @@ function ItemEditor({ onNavigatePdf, context, snapshot, selection, busy, dirty, 
       {selection.itemType === 'node' && item.origin === 'manual' && !sourceNode && <label>Destination link (optional)<input aria-label="Destination link (optional)" type="url" value={url} onChange={(e) => changed(() => setUrl(e.target.value))} placeholder="https://…" maxLength={4000} /></label>}
       {link && <a className="source-link" href={link} target="_blank" rel="noreferrer" onClick={(event) => {
         if (locator?.kind === 'pdf' && onNavigatePdf) { event.preventDefault(); if (!dirty && !busy) void perform(async () => onNavigatePdf(locator)); return; }
-        if (!context) return;
+        // Extension pages already have real PDF/web links. Only Google Doc
+        // navigation needs the worker's panel/map handoff in this surface.
+        if (!context && locator?.kind !== 'docs') { if (dirty || busy) event.preventDefault(); return; }
         event.preventDefault();
         if (dirty || busy) return;
-        void perform(async () => { const result = await sendToBackground({ type: 'NAVIGATE', locator: locator! }); if (!result.ok) throw new Error(result.error); });
+        void perform(async () => { const result = await sendToBackground({ type: 'NAVIGATE', locator: locator!, graphId: snapshot.graph.id }); if (!result.ok) throw new Error(result.error); });
       }}>{locator?.kind === 'pdf' ? `Go to page ${locator.pageIndex + 1}` : context?.kind === 'docs' && locator?.kind === 'docs' && locator.documentId === context.sourceId ? 'Go to tab in this document' : 'Open destination ↗'}</a>}
 
       <button className="primary" disabled={busy || !label.trim()}>Save changes</button>
