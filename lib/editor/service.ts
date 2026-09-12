@@ -25,7 +25,7 @@ export class EditorService {
     const args = request.args;
     // On Google pages, do not expose another signed-in account's saved maps.
     const graphId = ['readGraph', 'addNode', 'editNode', 'connect', 'saveView', 'exportGraph', 'arrange'].includes(request.op) ? args[0] :
-      ['setPersonalEdit', 'removeItem', 'savePosition'].includes(request.op) ? (args[0] as { graphId: string }).graphId : undefined;
+      ['saveConnection', 'setPersonalEdit', 'removeItem', 'savePosition'].includes(request.op) ? (args[0] as { graphId: string }).graphId : undefined;
     if (!ownPage && typeof graphId === 'string') {
       const graph = (await repository.readGraph(graphId)).graph;
       if (graph.accountScope && graph.accountScope !== await this.sources.account()) throw new Error('Connect the Google account that owns this map.');
@@ -74,6 +74,7 @@ export class EditorService {
       case 'addNode': return repository.addNode(...request.args);
       case 'editNode': return repository.editNode(...request.args);
       case 'connect': return repository.connect(...request.args);
+      case 'saveConnection': return repository.saveConnection(...request.args);
       case 'setPersonalEdit': return repository.setPersonalEdit(...request.args);
       case 'removeItem': return repository.removeItem(...request.args);
       case 'savePosition': return repository.savePosition(...request.args);

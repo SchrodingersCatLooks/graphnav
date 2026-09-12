@@ -173,3 +173,9 @@
 .launcher-account .account-settings { border: 0; padding: 0; }
 .launcher-account .account-settings p { font-size: 13px; }
 .launcher-account .connect-button, .launcher-account .auth-refresh { font-size: 12px; padding: 8px 10px; }
+.panel-editor-container { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.launcher-panel .panel-editor-container { flex: 0 1 auto; overflow-y: auto; }
+.window-control { width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #315e51; font-size: 22px !important; }
+.window-control:hover { background: #edf5f0; }
+.panel-step-title { min-width: 0; }
+.panel-step-title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

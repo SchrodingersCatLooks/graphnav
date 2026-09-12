@@ -14,7 +14,7 @@ import { pairingCodeSchema } from './generation/relay';
 import { panelPlacementSchema } from './panel-placement';
 
 const id = z.string().min(1).max(300);
-export const panelPreferencesSchema = z.object({ width: z.union([z.literal(420), z.literal(580), z.literal(780)]), dock: z.enum(['left', 'right']) }).strict();
+export const panelPreferencesSchema = z.object({ width: z.union([z.literal(420), z.literal(580), z.literal(780), z.literal(1100)]), dock: z.enum(['left', 'right']) }).strict();
 
 export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('AI_STATUS') }).strict(),

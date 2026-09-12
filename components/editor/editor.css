@@ -226,3 +226,67 @@
 .graphnav-editor .new-graph-options .entry-copy strong { font-size: 17px; color: #214b45; }
 .graphnav-editor .new-graph-options .entry-icon { color: #2c6358; }
 .graphnav-editor.entry-flow .entry-question { font-weight: 650; }
+
+/* Direct manipulation controls share the same canvas in every editor surface. */
+.graphnav-editor .react-flow__node-card { padding: 0; border: 1px solid #91b1a5; border-radius: 11px; background: #fff; color: #173f37; box-shadow: 0 3px 12px #163d3510; }
+.graphnav-editor .react-flow__node-card.selected { border: 2px solid #176a52; }
+.graphnav-editor .graph-card { position: relative; width: 100%; height: 100%; display: flex; align-items: center; padding: 12px 30px 22px 14px; border-radius: inherit; }
+.graphnav-editor .card-copy { min-width: 0; display: grid; gap: 4px; width: 100%; }
+.graphnav-editor .card-title { font-size: 14px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; max-height: 100%; overflow: hidden; }
+.graphnav-editor .card-copy .node-kind { font-size: 9px; text-transform: capitalize; letter-spacing: .6px; }
+.graphnav-editor .card-open { position: absolute; right: 4px; top: 4px; width: 25px; height: 25px; padding: 0; border: 0; background: transparent; color: #326d5b; }
+.graphnav-editor .graph-card .node-actions { position: absolute; bottom: 2px; left: 8px; right: 8px; display: flex; justify-content: space-between; margin: 0; opacity: 0; }
+.graphnav-editor .graph-card:hover .node-actions, .graphnav-editor .graph-card:focus-within .node-actions, .graphnav-editor .selected .node-actions { opacity: 1; }
+.graphnav-editor .graph-card .node-actions button { font-size: 10px; padding: 0 5px; border: 0; background: transparent; }
+.graphnav-editor .dense-card .node-kind { display: none; }
+.graphnav-editor .dense-card { padding: 10px 27px 15px 10px; }
+.graphnav-editor .connection-target { background: #e1f6e8; box-shadow: 0 0 0 3px #5cbd85a6; }
+.graphnav-editor .card-handle { width: 26px; height: 26px; border: 0; background: transparent; z-index: 5; }
+.graphnav-editor .card-handle::after { content: ''; position: absolute; inset: 9px; background: white; border: 1.5px solid #387561; border-radius: 50%; }
+.graphnav-editor .card-handle:hover::after, .graphnav-editor .card-handle.valid::after { background: #32a27a; box-shadow: 0 0 0 4px #32a27a33; }
+.graphnav-editor .card-resize-handle { width: 9px; height: 9px; background: white; border: 1.5px solid #176a52; border-radius: 1px; z-index: 8; }
+.graphnav-editor .card-resize-line { border-color: #176a52; }
+.graphnav-editor .graph-edge-label { border: 1px solid #87b39f; border-radius: 18px; padding: 3px 10px; background: #f6fff8; font-size: 12px; color: #19523f; }
+.graphnav-editor .connection-popup { width: min(320px, calc(100vw - 48px)); padding: 14px; margin: 0; max-width: 100%; background: white; border: 1px solid #82ac9c; border-radius: 13px; box-shadow: 0 12px 32px #173f3733; pointer-events: all; text-align: left; color: #203c32; }
+.graphnav-editor .connection-popup-heading, .graphnav-editor .connection-popup-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.graphnav-editor .connection-popup-heading button { border: 0; padding: 0 5px; font-size: 20px; }
+.graphnav-editor .connection-popup label { display: grid; gap: 5px; font-size: 12px; }
+.graphnav-editor .connection-popup input { width: 100%; padding: 8px 10px; }
+.graphnav-editor .connection-endpoints { margin: 9px 0 13px; font-size: 13px; overflow-wrap: anywhere; }
+.graphnav-editor .connection-presets, .graphnav-editor .connection-directions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.graphnav-editor .connection-popup button { font-size: 12px; padding: 5px 9px; }
+.graphnav-editor .connection-popup button[aria-pressed=true] { background: #dcf0e3; border-color: #71ab8b; }
+.graphnav-editor .connection-presets button { border-radius: 20px; }
+.graphnav-editor .connection-directions { border-top: 1px solid #e1e9e5; padding-top: 10px; }
+.graphnav-editor .connection-popup-footer { margin-top: 12px; }
+.graphnav-editor .connection-popup-footer .primary { min-width: 72px; }
+.graphnav-editor .source-tree-picker { min-width: 0; }
+.graphnav-editor .source-tree { max-height: min(400px, 42vh); overflow: auto; overscroll-behavior: contain; margin: 8px -4px; }
+.graphnav-editor .source-tree-row { display: flex; align-items: center; gap: 2px; min-height: 40px; }
+.graphnav-editor .tree-expand, .graphnav-editor .tree-spacer { width: 24px; flex: 0 0 24px; }
+.graphnav-editor .tree-expand { padding: 2px; border: 0; font-size: 22px; background: transparent; }
+.graphnav-editor .tree-add { display: flex; flex: 1; min-width: 0; align-items: center; gap: 8px; padding: 7px 5px; border: 0; background: transparent; text-align: left; font-size: 13px; }
+.graphnav-editor .tree-add:hover { background: #edf5f0; }
+.graphnav-editor .tree-add strong { overflow-wrap: anywhere; font-weight: 550; }
+.graphnav-editor .tree-add small { display: block; font-size: 10px; color: #688174; }
+.graphnav-editor .tree-kind { color: #377b61; font-size: 20px; flex-shrink: 0; }
+.graphnav-editor .tree-added { margin-left: auto; color: #2c815b; }
+.graphnav-editor .tree-location, .graphnav-editor .tree-help { font-size: 11px; color: #647d71; }
+.graphnav-editor .tree-help { border-top: 1px solid #dce7e1; padding-top: 9px; }
+.graphnav-editor .batch-source-options { margin-top: 16px; font-size: 11px; }
+.graphnav-editor .batch-source-options summary { cursor: pointer; color: #587869; padding: 6px 0; }
+.graphnav-editor .add-idea-form { margin-bottom: 18px; }
+.graphnav-editor .add-idea-form h2 { font-size: 13px; margin-bottom: 8px; }
+.graphnav-editor .add-idea-form form { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: end; }
+.graphnav-editor .add-idea-form button { white-space: nowrap; }
+.graphnav-editor .unified-add-button { min-width: 88px; }
+
+.graphnav-editor.embedded .map-heading.shell-titled { border: 0; min-height: 0; padding: 2px 12px; background: white; }
+.graphnav-editor .map-heading.shell-titled .count-badge { margin-left: auto; font-size: 10px; }
+.graphnav-editor .connection-more { margin-top: 10px; font-size: 11px; }
+.graphnav-editor .connection-more summary { cursor: pointer; }
+
+.graphnav-editor .react-flow__edgelabel-renderer { z-index: 2000; }
+.graphnav-editor .connection-popup .connection-endpoints { margin: 10px 0 14px; font-size: 13px; }
+.graphnav-editor .connection-popup label { margin-bottom: 10px; }
+.graphnav-editor .connection-popup .connection-directions { margin-top: 12px; padding-top: 10px; }

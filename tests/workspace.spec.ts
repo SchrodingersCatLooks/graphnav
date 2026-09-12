@@ -56,9 +56,9 @@ test('popup opens the private workspace; manual map and dragged layout survive a
   await page.getByLabel('Connection label', { exact: true }).fill('funds');
   await page.getByRole('button', { name: 'Connect nodes', exact: true }).click();
   await expect(page.locator('.react-flow__edge-text')).toHaveText('funds');
-  await page.getByLabel('Label', { exact: true }).fill('constrains');
+  await page.getByRole('dialog', { name: 'Connection', exact: true }).getByLabel('Connection label', { exact: true }).fill('constrains');
   await expect(page.getByRole('status')).toHaveText('Unsaved edits');
-  await page.getByRole('button', { name: 'Save changes' }).click();
+  await page.getByRole('dialog', { name: 'Connection', exact: true }).getByRole('button', { name: 'Done', exact: true }).click();
   await expect(page.locator('.react-flow__edge-text')).toHaveText('constrains');
   await expect(page.getByRole('status')).toHaveText('Saved locally');
 

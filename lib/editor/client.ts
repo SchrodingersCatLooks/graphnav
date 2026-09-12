@@ -12,7 +12,7 @@ export const editorClient: EditorRepository = {
   listGraphs: () => call('listGraphs', []), readGraph: (id) => call('readGraph', [id]),
   createGraph: (title) => call('createGraph', [title]),
   addNode: (...args) => call('addNode', args), editNode: (...args) => call('editNode', args),
-  connect: (...args) => call('connect', args), setPersonalEdit: (...args) => call('setPersonalEdit', args),
+  connect: (...args) => call('connect', args), saveConnection: (...args) => call('saveConnection', args), setPersonalEdit: (...args) => call('setPersonalEdit', args),
   removeItem: (...args) => call('removeItem', args), savePosition: (...args) => call('savePosition', args),
   saveView: (...args) => call('saveView', args), exportGraph: (id) => call('exportGraph', [id]),
   importGraph: (json) => call('importGraph', [json]),
@@ -34,18 +34,22 @@ export async function arrangeMap(graphId: string, revision: number, newOnly = fa
   const links = relations.flatMap((r) => r.members.length === 2 ? [{ from: (r.members.find((m) => m.role === 'from') ?? r.members[0]!).nodeId, to: (r.members.find((m) => m.role === 'to') ?? r.members[1]!).nodeId }] : r.members.map((m) => ({ from: m.role === 'to' ? r.id : m.nodeId, to: m.role === 'to' ? m.nodeId : r.id })));
   const positions = new Map<string, { x: number; y: number }>();
   const allIds = [...ids, ...junctions];
+  const sizes = new Map(snapshot.layoutItems.map((item) => [item.itemId, { width: item.width ?? 190, height: item.height ?? 96 }]));
+  const sizeOf = (id: string) => sizes.get(id) ?? { width: 190, height: 96 };
   let top = 0;
   // Bound each layout calculation to the same size as a canvas page.
   for (let offset = 0; offset < allIds.length; offset += LIMITS.visibleNodes) {
-    const batch = await sourceLayout(allIds.slice(offset, offset + LIMITS.visibleNodes), links);
+    const batch = await sourceLayout(allIds.slice(offset, offset + LIMITS.visibleNodes), links, sizes);
     for (const [id, point] of batch) positions.set(id, { x: point.x, y: point.y + top });
-    top += Math.max(0, ...[...batch.values()].map((point) => point.y)) + 180;
+    top += Math.max(0, ...[...batch].map(([id, point]) => point.y + sizeOf(id).height)) + 180;
   }
   const fixed = snapshot.layoutItems.filter((p) => p.pinned || newOnly), fixedIds = new Set(fixed.map((p) => p.itemId));
-  const occupied = fixed.map((p) => ({ x: p.x, y: p.y }));
+  const occupied = fixed.map((p) => ({ x: p.x, y: p.y, ...sizeOf(p.itemId) }));
   const placed = [...positions].filter(([id]) => !fixedIds.has(id)).map(([itemId, point]) => {
-    while (occupied.some((p) => Math.abs(p.x - point.x) < 210 && Math.abs(p.y - point.y) < 100)) point.x += 230;
-    occupied.push(point);
+    const size = sizeOf(itemId);
+    const overlaps = (p: typeof occupied[number]) => point.x < p.x + p.width + 24 && point.x + size.width + 24 > p.x && point.y < p.y + p.height + 24 && point.y + size.height + 24 > p.y;
+    while (occupied.some(overlaps)) point.x = Math.max(...occupied.filter(overlaps).map((p) => p.x + p.width + 44));
+    occupied.push({ ...point, ...size });
     return { itemId, itemType: ids.has(itemId) ? 'node' : 'relationship', ...point };
   });
   await call<void>('arrange', [graphId, revision, placed, newOnly]);

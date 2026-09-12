@@ -78,7 +78,7 @@ export type Response<T = unknown> =
 
 export type AuthStatus = { connected: boolean; accountLabel?: string };
 export type PanelState = { open: boolean; graphId?: string };
-export type PanelPreferences = { width: 420 | 580 | 780; dock: 'left' | 'right' };
+export type PanelPreferences = { width: 420 | 580 | 780 | 1100; dock: 'left' | 'right' };
 export type AccountKeyResult = { accountKey: string };
 /** Returned after an import so the caller can open the stored graph. */
 /** One source scope ready to hand to the repository. */
