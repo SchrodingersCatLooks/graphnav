@@ -332,3 +332,48 @@ test('accepting cannot attach a second Google account to a map', async () => {
   expect(after.graph.accountScope).toBe('acct');
   expect(after.nodes).toHaveLength(1);
 });
+
+test('an accepted suggestion keeps a destination you can open', async () => {
+  const FINGERPRINT = 'b'.repeat(64);
+  const passages: SourcePassage[] = [
+    {
+      passageId: 'page-2', sourceId: `local-pdf:${FINGERPRINT}`, accountKey: 'local', version: FINGERPRINT,
+      locator: { kind: 'pdf', fingerprint: FINGERPRINT, pageIndex: 2 },
+      heading: 'Findings', text: 'Backtracking rose with branch count.', charCount: 36,
+    },
+    {
+      passageId: 'page-4', sourceId: `local-pdf:${FINGERPRINT}`, accountKey: 'local', version: FINGERPRINT,
+      locator: { kind: 'pdf', fingerprint: FINGERPRINT, pageIndex: 4 },
+      heading: 'Intervention', text: 'One sign beat signing every junction.', charCount: 37,
+    },
+  ];
+  const draft: GraphDraft = {
+    draftVersion: 1, inputHash: 'c'.repeat(64),
+    nodes: [{
+      tempId: 'n1', label: 'Branching drives backtracking', kind: 'idea', rationale: '',
+      evidencePassageIds: ['page-2', 'page-4'],
+    }],
+    relationships: [],
+  };
+
+  const graph = await repo.createGraph('Paper', crypto.randomUUID(), 'import');
+  await applyProposals(db, {
+    graphId: graph.id, revision: graph.contentRevision, draft, inputHash: 'c'.repeat(64),
+    passages, sourceTitle: 'Paper',
+    acceptNodes: [{ tempId: 'n1' }], acceptRelationships: [],
+    rejectNodeTempIds: [], rejectRelationshipTempIds: [],
+  });
+
+  // readGraph is the validation boundary: a node carrying a destination must
+  // also carry the source record that destination belongs to, or this throws.
+  const snapshot = await repo.readGraph(graph.id);
+  const node = snapshot.nodes[0]!;
+  expect(node.origin).toBe('generated');
+  // The canvas shows its Open control only for a node with a locator, so this
+  // is what puts the arrow on the card.
+  expect(node.locator).toEqual({ kind: 'pdf', fingerprint: FINGERPRINT, pageIndex: 2 });
+  expect(node.sourceId).toBeTruthy();
+  expect(snapshot.sources.some((source) => source.id === node.sourceId)).toBe(true);
+  // The remaining passages are still evidence; only the first is the destination.
+  expect(node.evidence).toHaveLength(2);
+});

@@ -248,13 +248,22 @@ export async function applyProposals(
       }
 
       const id = crypto.randomUUID();
+      const evidence = evidenceFor(proposal.evidencePassageIds, request.passages, sourceRowIds);
+      // A suggestion's destination is the passage it was drawn from, so an
+      // accepted one opens to that page or tab exactly as an imported node
+      // does. Without this the reasoning is visible only while the draft is
+      // still on screen: once it is on the map, "where did this come from?"
+      // has no answer you can click. The first passage is the destination and
+      // the rest stay in evidence, which is what the review panel reads.
+      const destination = evidence[0];
       const node: GraphNode = {
         id, graphId: request.graphId, kind: proposal.kind,
         // Not 'manual': this record came from a model and says so forever.
         origin: 'generated',
         baseLabel: accepted.label?.trim() || proposal.label,
         body: '',
-        evidence: evidenceFor(proposal.evidencePassageIds, request.passages, sourceRowIds),
+        ...(destination ? { sourceId: destination.sourceId, locator: destination.locator } : {}),
+        evidence,
         ...stamp(),
       };
       await db.nodes.put(node);
