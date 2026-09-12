@@ -35,3 +35,16 @@ Google OAuth and permissions are unchanged.
 Installed Chromium tests prove three page jumps, distinct same-page anchors, selection-only refresh, personal notes, full restart, backup copies, byte deletion, wrong-file rejection and exact reattachment.
 Screenshots were inspected and PDF text-layer CSS is scoped so it cannot style the editor sidebar.
 This is the manual reader slice; V2 controls, OCR/password support, and final real-content acceptance are not claimed complete.
+
+## Partner checkpoint 2e89d18 integration review
+
+This checkpoint adds lib/pdf/storage.ts after the reader and lib/pdf/library.ts already merged in PR #10.
+It has not been merged into main or connected to the reader.
+Use the existing PdfLibrary contract from current main before adding another persistence path.
+The reader keys bytes as pdf:<SHA-256>, saves the original name, enforces 20 MiB per file and 100 MiB total, and verifies exact-byte reattachment.
+The new helper uses bare fingerprints and different 50/200 MiB limits, so its records would not reopen through the current reader.
+Its eviction scans the entire blobs table rather than PDF records and deletes before the final put outside a transaction; a quota failure can therefore remove old bytes without saving the new file.
+These differences require reconciliation, not a second store wired beside the first.
+The existing installed reader tests already cover saved bytes, restart, exact reattachment and retaining map edits when bytes are removed.
+Eddy should bring main into partner-data, retain the current PdfLibrary path, and focus M4-B on independent paper acceptance or missing shared-reader cases.
+His checkpoint remains preserved on partner-data.
