@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto';
 import { test, expect } from '@playwright/test';
 import { GraphDatabase } from '../lib/storage/database';
 import { GraphRepository, ConflictError, importedKey, storageError } from '../lib/storage/repository';
-import { destinationUrl, type GraphSnapshot } from '../lib/graph/types';
+import { destinationUrl, effectiveConnection, directedMembers, type GraphSnapshot } from '../lib/graph/types';
 
 let db: GraphDatabase;
 let repo: GraphRepository;
@@ -164,4 +164,37 @@ test('malformed backups, unsafe URLs and unsupported versions cannot create reco
   await expect(repo.importGraph(JSON.stringify({ ...json, version: 99 }))).rejects.toThrow();
   expect(await db.graphs.count()).toBe(1);
   expect((await repo.readGraph(graph.id)).graph.contentRevision).toBe(data.graph.contentRevision);
+});
+
+test('connection semantics and card dimensions survive refresh, reopen and backup without changing base IDs', async () => {
+  const graph = await repo.createGraph('Editable source connections');
+  await repo.refreshScope(graph.id, 0, refresh());
+  let data = await repo.readGraph(graph.id);
+  const relation = data.relationships[0]!, node = data.nodes[0]!;
+  const key = { graphId: graph.id, itemType: 'relationship' as const, itemId: relation.id };
+  await repo.setPersonalEdit(key, data.graph.contentRevision, { notes: 'Keep this note' });
+  data = await repo.readGraph(graph.id);
+  await repo.saveConnection(key, data.graph.contentRevision, { label: 'Explains the evidence', relationshipKind: 'custom', direction: 'reverse' });
+  await repo.savePosition({ graphId: graph.id, itemType: 'node', itemId: node.id }, { x: 300, y: 200, width: 345, height: 210 });
+  await repo.savePosition({ graphId: graph.id, itemType: 'node', itemId: node.id }, { x: 420, y: 250 });
+  data = await repo.readGraph(graph.id);
+  await repo.refreshScope(graph.id, data.graph.contentRevision, refresh());
+  const name = db.name; db.close(); db = new GraphDatabase(name); repo = new GraphRepository(db);
+  data = await repo.readGraph(graph.id);
+  expect(data.relationships.find((item) => item.id === relation.id)!.members).toEqual(relation.members);
+  expect(effectiveConnection(relation, data.itemEdits)).toEqual({ label: 'Explains the evidence', relationshipKind: 'custom', direction: 'reverse' });
+  expect(directedMembers(relation, data.itemEdits).find((member) => member.role === 'from')!.nodeId).toBe(relation.members.find((member) => member.role === 'to')!.nodeId);
+  expect(data.itemEdits.find((item) => item.itemId === relation.id)).toMatchObject({ notes: 'Keep this note', createdAt: expect.any(Number), updatedAt: expect.any(Number) });
+  expect(data.layoutItems.find((item) => item.itemId === node.id)).toMatchObject({ x: 420, y: 250, width: 345, height: 210 });
+  const backup = await repo.exportGraph(graph.id), copyId = await repo.importGraph(backup), copy = await repo.readGraph(copyId);
+  expect(copy.itemEdits.find((item) => item.itemType === 'relationship')).toMatchObject({ displayLabel: 'Explains the evidence', direction: 'reverse', relationshipKind: 'custom' });
+  expect(copy.layoutItems.find((item) => item.width === 345)).toMatchObject({ height: 210 });
+  await repo.saveConnection(key, data.graph.contentRevision, { label: '', relationshipKind: 'custom', direction: 'none' });
+  data = await repo.readGraph(graph.id);
+  expect(data.relationships.some((item) => item.id === relation.id)).toBe(true);
+  expect(effectiveConnection(relation, data.itemEdits).label).toBe('');
+  expect(directedMembers(relation, data.itemEdits).every((member) => member.role === 'peer')).toBe(true);
+  await expect(repo.saveConnection({ ...key, itemType: 'node', itemId: node.id }, data.graph.contentRevision, { label: '', relationshipKind: 'custom', direction: 'none' })).rejects.toThrow('relationship');
+  await expect(repo.setPersonalEdit({ ...key, itemType: 'node', itemId: node.id }, data.graph.contentRevision, { displayLabel: '' })).rejects.toThrow('titles');
+  await expect(repo.savePosition({ ...key, itemType: 'node', itemId: node.id }, { x: 1, y: 2, width: -2 })).rejects.toThrow();
 });

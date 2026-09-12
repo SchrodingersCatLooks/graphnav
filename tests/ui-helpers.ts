@@ -11,6 +11,13 @@ export async function tools(page: Page, name: 'Sources' | 'Add idea' | 'More' | 
     await closeTools(page);
     await page.getByRole('button', { name: 'Connect', exact: true }).click();
     await page.getByRole('button', { name: 'Choose by name', exact: true }).click();
+  } else if (name === 'Sources' || name === 'Add idea') {
+    const button = page.getByRole('button', { name: 'Add', exact: true });
+    if (await button.isVisible() && await button.getAttribute('aria-expanded') !== 'true') await button.click();
+    if (name === 'Sources' && await page.locator('.batch-source-options').count()) {
+      const details = page.locator('.batch-source-options');
+      if (await details.getAttribute('open') === null) await details.locator('summary').click();
+    }
   } else {
     const button = page.getByRole('button', { name, exact: true });
     if (await button.getAttribute('aria-pressed') !== 'true') await button.click();
@@ -29,6 +36,8 @@ export async function panelSettings(page: Page) {
   if (await details.getAttribute('open') === null) await details.locator('summary').click();
 }
 export async function blankMap(page: Page, title: string) {
+  await expect(page.getByRole('button', { name: 'New Graph', exact: true }).or(page.getByRole('button', { name: 'Back', exact: true })).first()).toBeVisible();
+  if (!await page.getByRole('button', { name: 'New Graph', exact: true }).isVisible()) await page.getByRole('button', { name: 'Back', exact: true }).click();
   await page.getByRole('button', { name: 'New Graph', exact: true }).click();
   await page.getByRole('button', { name: 'Manual', exact: true }).click();
   await page.getByLabel('New map name', { exact: true }).fill(title);

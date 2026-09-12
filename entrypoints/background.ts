@@ -160,7 +160,7 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       const key = `panel-preferences:v1:${request.kind}`;
       if (request.preferences) await browser.storage.local.set({ [key]: request.preferences });
       const stored = panelPreferencesSchema.safeParse((await browser.storage.local.get(key))[key]);
-      return { ok: true, data: stored.success ? stored.data : { width: request.kind === 'docs' ? 580 : 780, dock: request.kind === 'docs' ? 'left' : 'right' } };
+      return { ok: true, data: stored.success ? stored.data : { width: 1100, dock: request.kind === 'docs' ? 'left' : 'right' } };
     }
     case 'IMPORT_DRIVE_FOLDER':
       return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey()), request.intoGraphId) };

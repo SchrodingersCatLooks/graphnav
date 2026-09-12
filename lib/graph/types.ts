@@ -57,9 +57,13 @@ export const membersSchema = z.array(z.object({ nodeId: id, role: z.enum(['from'
     (members.every((m) => m.role !== 'peer') && members.some((m) => m.role === 'from') && members.some((m) => m.role === 'to'));
 }, 'Use distinct nodes and either all peers or at least one from and one to.');
 export type Members = z.infer<typeof membersSchema>;
+export const relationshipLabelSchema = z.string().trim().max(200);
+export const relationshipKindSchema = z.enum(['supports', 'references', 'depends-on', 'related-to', 'custom']);
+export const connectionValuesSchema = z.object({ label: relationshipLabelSchema, relationshipKind: relationshipKindSchema, direction: z.enum(['forward', 'reverse', 'none']) }).strict();
+export type ConnectionValues = z.infer<typeof connectionValuesSchema>;
 export const relationshipSchema = z.object({
   id, graphId: id, members: membersSchema, memberNodeIds: z.array(id).max(LIMITS.members),
-  kind: z.enum(['contains', 'reference', 'personal']), origin: z.enum(['manual', 'imported', 'generated']), baseLabel: label,
+  kind: z.enum(['contains', 'reference', 'personal']), origin: z.enum(['manual', 'imported', 'generated']), baseLabel: relationshipLabelSchema,
   importKey: z.string().max(1500).optional(), scopeKey: id.optional(), evidence: z.array(evidenceSchema).max(32), ...stamps,
 }).strict();
 export type Relationship = z.infer<typeof relationshipSchema>;
@@ -87,10 +91,11 @@ export type ProposalDecision = z.infer<typeof proposalDecisionSchema>;
 
 export const itemKeySchema = z.object({ graphId: id, itemType: z.enum(['node', 'relationship']), itemId: id }).strict();
 export type ItemKey = z.infer<typeof itemKeySchema>;
-export const editValuesSchema = z.object({ displayLabel: label.optional(), notes: z.string().max(20_000).optional(), hidden: z.boolean().optional() }).strict();
+export const editValuesSchema = z.object({ displayLabel: relationshipLabelSchema.optional(), notes: z.string().max(20_000).optional(), hidden: z.boolean().optional(), relationshipKind: relationshipKindSchema.optional(), direction: connectionValuesSchema.shape.direction.optional() }).strict();
 export const itemEditSchema = itemKeySchema.extend({ ...editValuesSchema.shape, ...stamps });
 export type ItemEdit = z.infer<typeof itemEditSchema>;
-export const layoutSchema = itemKeySchema.extend({ ...pointSchema.shape, pinned: z.boolean(), ...stamps });
+export const geometrySchema = pointSchema.extend({ width: z.number().finite().min(120).max(1000).optional(), height: z.number().finite().min(64).max(800).optional() }).strict();
+export const layoutSchema = itemKeySchema.extend({ ...geometrySchema.shape, pinned: z.boolean(), ...stamps });
 export type LayoutItem = z.infer<typeof layoutSchema>;
 export type GraphSnapshot = { graph: Graph; sources: Source[]; nodes: GraphNode[]; relationships: Relationship[]; itemEdits: ItemEdit[]; layoutItems: LayoutItem[]; decisions?: ProposalDecision[] };
 export const snapshotSchema = z.object({
@@ -106,7 +111,7 @@ export const BACKUP_VERSION = 2 as const;
 export type SourceCache = { id: string; sourceId: string; sourceVersion: string; chunkKey: string; payload: string; byteSize: number; lastAccessedAt: number };
 export type StoredBlob = { id: string; name?: string; blob: Blob; mimeType: string; byteSize: number; createdAt: number };
 export const newNodeSchema = z.object({ id, label, body: z.string().max(20_000).default(''), locator: locatorSchema.optional(), position: pointSchema });
-export const newRelationshipSchema = z.object({ id, label, members: membersSchema });
+export const newRelationshipSchema = z.object({ id, label: relationshipLabelSchema, members: membersSchema });
 
 export function effectiveLabel(item: GraphNode | Relationship, edits: ItemEdit[]): string {
   return edits.find((edit) => edit.itemId === item.id)?.displayLabel ?? item.baseLabel;
@@ -129,4 +134,14 @@ export function destinationUrl(locator: Locator): string | undefined {
     case 'docs': return `https://docs.google.com/document/d/${encodeURIComponent(locator.documentId)}/edit${locator.tabId ? `?tab=${encodeURIComponent(locator.tabId)}` : ''}`;
     case 'pdf': return undefined; // Resolved by the reader UI or extension worker.
   }
+}
+
+/** Base membership stays stable; presentation direction belongs to the personal overlay. */
+export function effectiveConnection(item: Relationship, edits: ItemEdit[]): ConnectionValues {
+  const edit = edits.find((value) => value.itemType === 'relationship' && value.itemId === item.id);
+  return { label: effectiveLabel(item, edits), relationshipKind: edit?.relationshipKind ?? (item.kind === 'reference' ? 'references' : 'custom'), direction: edit?.direction ?? (item.members.every((member) => member.role === 'peer') ? 'none' : 'forward') };
+}
+export function directedMembers(item: Relationship, edits: ItemEdit[]): Members {
+  const { direction } = effectiveConnection(item, edits);
+  return item.members.map((member, index) => ({ nodeId: member.nodeId, role: direction === 'none' ? 'peer' : member.role === 'peer' ? ((index === 0) !== (direction === 'reverse') ? 'from' : 'to') : direction === 'reverse' ? member.role === 'from' ? 'to' : 'from' : member.role }));
 }

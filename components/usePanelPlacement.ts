@@ -4,7 +4,7 @@ import { clampPanelRect, type PanelPlacement, type PanelRect } from '../lib/pane
 
 const visibleViewport = () => ({ width: window.visualViewport?.width ?? innerWidth, height: window.visualViewport?.height ?? innerHeight });
 const rectStyle = (rect: PanelRect): CSSProperties => ({ left: rect.x, top: rect.y, width: rect.width, height: rect.height, right: 'auto', bottom: 'auto' });
-type Gesture = { action: 'move' | 'resize'; pointerId: number; target: HTMLButtonElement; x: number; y: number; start: PanelRect; latest: PanelRect };
+type Gesture = { action: 'move' | 'resize'; pointerId: number; target: HTMLButtonElement; x: number; y: number; start: PanelRect; latest: PanelRect; originalStyle: string };
 
 /** Save only completed gestures; moving the shell never changes the map. */
 export function usePanelPlacement(kind: 'drive' | 'docs', preferences: PanelPreferences) {
@@ -42,7 +42,7 @@ export function usePanelPlacement(kind: 'drive' | 'docs', preferences: PanelPref
     if (!active) return false;
     gesture.current = null;
     if (active.target.hasPointerCapture(active.pointerId)) active.target.releasePointerCapture(active.pointerId);
-    if (currentRect.current) paint(currentRect.current);
+    if (panel.current) panel.current.style.cssText = active.originalStyle;
     return true;
   }
   useEffect(() => {
@@ -64,7 +64,7 @@ export function usePanelPlacement(kind: 'drive' | 'docs', preferences: PanelPref
     cancelGesture();
     if (floating) { save({ mode: 'docked', rect: placement.rect }); return; }
     const view = visibleViewport();
-    const width = Math.min(preferences.width, 580), height = Math.min(640, view.height - 128);
+    const width = preferences.width, height = Math.min(640, view.height - 128);
     save({ mode: 'floating', rect: clampPanelRect(placement.rect ?? {
       x: preferences.dock === 'left' ? 32 : view.width - width - 32,
       y: 32, width, height,
@@ -85,19 +85,24 @@ export function usePanelPlacement(kind: 'drive' | 'docs', preferences: PanelPref
   function describe(value: PanelRect) {
     setAnnouncement(`Panel at ${Math.round(value.x)}, ${Math.round(value.y)}; ${Math.round(value.width)} by ${Math.round(value.height)} pixels.`);
   }
+  function measurePanel() {
+    const box = panel.current!.getBoundingClientRect();
+    return { x: box.x - (window.visualViewport?.offsetLeft ?? 0), y: box.y - (window.visualViewport?.offsetTop ?? 0), width: box.width, height: box.height };
+  }
   function handleKey(event: KeyboardEvent<HTMLButtonElement>, action: Gesture['action']) {
-    if (!rect || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+    if ( !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
     event.preventDefault(); event.stopPropagation();
     const step = event.shiftKey ? 40 : 10;
-    const next = adjust(rect, action, event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0, event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0);
+    const next = adjust(rect ?? measurePanel(), action, event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0, event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0);
     save({ mode: 'floating', rect: next }); describe(next);
   }
   function handlePointerDown(event: PointerEvent<HTMLButtonElement>, action: Gesture['action']) {
-    if (!rect || event.button !== 0 || !event.isPrimary) return;
+    if (event.button !== 0 || !event.isPrimary) return;
     event.preventDefault(); event.stopPropagation();
     event.currentTarget.focus();
     event.currentTarget.setPointerCapture(event.pointerId);
-    gesture.current = { action, pointerId: event.pointerId, target: event.currentTarget, x: event.clientX, y: event.clientY, start: rect, latest: rect };
+    const start = rect ?? measurePanel();
+    gesture.current = { action, pointerId: event.pointerId, target: event.currentTarget, x: event.clientX, y: event.clientY, start, latest: start, originalStyle: panel.current?.style.cssText ?? '' };
   }
   function handlePointerMove(event: PointerEvent<HTMLButtonElement>) {
     const active = gesture.current;

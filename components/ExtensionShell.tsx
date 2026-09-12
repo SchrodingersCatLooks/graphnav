@@ -11,9 +11,10 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   const [screen, setScreen] = useState<EntryScreen>('home');
+  const [minimized, setMinimized] = useState(false), [fullscreen, setFullscreen] = useState(false), [graphTitle, setGraphTitle] = useState('GraphNav');
   const compact = screen !== 'graph';
   const backButton = useRef<HTMLButtonElement>(null);
-  const title = screen === 'new' ? 'New Graph' : screen === 'manual' ? 'Manual graph' : screen === 'automated' ? 'Automated graph' : screen === 'existing' ? 'Use Existing Graph' : screen === 'account' ? 'Google connection' : 'GraphNav';
+  const title = screen === 'new' ? 'New Graph' : screen === 'manual' ? 'Manual graph' : screen === 'automated' ? 'Automated graph' : screen === 'existing' ? 'Use Existing Graph' : screen === 'account' ? 'Google connection' : graphTitle;
   const [authEpoch, setAuthEpoch] = useState(0);
   // Resolve the account before loading maps so initialization cannot interrupt a menu click.
   const [authReady, setAuthReady] = useState(false);
@@ -25,7 +26,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
     }
   }
   const [editorBusy, setEditorBusy] = useState(true);
-  const [preferences, setPreferences] = useState<PanelPreferences>({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' });
+  const [preferences, setPreferences] = useState<PanelPreferences>({ width: 1100, dock: context.kind === 'docs' ? 'left' : 'right' });
   const placement = usePanelPlacement(context.kind, preferences);
   const [preferenceError, setPreferenceError] = useState('');
   const preferenceChanged = useRef(false);
@@ -87,7 +88,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
 
   function back() {
     if (editorBusy) return;
-    placement.cancelGesture();
+    placement.cancelGesture(); setMinimized(false); setFullscreen(false);
     setScreen(screen === 'manual' || screen === 'automated' ? 'new' : 'home');
   }
 
@@ -106,7 +107,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
           ref={placement.panel}
           id="graphnav-panel"
           className={`graphnav-panel editor-panel ${compact ? 'launcher-panel' : ''} ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
-          style={{ ...(compact ? { width: 'min(400px, calc(100% - 32px))', left: context.kind === 'docs' ? 16 : 'auto', right: context.kind === 'docs' ? 'auto' : 16, top: 'min(80px, 10%)', bottom: 'auto', height: 'auto', maxHeight: 'calc(100% - 96px)' } : placement.style), display: open ? undefined : 'none' }}
+          style={{ ...(compact ? { width: 'min(400px, calc(100% - 32px))', left: context.kind === 'docs' ? 16 : 'auto', right: context.kind === 'docs' ? 'auto' : 16, top: 'min(80px, 10%)', bottom: 'auto', height: 'auto', maxHeight: 'calc(100% - 96px)' } : minimized ? { ...placement.style, width: 'min(420px, calc(100% - 32px))', height: 'auto', bottom: 'auto' } : fullscreen ? { left: 16, top: 16, right: 16, bottom: 16, width: 'calc(100% - 32px)', height: 'calc(100% - 32px)' } : placement.style), display: open ? undefined : 'none' }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="graphnav-title"
@@ -114,7 +115,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
             if (event.key === 'Escape') {
               event.preventDefault();
               event.stopPropagation();
-              if (!placement.cancelGesture()) close();
+              if (!placement.cancelGesture()) { if (fullscreen) setFullscreen(false); else close(); }
             }
           }}
         >
@@ -124,7 +125,9 @@ export function ExtensionShell({ context }: { context: PageContext }) {
               <div className="panel-step-title"><h1 id="graphnav-title">{title}</h1>{!compact && <p className="source-label">{context.label}</p>}</div>
             </>}
             <div className="panel-header-actions">
-              {!compact && placement.floating && <button type="button" className="panel-move" aria-label="Move graph panel" aria-describedby="panel-placement-help" title="Drag to move; arrow keys move, Shift moves faster" {...placement.controls('move')}><span aria-hidden="true">⠿</span> Move</button>}
+              {!compact && <button className="window-control" aria-label={minimized ? 'Restore graph' : 'Minimize graph'} onClick={() => { placement.cancelGesture(); setMinimized(!minimized); }}>{minimized ? '▢' : '−'}</button>}
+              {!compact && !minimized && <button className="window-control" aria-label={fullscreen ? 'Exit fullscreen' : 'Fullscreen graph'} aria-pressed={fullscreen} onClick={() => { placement.cancelGesture(); setFullscreen(!fullscreen); }}>{fullscreen ? '↙' : '⛶'}</button>}
+              {!compact && !minimized && !fullscreen && placement.floating && <button type="button" className="panel-move" aria-label="Move graph panel" aria-describedby="panel-placement-help" title="Drag to move; arrow keys move, Shift moves faster" {...placement.controls('move')}><span aria-hidden="true">⠿</span> Move</button>}
               <button ref={closeButton} type="button" className="close-button" onClick={close} aria-label="Close graph panel"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></button>
             </div>
           </header>
@@ -137,17 +140,17 @@ export function ExtensionShell({ context }: { context: PageContext }) {
             </div>
           </div>
           <div className="panel-auth launcher-account" hidden={screen !== 'account'}><GoogleConnection expanded onConnected={connectionChanged} onInitialCheckComplete={() => setAuthReady(true)} disabled={editorBusy} /></div>
-          {authReady && <GraphEditor panelOpen={open} entryScreen={screen} onEntryScreenChange={setScreen} layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} onBusyChange={setEditorBusy} />}
+          <div hidden={minimized && !compact} className="panel-editor-container">{authReady && <GraphEditor onTitleChange={setGraphTitle} panelOpen={open} entryScreen={screen} onEntryScreenChange={setScreen} layoutKey={`${placement.layoutKey}:${fullscreen}:${minimized}`} context={context} activeTabId={context.tabId} authEpoch={authEpoch} onBusyChange={setEditorBusy} />}</div>
 
-          <footer hidden={compact} className="panel-footer flex items-center justify-between gap-3">
+          <footer hidden={compact || minimized} className="panel-footer flex items-center justify-between gap-3">
             <span>{placement.floating ? 'Floating overlay' : 'Fixed overlay'}</span>
             <details className="panel-settings"><summary>Panel settings</summary><div className="panel-settings-controls">
-            {!placement.floating && <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>}
+            {!placement.floating && <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option><option value={1100}>Spacious</option></select></label>}
             <button type="button" className="dock-button" onClick={() => { placement.dock(); changePreferences({ ...preferences, dock: preferences.dock === 'left' ? 'right' : 'left' }); }}>Dock {preferences.dock === 'left' ? 'right' : 'left'}</button>
             <button type="button" className="dock-button" onClick={placement.toggle}>{placement.floating ? 'Dock panel' : 'Float panel'}</button>
-            <button type="button" className="dock-button" onClick={() => { placement.reset(); changePreferences({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' }); }}>Reset position</button>
+            <button type="button" className="dock-button" onClick={() => { placement.reset(); changePreferences({ width: 1100, dock: context.kind === 'docs' ? 'left' : 'right' }); }}>Reset position</button>
             </div></details>
-            {placement.floating ? <button type="button" className="panel-resize" aria-label="Resize graph panel" aria-describedby="panel-placement-help" title="Drag to resize; arrow keys resize, Shift resizes faster" {...placement.controls('resize')}>Resize <span aria-hidden="true">↘</span></button> : <kbd>Esc</kbd>}
+            {!fullscreen ? <button type="button" className="panel-resize" aria-label="Resize graph panel" aria-describedby="panel-placement-help" title="Drag to resize; arrow keys resize, Shift resizes faster" {...placement.controls('resize')}>Resize <span aria-hidden="true">↘</span></button> : <kbd>Esc</kbd>}
             {(preferenceError || placement.error) && <span className="panel-preference-error" role="alert">{preferenceError || placement.error}</span>}
           </footer>
           <span id="panel-placement-help" className="panel-sr-only">Drag this control or use arrow keys. Hold Shift for larger steps. Escape cancels a drag; otherwise Escape closes the panel.</span>
@@ -157,6 +160,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
 
       <button
         ref={trigger}
+        hidden={open && fullscreen}
         type="button"
         className="graph-trigger flex items-center justify-center gap-2"
         aria-expanded={open}

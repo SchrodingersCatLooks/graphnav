@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { GraphDatabase } from './database';
 import {
   LIMITS, backupSchema, graphSchema, snapshotSchema, itemKeySchema, editValuesSchema,
-  newNodeSchema, newRelationshipSchema, pointSchema, viewSchema, membersSchema,
+  newNodeSchema, newRelationshipSchema, connectionValuesSchema, geometrySchema, pointSchema, viewSchema, membersSchema,
   sourceInputSchema, locatorSchema, sourceKey, locatorKey, bindingSelectionSchema,
   type Graph, type GraphNode, type GraphSnapshot, type ItemKey,
   type Locator, type Relationship, type Source, type SourceInput,
@@ -67,6 +67,9 @@ export function validateSnapshot(value: unknown): GraphSnapshot {
       if (relation.importKey !== JSON.stringify([relation.scopeKey, 'contains', relation.members[0]!.nodeId, relation.members[1]!.nodeId])) throw new Error('Invalid imported relationship identity.');
     } else if (relation.importKey !== undefined || relation.scopeKey !== undefined) throw new Error('Personal relationships cannot use imported identity.');
     if (JSON.stringify(relation.memberNodeIds) !== JSON.stringify(relation.members.map((m) => m.nodeId))) throw new Error('Invalid relationship lookup index.');
+  }
+  for (const edit of itemEdits) {
+    if (edit.itemType === 'node' && (edit.displayLabel === '' || edit.direction !== undefined || edit.relationshipKind !== undefined)) throw new Error('Node titles are required and connection options belong to relationships.');
   }
   for (const edit of [...itemEdits, ...layoutItems]) {
     if (!(edit.itemType === 'node' ? nodeMap.has(edit.itemId) : relationMap.has(edit.itemId))) throw new Error('Saved edits or layout reference a missing item.');
@@ -167,9 +170,19 @@ export class GraphRepository {
       return value.id;
     });
   }
+  async saveConnection(keyInput: ItemKey, revision: number, input: z.infer<typeof connectionValuesSchema>) {
+    const key = itemKeySchema.parse(keyInput), value = connectionValuesSchema.parse(input);
+    if (key.itemType !== 'relationship') throw new Error('Connection options require a relationship.');
+    return this.mutate(key.graphId, revision, async () => {
+      await this.itemExists(key);
+      const old = await this.db.itemEdits.get(itemTuple(key));
+      await this.db.itemEdits.put({ ...old, ...key, ...stamp(), createdAt: old?.createdAt ?? Date.now(), displayLabel: value.label, relationshipKind: value.relationshipKind, direction: value.direction });
+    });
+  }
   async setPersonalEdit(keyInput: ItemKey, revision: number, values: z.infer<typeof editValuesSchema>) {
     const key = itemKeySchema.parse(keyInput);
     const edits = editValuesSchema.parse(values);
+    if (key.itemType === 'node' && (edits.displayLabel === '' || edits.direction !== undefined || edits.relationshipKind !== undefined)) throw new Error('Node titles are required and connection options belong to relationships.');
     return this.mutate(key.graphId, revision, async () => {
       await this.itemExists(key);
       const old = await this.db.itemEdits.get(itemTuple(key));
@@ -205,13 +218,13 @@ export class GraphRepository {
     await this.db.itemEdits.delete(key);
     await this.db.layoutItems.delete(key);
   }
-  async savePosition(keyInput: ItemKey, point: { x: number; y: number }) {
-    const key = itemKeySchema.parse(keyInput), position = pointSchema.parse(point);
+  async savePosition(keyInput: ItemKey, point: z.infer<typeof geometrySchema>) {
+    const key = itemKeySchema.parse(keyInput), position = geometrySchema.parse(point);
     await this.db.transaction('rw', this.tables(), async () => {
       await this.graph(key.graphId);
       await this.itemExists(key);
       const previous = await this.db.layoutItems.get(itemTuple(key));
-      await this.db.layoutItems.put({ ...key, ...position, ...stamp(), createdAt: previous?.createdAt ?? Date.now(), pinned: true });
+      await this.db.layoutItems.put({ ...previous, ...key, ...position, ...stamp(), createdAt: previous?.createdAt ?? Date.now(), pinned: true });
     });
   }
   async saveView(graphId: string, view: Graph['view']) {
@@ -249,7 +262,7 @@ export class GraphRepository {
         await this.itemExists(key);
         const old = await this.db.layoutItems.get(itemTuple(key));
         if (old && (old.pinned || newOnly)) continue;
-        await this.db.layoutItems.put({ ...key, ...point, pinned: false, ...stamp(), createdAt: old?.createdAt ?? Date.now() });
+        await this.db.layoutItems.put({ ...old, ...key, ...point, pinned: false, ...stamp(), createdAt: old?.createdAt ?? Date.now() });
       }
     });
   }
