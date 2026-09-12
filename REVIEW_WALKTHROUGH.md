@@ -19,28 +19,33 @@ The extension folder is .output/chrome-mv3 inside the intended clone.
 1. **Drive Home and folders.**
    Open Drive Home and click Graph.
    Connect Google if requested.
-   Expect a My Drive root map with names and destinations filled in automatically, without GPT.
+   If a saved map exists, expect it immediately with Edit graph and New graph.
+   If none exists, expect New graph with Manually and With AI choices.
+   Choose Manually, name it, Create map, then Build baseline to fill the listed names and destinations without GPT.
+   Close and reopen Graph; the saved graph should now open with the tool drawer hidden.
    Home does not mirror Google's suggested/shared feed.
-   Open a real folder, including from Recent or Shared with me, and expect its source map without the old panel-state error.
+   Open a real folder, including from Recent or Shared with me, and expect its saved graph or creation chooser without the old panel-state error.
 
 2. **A useful fixed overlay.**
    Keep the graph open and click a folder node's title.
-   Expect that folder in the same browser tab, the overlay still open, and that folder's own map.
+   Expect that folder in the same browser tab, the overlay still open, and its saved map or creation chooser.
    Go back and expect the previous map with your edits.
    If a personal project such as gg is selected, click This page for the current source's cached map.
    More still lets you choose your personal project again.
 
 3. **Connect and edit with little effort.**
-   Click Connect on one node and then Connect on another.
+   Choose Edit graph, then click Connect on one node and Connect on another.
    A connection appears and its label editor opens.
    Give it a useful label, Save changes, and close the drawer with its X.
    Click the connection label to edit it again.
    Add idea creates a personal node in clear space; Edit on a node opens its label and notes.
    Arrange map helps with existing crowded layouts while preserving dragged pins.
+   Done editing hides these controls and stops node dragging while leaving source navigation available.
 
 4. **Navigate inside a Doc.**
    Open a Doc and click Graph.
-   Expect its graph on the left, with the canvas taking most of the panel.
+   Expect its saved graph on the left, with the canvas taking most of the panel.
+   If it has no saved graph, choose Manually, name it and Build baseline first.
    Click a top-level or nested tab node's title and expect that exact tab in the same browser tab.
    Type and scroll in the Doc while the panel is open, then try normal and increased browser zoom.
    Close and panel controls must remain reachable.
@@ -54,24 +59,25 @@ The extension folder is .output/chrome-mv3 inside the intended clone.
 
 ## Where the less frequent actions moved
 
-- Sources: existing-file/tab/section suggestions, selected imports, baseline creation and Refresh source.
-  Use Start a blank map instead if you want to choose every member yourself.
-- More: choose or create maps, add a PDF to the current map, and export/import a backup.
+- Edit graph > Sources: existing-file/tab/section suggestions, selected imports, baseline creation and Refresh source.
+- New graph: Manually or With AI; naming and creating another map preserves the old one.
+- More: choose saved maps, add a PDF to the current map, and export/import a backup.
 - Map options: focus, collapse, larger-map pages and destination checks.
 - Panel settings: width, dock side, floating placement and reset.
-- AI: selected-content preview and generation controls in Docs and the PDF reader.
+- New graph > With AI: selected-content preview and generation in Docs, the PDF reader, or one recognized Google Doc chosen from the current Drive folder.
 
 ## Check PDFs and AI after the overlay
 
 Under More, choose Add a PDF to this map and open demo/GraphNav-demo-paper.pdf.
-In the reader, use Sources to select sections or build the listed outline, then close the drawer.
+In the reader, create a manual graph if none exists, then use Edit graph > Sources to select sections or build the listed outline.
 Click source nodes to navigate to exact pages or section markers, and connect a Doc node with a PDF node.
 Following a Doc or PDF destination retains the chosen project map.
 Export/import under More creates a separate graph copy; keep the original PDF because graph backups exclude its bytes.
 
 Start the local relay as described in relay/README.md.
 If needed, use GraphNav's toolbar popup, AI connection and the separate RELAY_TOKEN to pair it.
-Open AI, choose Select content for AI, select relevant Doc tabs or PDF pages, then Preview selected text.
+Choose New graph > With AI, name it and Continue with AI.
+In Drive, choose a listed Google Doc; select relevant Doc tabs or PDF pages, then Preview selected text.
 Review the text before Generate with AI.
 Inspect suggested concepts and connections through See supporting text and Open evidence source.
 The previously verified real request took about 25 seconds; duration and suggestion counts vary.
