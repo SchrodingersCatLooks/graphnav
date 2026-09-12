@@ -5,38 +5,47 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
 ## What is working
 
 - Private GitHub repository and shared AI workflow documents.
-- Product context extracted from the idea notes, a joint build schedule, and task ownership.
+- M1-A scaffold merged through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) as `92a76ce`.
+  Main contains WXT/React/TypeScript/Tailwind, package scripts, lockfile, Chrome installation instructions, and automated browser checks.
+- Graph button and reversible empty panel on My Drive, real Drive folders, and Google Docs.
+  Context changes, Graph/X toggle, Escape focus restoration, host editing, and the popover/viewport layout are covered by the acceptance record.
+- Node 22.23.2/npm 10.9.9: type-check, production build, and six synthetic browser tests passed.
+  Eddy reports a clean build on Node 22.23.2/npm 10.9.8 and the full Chrome 152.0.7977.84/macOS 26.5.2 checklist passing after a proper reload.
+  His accepted content-script hash matches the current local production bundle.
 
 ## What is not implemented or verified
 
-- Main has no application code or package scripts yet. An unmerged shell, manifest configuration, lockfile, and test setup exist in PR #3; they are not absent from the project.
-- No Google connection, manual graph editor, PDF reader, source actions, persistence code, or GPT generator.
-- Both laptops have reported building the shell; Eddy reports Google Console setup complete in `partner-data` commit `9f68af6`.
-  A real API read and agreed M0 demo sources remain unverified.
+- No Google authentication or real API reads, manual graph editor, PDF reader, source actions, persistence, or GPT generator in the merged scaffold.
+- Eddy reports Google Cloud configuration complete on `partner-data` at `9f68af6`; manifest wiring and the background auth handler are next.
+- M0 demo source links and access for both accounts remain unconfirmed.
+  Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, plus a Drive folder with ten subfolders including one nested level.
 
 ## Version status
 
-- **V1 manual:** the extension shell is under review in PR #3; the manual graph editor is not implemented. Imported source structure is allowed; user-created concepts and meaningful labeled relationships are core.
-- **V2 GPT-assisted:** planned next stage, implementation not started. It will generate grounded, editable drafts through the same graph/navigation/storage system.
-- Product value comes from source integration, manual editing, precise navigation, and durable user work; generation augments those capabilities.
+- **V1 manual:** the shell is merged and accepted; manual graph creation/editing, source navigation, and saving are the next implementation work.
+  Imported structure is allowed, and personal ideas with meaningful labeled relationships remain core.
+- **V2 GPT-assisted:** planned next stage, implementation not started.
+  It will generate grounded, editable drafts through the same graph/navigation/storage system.
 
 ## Current shared milestone
 
-**M1-A: confirm the reloaded shell and complete the shared scaffold handoff.**
+**M1-B and M1-C: prove real Google reads and agree the shared graph format.**
 
-- [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3), branch `rajvansh-ui`, reports a runnable extension shell plus build/test results. These reports were read, not independently rerun in this documentation task.
-- Rajvansh's next action: preserve the scaffold, reconcile the newer planning documents, and obtain final acceptance of the reloaded build.
-- Partner's next action: confirm the commit and full browser checklist after reload, then bring the merged scaffold into `partner-data` and implement M1-B.
-  Rajvansh explicitly hands over the M1-B manifest key/Identity/OAuth/API configuration and background worker after the scaffold merge; he retains panel/CSS work.
-- Next shared checkpoint: PR #3 browser acceptance passes on both laptops, then hand off the accepted scaffold and agree M1-C before starting the manual graph in M2. M1-B authentication work remains separate.
+- Eddy brings main into `partner-data` without resetting or force-pushing.
+  He now owns M1-B changes to `wxt.config.ts` for the public key, Identity permission, OAuth client/scopes, required API access, and the background worker.
+  The exact configuration is in [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md).
+  After the key is added, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
+- Rajvansh retains panel/CSS ownership and coordinates M1-C with Eddy before implementing the M2 graph UI.
+  Dependency changes remain coordinated.
+- Next shared checkpoint: the installed extension reads the shared folder and tabbed Doc, and both lanes agree stable graph/node/edge IDs, source destinations, relationship labels/origins, and editing commands.
 
 ## Blockers
 
-Eddy previously reported Docs header/close clipping, side-rail overlap, and zoom failures.
-Rajvansh now reports that reloading appears to have fixed Eddy's UI; the exact reloaded commit and full acceptance result remain unconfirmed.
-Preserve the earlier failure history and keep M1-A in REVIEW until verified; no additional runtime fix is claimed by these documentation updates.
-Google API access remains unverified, and both teammates still need to choose one shared demo folder and a Doc with a nested tab.
-Eddy's proposed partial scaffold merge is distinct from marking M1-A DONE; no merge or acceptance is claimed here.
+The scaffold handoff no longer blocks M1-B.
+Eddy corrected the previous second-machine failure report: an improperly reloaded extension left a stale content script in the tab.
+After a proper reload, the popover/visualViewport fix passes the full checklist, including header/X reachability and increased zoom.
+No further UI defect is established by that earlier report, and no new runtime patch was needed.
+Google API reads and demo-source access still need verification; M0 remains open.
 
 ## Decision record
 
@@ -55,5 +64,9 @@ Eddy's proposed partial scaffold merge is distinct from marking M1-A DONE; no me
 - 2026-09-12: Added explicit GitHub push verification and larger-source design/acceptance criteria (DOC-2). Documentation only; no scalability or runtime checks have been executed.
 
 - 2026-09-12: Recorded the user's manual V1 / GPT-assisted V2 decision (DOC-3), moved basic manual editing into the first graph milestone, and added the pending G1–G4 generation queue. Found the existing unmerged shell in PR #3 and updated the handoff to its unresolved browser acceptance. No application implementation or runtime verification was performed by this documentation update.
+
+- 2026-09-12: Merged M1-A PR #3 as `92a76ce` after Eddy's corrected full second-machine acceptance.
+  Verified main contains the tested scaffold and matches the accepted runtime; marked M1-A DONE and handed M1-B manifest/background ownership to Eddy.
+  M0 sources and M1-C remain open; no Google API read is claimed.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.
