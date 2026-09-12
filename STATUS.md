@@ -1,6 +1,6 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #12 merged as `c947fa1`.
+Last shared update: 2026-09-12, after runtime PR #13 merged as `5fa1ba4`.
 
 ## Working on main
 
@@ -8,7 +8,7 @@ Last shared update: 2026-09-12, after runtime PR #12 merged as `c947fa1`.
 [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
 [PR #10](https://github.com/SchrodingersCatLooks/graphnav/pull/10) adds the local PDF reader and editable section maps.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
-The current main runtime matches checkpoint 148dfa4.
+The current main runtime matches checkpoint 12ee690.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -75,7 +75,8 @@ Eddy should bring main into partner-data and read GENERATION_HANDOFF before chan
 His work through 179d98f is now merged, including the authored paper and request/scale tests.
 The review fixes are implemented with reproductions and regression checks; Eddy retains server/provider startup and proposal-persistence/migrations.
 GENERATION_HANDOFF defines the extension client's bounded loopback contract so he can build the server independently.
-No model has been called, no accepted-AI persistence is implemented, and no complete V2 acceptance is claimed.
+One real OpenAI request now returned eight ideas and eight connections inside the installed PDF reader.
+Persistent accepted/edited/rejected AI decisions are still open, and no complete V2 acceptance is claimed.
 
 The user supplied OpenAI project, organization and key metadata.
 These IDs do not authenticate model requests.
@@ -168,3 +169,10 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 - 2026-09-12: Replacement private API credential passed authentication and model availability lookup.
   Eddy’s server checkpoint a8325dc is on main; its full integration is being checked by Rajvansh, including correcting the old hash computation and adding request limits.
   This supersedes the earlier authentication failure but does not yet claim a generated result or successful provider billing.
+
+- 2026-09-12: Merged PR #13 as 5fa1ba4 after extension/relay typechecks, build, all 116 tests and 14 affected final checks.
+  A real installed-extension request used gpt-5-mini-2025-08-07 on authored PDF pages 2 and 3: eight ideas/eight connections, 24,973 ms, 757 input/1,552 output tokens.
+  Evidence navigation and unchanged saved baseline passed, and the screenshot was inspected.
+  A preceding browser attempt timed out before any provider call; the fresh-profile run passed.
+  G0/G2 are complete for this scoped connection/draft loop; G3/G4 remain open.
+  Rajvansh claims X4-A and its separate placement preference bridge while Eddy owns the proposal store/decision API.

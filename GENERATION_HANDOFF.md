@@ -113,3 +113,19 @@ These are local changes under test, not yet a claim that current main works agai
 The replacement user credential now authenticates successfully and lists gpt-5-mini as available.
 It remains only in ignored local configuration.
 No provider secret or pairing code is published here.
+
+## PR #13 complete integration
+
+The relay integration is merged as 5fa1ba4, runtime 12ee690.
+Extension and relay typechecks/build/all 116 tests passed; final recovery-message changes passed all 14 affected cases.
+One real installed-extension request selected authored PDF pages 2 and 3 and returned eight ideas/eight connections in 24,973 ms.
+The actual model was gpt-5-mini-2025-08-07 with 757 input and 1,552 output tokens.
+Evidence navigation opened the correct page and the five-node baseline stayed unchanged.
+Startup and authenticated health were also tested using the documented npm command.
+Read relay/README.md for current startup/configuration; the old reduced hash and unloaded-env startup are corrected.
+
+Eddy’s next task is the already-authorized G3-B proposal store, decisions, additive migration and backup/acceptance commands.
+Please publish its typed API for Rajvansh’s G3-A controls.
+Rajvansh is implementing X4-A shell move/resize/dock/reset plus its small versioned placement message/storage key while that store is built.
+X4 changes no Dexie schema, proposal records, repository acceptance or backup formats.
+The API account owner should replace the chat-exposed key privately before final use; no credential or pairing value is in GitHub.

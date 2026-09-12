@@ -1,93 +1,88 @@
-# GraphNav AI relay
+# GraphNav local AI relay
 
-A small local service that holds the model key so the extension does not.
+The relay keeps the provider secret on your laptop and returns suggestions from selected Doc/PDF content.
+Manual maps, source imports, navigation and saving continue with the relay stopped.
+The extension uses a separate pairing code and never receives the provider secret.
 
-An extension bundle is readable by anyone who installs it, so a key shipped
-inside one is a published key. The relay keeps it on the machine instead, and
-the extension holds only a shared token proving a request came from it.
+## Start the current build
 
-It implements the server half of [GENERATION_HANDOFF.md](../GENERATION_HANDOFF.md).
-The extension posts a complete `GenerationInput`; the relay revalidates it
-against the shared schema and builds the instructions, payload and JSON schema
-with the same helpers the extension uses. A caller cannot supply its own
-instructions or schema, and the prompt cannot drift from the contract the
-answer is checked against.
+Use the pinned Node 22 environment and run npm ci at the repository root first.
+The relay reuses the shared Zod/input/draft code and does not require a second npm install.
 
-**GraphNav works without it.** Manual maps, imports, navigation and saving all
-run with the relay stopped. Only AI drafting needs it.
-
-## Start it
-
-Requires Node 22.12 or newer, the same version the extension uses.
+From the repository root:
 
 ```bash
-cd relay
-cp .env.example .env
+npm --prefix relay start
 ```
 
-Fill in `.env`:
+Startup loads the ignored root .env.relay.local file, followed by an optional relay/.env file.
+An absent optional .env notice is harmless when the root configuration is present.
+Keep the terminal running while generating; Control+C stops the relay.
 
-- **`RELAY_TOKEN`** — a shared secret. Generate one:
-  ```bash
-  node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
-  ```
-  The same value goes into the extension's relay settings. Each teammate uses
-  their own; it is not shared through GitHub.
-- **`PROVIDER_API_KEY`** — the model key. This is the only place it exists.
-- **`PROVIDER`** — `openai` or `gemini`.
-- **`ALLOWED_ORIGIN`** — must match the installed extension ID exactly.
+For a new laptop, create private configuration using relay/.env.example as a guide.
+Existing private configuration must be edited rather than overwritten.
+Set these values privately:
 
-Then:
+```dotenv
+OPENAI_API_KEY=your_actual_secret_key
+PROVIDER=openai
+PROVIDER_MODEL=gpt-5-mini
+RELAY_TOKEN=your_separate_random_pairing_code
+RELAY_MAX_REQUESTS=20
+```
+
+Generate the separate pairing code locally with:
 
 ```bash
-npm start
+node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"
 ```
 
-It prints the port, provider and allowed origin. It never prints the token or
-the key.
+Copy that generated value into RELAY_TOKEN and the extension’s AI connection settings.
+Use at least 32 characters; a provider key beginning with sk- is refused as a pairing code.
+Optional OPENAI_PROJECT_ID and OPENAI_ORG_ID select an explicit API project/account.
+The OpenAI base URL is fixed to https://api.openai.com/v1.
+The existing PROVIDER_API_KEY variable is also accepted, but do not maintain conflicting keys in multiple files.
 
-## What it refuses
+## Pair the extension
 
-| Condition | Response |
-| --- | --- |
-| Origin is not the allowed extension | 403 |
-| Pairing code missing or wrong, including on `/health` | 401 |
-| No model key configured | 503 |
-| Another draft already running | 429 |
-| Body over 512 KiB | 413, refused while reading rather than after buffering |
-| Body is not a valid `GenerationInput` | 400 |
-| Model takes over 60 seconds | 504 |
-| Provider unreachable, errors, or over-long response | 502 |
+1. Build GraphNav, reload it in chrome://extensions, and refresh any open Drive/Docs tabs.
+2. Open GraphNav’s toolbar popup, then AI connection.
+3. Paste the RELAY_TOKEN value into Relay pairing code and click Pair AI connection.
+   Never enter OPENAI_API_KEY into the extension.
+4. In a Doc or the PDF reader, select content, preview its text, then check the AI connection and click Generate with AI.
+5. Read the suggestions and open their supporting sources.
+   Persistent accept/edit/reject is still the next G3 integration step.
 
-`GET /health` requires the pairing code too, so an unpaired caller learns
-nothing about this host. It returns `{ protocol: 1, ready, model? }`, where
-`ready` means a provider key is configured, not that a model call has succeeded.
+Pairing lasts for the Chrome session and may need repeating after Chrome or the extension restarts.
+The current user key has been tested successfully; because it was posted in chat, the account owner should revoke it and save a replacement privately before final use.
 
-Pairing-code comparison is constant-time over digests, so neither length nor
-content leaks through timing. Provider errors are logged by name only: the raw
-error can contain selected source text, so it is never echoed to the caller or
-written to the log.
+## Protocol and limits
 
-## Security boundary
+The server binds 127.0.0.1:8787 and is intended only for local development/demo use.
+Do not expose it through a tunnel or public proxy.
 
-- Binds `127.0.0.1` only. This is never a public service, and must not be put
-  behind a tunnel or reverse proxy.
-- The key is read from the environment and never logged, returned, or written
-  to disk by this service.
-- `.env` is gitignored. Do not paste a key into chat, a commit, or an issue.
-- The relay cannot write to Google, to the database, or to the graph. It
-  returns text. Everything that decides what to do with that text runs in the
-  extension, where the user reviews it.
+- Health and draft requests require the pairing bearer token.
+- POST requires the exact chrome-extension://pidejkbkldalibjaehjfpjkcpjpcenpk Origin.
+  An authenticated GET may omit Origin because Chrome can omit it on extension health requests.
+  Other browser origins are refused.
+- GET /health returns protocol 1, readiness and the configured model, never a credential.
+  Readiness means configuration is present; a successful model request is a separate check.
+- POST /draft takes the validated GenerationInput, not caller-provided instructions or arbitrary schemas.
+  Both ends use the shared full-input hash, draft schema and evidence validation.
+- Transport is bounded to 512 KiB, content to 20,000 characters and 200 passages, and output to 8,000 tokens.
+- One provider request is active at a time, with a 60-second deadline, abort on client disconnect, five attempts per minute and 20 per launch by default.
+  Launch limits reset when the relay restarts and are not an account-wide monetary budget.
+- OpenAI response storage is disabled with store:false.
+  No source text, provider secret, or pairing code is logged by this server.
 
-## Swapping providers
+Gpt-5-mini is the tested default for OpenAI.
+The existing Gemini adapter is preserved but has not been verified against a live Gemini account.
 
-`src/providers.ts` holds one function per vendor. Adding another means adding a
-case there; the server, the extension and the draft contract are all unaware of
-which one is in use.
+## Verified checkpoint
 
-This uses plain `fetch` rather than a vendor SDK, and has no dependencies of its
-own: it imports the shared generation helpers directly from `lib/`. FEATURE_SPEC
-names the official `openai` SDK — swapping this one file for it changes nothing
-elsewhere.
-
-`PROVIDER_API_KEY` is read first, falling back to `OPENAI_API_KEY`.
+PR #13 combines extension/relay typechecks, production build, all 116 tests, and 14 affected tests after the final recovery-message refinement.
+A real installed-extension request on selected pages 2 and 3 of the authored PDF returned eight ideas and eight connections in 24,973 ms.
+The actual model was gpt-5-mini-2025-08-07 with 757 input tokens and 1,552 output tokens.
+Evidence navigation opened the correct PDF page and the saved baseline stayed unchanged.
+Startup through npm --prefix relay start and authenticated health also passed.
+This is a real provider check on authored content, not acceptance on an independent publication or completion of saved review decisions.

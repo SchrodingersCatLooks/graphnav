@@ -2,16 +2,19 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #12](https://github.com/SchrodingersCatLooks/graphnav/pull/12).
+**Current state:** the on-page Drive/Docs editor, local PDF reader, saved graphs and selected-content AI preview/client are merged through [PR #13](https://github.com/SchrodingersCatLooks/graphnav/pull/13).
 Choose existing source items without retyping, build a structural baseline, edit personal nodes/connections, arrange and navigate the map, or read a local PDF beside its graph.
-AI connection settings and draft/evidence display work against the local test relay; a real model and persistent review decisions are not yet verified.
+The local OpenAI relay now generates real suggestions with supporting text and source navigation inside the PDF reader.
+Persistent accept/edit/reject decisions remain the next G3 integration step.
+See [relay setup](./relay/README.md) for the private configuration and startup command.
 
-**Still open:** actual provider integration and accepted/edited/rejected AI persistence, source-authoring controls, group editing, floating placement and final demo acceptance.
+**Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, floating placement and final demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Verification:** Node 22.23.2 / npm 10.9.9 typecheck, production build and all 102 tests pass.
+**Verification:** Node 22.23.2 / npm 10.9.9 typecheck, production build and all 116 tests passed; the final recovery-message refinement passed 14 affected tests.
 Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
-No live generated graph or fresh Google-account acceptance is implied by those tests.
+Separately, one actual OpenAI request returned eight ideas/eight connections from two authored PDF pages, with exact evidence navigation and unchanged saved graph.
+No fresh Google-account acceptance or full saved-review loop is implied.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
