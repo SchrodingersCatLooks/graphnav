@@ -102,6 +102,10 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
+Rajvansh has claimed UX2-A on rajvansh-ui for the requested saved-map opening view with Edit graph, New graph and Generate with AI.
+Saved-map navigation becomes the default, with editing controls revealed deliberately and AI starting from an explicit content selection.
+This uses existing graph/generation contracts and does not claim G3 review persistence complete.
+
 Rajvansh's UX1 runtime fixes are merged in [PR #16](https://github.com/SchrodingersCatLooks/graphnav/pull/16) (c7de5ab, runtime 63de3fc).
 The five user checks in REVIEW_WALKTHROUGH now match the compact interface; user feedback on the actual Google screens remains open.
 Rajvansh next addresses any concrete usability regression and continues G3-A review controls.
