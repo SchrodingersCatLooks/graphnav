@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 import { browser } from 'wxt/browser';
+import { locatorSchema } from './graph/types';
 
 const id = z.string().min(1).max(300);
 
@@ -23,6 +24,7 @@ export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('IMPORT_DOC_TABS'), documentId: id }).strict(),
   z.object({ type: z.literal('LIST_GRAPHS') }).strict(),
   z.object({ type: z.literal('READ_GRAPH'), graphId: id }).strict(),
+  z.object({ type: z.literal('NAVIGATE'), locator: locatorSchema }).strict(),
 ]);
 
 /** Content scripts are declared for these origins only. */

@@ -6,6 +6,7 @@ import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder, type ScopedImport } from '../lib/google/import';
 import { GraphRepository } from '../lib/storage/repository';
+import { destinationUrl } from '../lib/graph/types';
 import { isTrustedSender, requestSchema } from '../lib/requests';
 import type { ImportResult, Request, Response } from '../lib/messages';
 
@@ -18,7 +19,7 @@ const repository = new GraphRepository();
 async function storeImport(scoped: ScopedImport, accountKey: string): Promise<ImportResult> {
   const graphs = await repository.listGraphs();
   const existing = graphs.find((graph) => graph.sourceBindings.some((b) => b.key === scoped.scopeKey));
-  const graph = existing ?? (await repository.createGraph(scoped.title));
+  const graph = existing ?? (await repository.createGraph(scoped.title, crypto.randomUUID(), 'import'));
 
   await repository.refreshScope(graph.id, graph.contentRevision, {
     scopeKey: scoped.scopeKey,
@@ -69,6 +70,15 @@ async function handle(raw: unknown): Promise<Response> {
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':
       return { ok: true, data: await repository.readGraph(request.graphId) };
+    case 'NAVIGATE': {
+      // The locator is the node's stored destination, so navigation does not
+      // depend on layout or on re-reading the source.
+      const url = destinationUrl(request.locator);
+      if (!url) return { ok: false, error: 'This destination opens in the PDF reader, which is M4.' };
+      // Content scripts cannot open tabs themselves, so the worker does it.
+      await browser.tabs.create({ url, active: true });
+      return { ok: true, data: { url } };
+    }
   }
 }
 

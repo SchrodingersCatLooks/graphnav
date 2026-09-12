@@ -92,8 +92,10 @@ export class GraphRepository {
     });
   }
   async listGraphs(): Promise<Graph[]> { return this.db.graphs.orderBy('updatedAt').reverse().toArray(); }
-  async createGraph(title: string, id: string = crypto.randomUUID()): Promise<Graph> {
-    const graph = graphSchema.parse({ id, title, createdVia: 'manual', accountScope: null, contentRevision: 0, view: { x: 0, y: 0, zoom: 1 }, sourceBindings: [], ...stamp() });
+  // createdVia is optional and defaults to 'manual' so existing callers are
+  // unchanged. An imported map must not claim to be a personal creation.
+  async createGraph(title: string, id: string = crypto.randomUUID(), createdVia: Graph['createdVia'] = 'manual'): Promise<Graph> {
+    const graph = graphSchema.parse({ id, title, createdVia, accountScope: null, contentRevision: 0, view: { x: 0, y: 0, zoom: 1 }, sourceBindings: [], ...stamp() });
     await this.db.graphs.add(graph);
     return graph;
   }
