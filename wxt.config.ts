@@ -17,7 +17,12 @@ export default defineConfig({
     // Storage keeps transient panel state in the extension, never on Google pages.
     permissions: ['identity', 'storage'],
     // Drive API is on www.googleapis.com; the Docs API is on docs.googleapis.com.
-    host_permissions: ['https://www.googleapis.com/*', 'https://docs.googleapis.com/*'],
+    // The loopback entry reaches the local AI relay, which holds the model key.
+    host_permissions: [
+      'https://www.googleapis.com/*',
+      'https://docs.googleapis.com/*',
+      'http://127.0.0.1/*',
+    ],
     oauth2: {
       client_id: '138105039840-5394rj79mfeq3jtipsg9g8fi5bneub02.apps.googleusercontent.com',
       scopes: [
