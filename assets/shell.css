@@ -148,3 +148,28 @@
 .panel-auth .auth-refresh, .panel-auth .connect-button { padding: 4px 8px; font-size: 11px; }
 .editor-panel .panel-footer { padding: 6px 12px; }
 .home-map-note { padding: 3px 12px; }
+
+.graphnav-shell [hidden] { display: none !important; }
+.launcher-panel .panel-header { min-height: 64px; padding: 14px 18px; display: grid; grid-template-columns: 72px minmax(0, 1fr) 32px; gap: 8px; }
+.launcher-brand { display: flex; align-items: center; gap: 12px; grid-column: 1 / 3; }
+.launcher-panel .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; }
+.launcher-panel .panel-header h1 { font-size: 18px; line-height: 1.3; }
+.launcher-panel .panel-step-title { text-align: center; }
+.panel-step-title { min-width: 0; }
+.graphnav-shell .panel-back { display: flex; align-items: center; gap: 6px; padding: 6px 0; border: 0; background: transparent; color: #24564c; font-size: 13px; }
+.panel-back span { font-size: 21px; line-height: 1; }
+.panel-back:disabled { opacity: .45; cursor: default; }
+.launcher-home { overflow: auto; }
+.graphnav-shell .manage-connection { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 20px; background: white; color: #243f3b; border: 0; border-bottom: 1px solid #e5ece8; text-align: left; font-size: 14px; }
+.manage-connection > span:nth-child(2) { flex: 1; }
+.manage-connection > span:last-child { font-size: 24px; line-height: 1; }
+.manage-connection:disabled { opacity: .5; cursor: default; }
+.graphnav-shell .manage-connection:hover:not(:disabled) { background: #f4f8f6; }
+.google-letter { font-size: 23px; line-height: 1; font-weight: 750; color: #4285f4; }
+.launcher-choices { display: grid; gap: 12px; padding: 14px; }
+.launcher-account { padding: 18px; border: 0; overflow: auto; background: white; }
+.launcher-account .google-connection { gap: 14px; }
+.launcher-account .connection-notice { font-size: 13px; }
+.launcher-account .account-settings { border: 0; padding: 0; }
+.launcher-account .account-settings p { font-size: 13px; }
+.launcher-account .connect-button, .launcher-account .auth-refresh { font-size: 12px; padding: 8px 10px; }

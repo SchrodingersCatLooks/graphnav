@@ -1,15 +1,22 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { PageContext } from '../lib/page-context';
+import { EntryChoice, type EntryScreen } from './GraphEntry';
 import { GraphMark } from './GraphMark';
 import { GoogleConnection } from './GoogleConnection';
 import { GraphEditor } from './editor/GraphEditor';
-import { sendToBackground, type PanelPreferences } from '../lib/messages';
+import { sendToBackground, type PanelPreferences, type PanelState } from '../lib/messages';
 import { usePanelPlacement } from './usePanelPlacement';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
+  const [screen, setScreen] = useState<EntryScreen>('home');
+  const compact = screen !== 'graph';
+  const backButton = useRef<HTMLButtonElement>(null);
+  const title = screen === 'new' ? 'New Graph' : screen === 'manual' ? 'Manual graph' : screen === 'automated' ? 'Automated graph' : screen === 'existing' ? 'Use Existing Graph' : screen === 'account' ? 'Google connection' : 'GraphNav';
   const [authEpoch, setAuthEpoch] = useState(0);
+  // Resolve the account before loading maps so initialization cannot interrupt a menu click.
+  const [authReady, setAuthReady] = useState(false);
   const lastConnection = useRef(false);
   function connectionChanged(value: boolean) {
     if (lastConnection.current !== value) {
@@ -17,7 +24,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
       setAuthEpoch((epoch) => epoch + 1);
     }
   }
-  const [editorBusy, setEditorBusy] = useState(false);
+  const [editorBusy, setEditorBusy] = useState(true);
   const [preferences, setPreferences] = useState<PanelPreferences>({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' });
   const placement = usePanelPlacement(context.kind, preferences);
   const [preferenceError, setPreferenceError] = useState('');
@@ -29,8 +36,8 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   const interacted = useRef(false);
   useEffect(() => {
     let alive = true;
-    void sendToBackground<{ open: boolean }>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }).then((result) => {
-      if (alive && !interacted.current && result.ok && result.data.open) { setVisited(true); setOpen(true); }
+    void sendToBackground<PanelState>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }).then((result) => {
+      if (alive && !interacted.current && result.ok && result.data.open) { setVisited(true); setScreen(result.data.graphId ? 'graph' : 'home'); setOpen(true); }
     }).catch(() => undefined);
     void sendToBackground<PanelPreferences>({ type: 'PANEL_PREFERENCES', kind: context.kind }).then((result) => { if (alive && !preferenceChanged.current && result.ok) setPreferences(result.data); }).catch(() => undefined);
     return () => { alive = false; };
@@ -72,8 +79,17 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   }, []);
 
   useEffect(() => {
-    if (open) closeButton.current?.focus();
-  }, [open]);
+    if (!open) return;
+    if (screen === 'manual' || screen === 'automated') surface.current?.querySelector<HTMLInputElement>('[aria-label="New map name"]')?.focus();
+    else if (screen === 'home') closeButton.current?.focus();
+    else backButton.current?.focus();
+  }, [open, screen]);
+
+  function back() {
+    if (editorBusy) return;
+    placement.cancelGesture();
+    setScreen(screen === 'manual' || screen === 'automated' ? 'new' : 'home');
+  }
 
   function close() {
     placement.cancelGesture();
@@ -89,8 +105,8 @@ export function ExtensionShell({ context }: { context: PageContext }) {
         <section
           ref={placement.panel}
           id="graphnav-panel"
-          className={`graphnav-panel editor-panel ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
-          style={{ ...placement.style, display: open ? undefined : 'none' }}
+          className={`graphnav-panel editor-panel ${compact ? 'launcher-panel' : ''} ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
+          style={{ ...(compact ? { width: 'min(400px, calc(100% - 32px))', left: context.kind === 'docs' ? 16 : 'auto', right: context.kind === 'docs' ? 'auto' : 16, top: 'min(80px, 10%)', bottom: 'auto', height: 'auto', maxHeight: 'calc(100% - 96px)' } : placement.style), display: open ? undefined : 'none' }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="graphnav-title"
@@ -103,28 +119,27 @@ export function ExtensionShell({ context }: { context: PageContext }) {
           }}
         >
           <header className="panel-header flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="brand-mark flex items-center justify-center"><GraphMark /></span>
-              <div>
-                <h1 id="graphnav-title">GraphNav</h1>
-                <p className="source-label">{context.label}</p>
-              </div>
-            </div>
+            {screen === 'home' ? <div className="launcher-brand"><span className="brand-mark"><GraphMark /></span><h1 id="graphnav-title">GraphNav</h1></div> : <>
+              <button ref={backButton} className="panel-back" aria-label="Back" disabled={editorBusy} onClick={back}><span aria-hidden="true">←</span> Back</button>
+              <div className="panel-step-title"><h1 id="graphnav-title">{title}</h1>{!compact && <p className="source-label">{context.label}</p>}</div>
+            </>}
             <div className="panel-header-actions">
-            {placement.floating && <button type="button" className="panel-move" aria-label="Move graph panel" aria-describedby="panel-placement-help" title="Drag to move; arrow keys move, Shift moves faster" {...placement.controls('move')}><span aria-hidden="true">⠿</span> Move</button>}
-            <button ref={closeButton} type="button" className="close-button" onClick={close} aria-label="Close graph panel">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
+              {!compact && placement.floating && <button type="button" className="panel-move" aria-label="Move graph panel" aria-describedby="panel-placement-help" title="Drag to move; arrow keys move, Shift moves faster" {...placement.controls('move')}><span aria-hidden="true">⠿</span> Move</button>}
+              <button ref={closeButton} type="button" className="close-button" onClick={close} aria-label="Close graph panel"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg></button>
             </div>
           </header>
 
-          <div className="panel-auth"><GoogleConnection onConnected={connectionChanged} disabled={editorBusy} /></div>
-          {context.label === 'Drive Home' && <p className="home-map-note">Home shows your My Drive map. Open a folder for its own map.</p>}
-          <GraphEditor panelOpen={open} layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} onBusyChange={setEditorBusy} />
+          <div className="launcher-home" hidden={screen !== 'home'}>
+            <button className="manage-connection" disabled={editorBusy} onClick={() => setScreen('account')}><span className="google-letter" aria-hidden="true">G</span><span>Manage Google connection</span><span aria-hidden="true">›</span></button>
+            <div className="launcher-choices">
+              <EntryChoice title="New Graph" description="Start a new map." icon="graph" accent disabled={editorBusy} onClick={() => setScreen('new')} />
+              <EntryChoice title="Use Existing Graph" description="Open a saved map." icon="folder" disabled={editorBusy} onClick={() => setScreen('existing')} />
+            </div>
+          </div>
+          <div className="panel-auth launcher-account" hidden={screen !== 'account'}><GoogleConnection expanded onConnected={connectionChanged} onInitialCheckComplete={() => setAuthReady(true)} disabled={editorBusy} /></div>
+          {authReady && <GraphEditor panelOpen={open} entryScreen={screen} onEntryScreenChange={setScreen} layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={authEpoch} onBusyChange={setEditorBusy} />}
 
-          <footer className="panel-footer flex items-center justify-between gap-3">
+          <footer hidden={compact} className="panel-footer flex items-center justify-between gap-3">
             <span>{placement.floating ? 'Floating overlay' : 'Fixed overlay'}</span>
             <details className="panel-settings"><summary>Panel settings</summary><div className="panel-settings-controls">
             {!placement.floating && <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>}
@@ -147,7 +162,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
         aria-expanded={open}
         aria-controls={open ? 'graphnav-panel' : undefined}
         aria-haspopup="dialog"
-        onClick={() => { interacted.current = true; if (open) close(); else { setVisited(true); setOpen(true); void sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, open: true }).catch(() => undefined); } }}
+        onClick={() => { interacted.current = true; if (open) close(); else { setVisited(true); if (!editorBusy) setScreen('home'); setOpen(true); void sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, open: true }).catch(() => undefined); } }}
       >
         <GraphMark size={22} />
         Graph

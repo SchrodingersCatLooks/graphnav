@@ -22,7 +22,7 @@ async function ready(page: Page, pageNumber = 1) {
   await expect(page.getByRole('alert')).toHaveCount(0);
 }
 async function baseline(page: Page) {
-  if (await page.getByRole('button', { name: 'Manually', exact: true }).isVisible()) await blankMap(page, 'demo-paper.pdf');
+  if (await page.getByRole('button', { name: 'Manual', exact: true }).isVisible()) await blankMap(page, 'demo-paper.pdf');
   await tools(page, 'Sources');
   await page.getByRole('button', { name: 'Build baseline (5)', exact: true }).click();
   await expect(page.locator('.react-flow__node')).toHaveCount(5);

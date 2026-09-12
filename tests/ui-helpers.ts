@@ -29,8 +29,8 @@ export async function panelSettings(page: Page) {
   if (await details.getAttribute('open') === null) await details.locator('summary').click();
 }
 export async function blankMap(page: Page, title: string) {
-  await page.getByRole('button', { name: 'New graph', exact: true }).click();
-  await page.getByRole('button', { name: 'Manually', exact: true }).click();
+  await page.getByRole('button', { name: 'New Graph', exact: true }).click();
+  await page.getByRole('button', { name: 'Manual', exact: true }).click();
   await page.getByLabel('New map name', { exact: true }).fill(title);
   await page.getByRole('button', { name: 'Create map', exact: true }).click();
   await expect(page.locator('.save-state')).toHaveText('Saved locally');
@@ -42,8 +42,8 @@ export async function editGraph(page: Page) {
   if (await button.isVisible()) await button.click();
 }
 export async function newAiGraph(page: Page, title = 'AI exploration') {
-  await page.getByRole('button', { name: 'New graph', exact: true }).click();
-  await page.getByRole('button', { name: 'With AI', exact: true }).click();
+  await page.getByRole('button', { name: 'New Graph', exact: true }).click();
+  await page.getByRole('button', { name: 'Automated', exact: true }).click();
   await page.getByLabel('New map name', { exact: true }).fill(title);
   await page.getByRole('button', { name: 'Continue with AI', exact: true }).click();
   await expect(page.locator('.save-state')).toHaveText('Saved locally');
@@ -58,4 +58,22 @@ export async function currentMapId(page: Page) {
   const id = await page.getByLabel('Open a map', { exact: true }).inputValue();
   await closeTools(page);
   return id;
+}
+
+export async function openSavedGraph(page: Page) {
+  const useExisting = page.getByRole('button', { name: 'Use Existing Graph', exact: true });
+  if (!(await useExisting.isVisible())) return true;
+  await useExisting.click();
+  await expect(page.getByText('Loading saved graphs…', { exact: true })).toBeHidden();
+  const choices = page.locator('.saved-graph-choices .graph-entry-choice');
+  if (!await choices.count()) return false;
+  const remembered = page.locator('.saved-graph-choices .graph-entry-choice.accent');
+  await (await remembered.count() ? remembered.first() : choices.first()).click();
+  await expect(page.locator('.save-state')).toHaveText('Saved locally');
+  return true;
+}
+export async function manageAccount(page: Page) {
+  const manage = page.getByRole('button', { name: 'Manage Google connection', exact: true });
+  if (!await manage.isVisible()) await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await manage.click();
 }
