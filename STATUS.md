@@ -1,6 +1,6 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #15 merged as `e5dcb88`.
+Last shared update: 2026-09-12, reviewing main c6d700f for the user's product check-in.
 
 ## Working on main
 
@@ -10,7 +10,7 @@ Last shared update: 2026-09-12, after runtime PR #15 merged as `e5dcb88`.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
 [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
-The current main runtime matches checkpoint bcfd0d7.
+The current main runtime includes bcfd0d7's UI and Eddy's ddf566d proposal-store backend, merged as c6d700f.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -45,8 +45,15 @@ Eddy's application work through 179d98f is included through normal merges.
   The merged extension client pairs with a local relay and displays validated drafts/evidence.
   One real OpenAI request returned eight ideas and eight connections from two explicitly selected authored PDF pages, with exact evidence navigation and unchanged saved graph.
 - Eddy's authored six-page demo paper and generation/scale tests are now included on main.
+- Eddy's additive proposal-decision table and typed acceptance/recall methods are now merged.
+  Their storage tests pass, but no browser control calls them yet; generated suggestions remain unsaved previews in the current UI.
+  Proposal decisions are not yet included by the editor's actual export/import methods despite the newer backup schema accepting them.
 
 ## Verification and limits
+
+For c6d700f, extension/relay typechecks, production build and 34 focused tests pass.
+The focused set covers proposals, storage, requests, installed on-page workflows and the PDF reader; a new full-suite or real-account pass is not claimed.
+REVIEW_WALKTHROUGH describes the requested user check-in and expected current behavior.
 
 Node 22.23.2 / npm 10.9.9: extension/relay typechecks, production build and all 118 combined tests passed for the PR #14 integration.
 Floating controls passed installed pointer/keyboard, cancellation, restart, dock/reset, narrow-window/zoom, top-layer and host-editing checks.
@@ -83,7 +90,9 @@ Eddy should bring main into partner-data and read GENERATION_HANDOFF before edit
 His relay work through a8325dc is merged and reconciled with the extension client.
 Eddy owns G3-B proposal persistence, decisions, additive migration and atomic acceptance/backup methods.
 Rajvansh owns the G3-A review UI; X2-A's manual project-map selection/navigation is now merged.
-G3-A awaits Eddy's typed proposal-store/decision handoff, which is not present at the latest fetched partner-data checkpoint 91572ba.
+Eddy's typed proposal-store/decision handoff is now present in PROPOSAL_STORE_HANDOFF at ddf566d and on main c6d700f.
+Rajvansh can review and connect G3-A after the user's current usability check-in.
+The remaining G3-B review includes decision backup export/import; the editor still emits version 1 snapshots without decisions.
 Combined multi-source AI input, group membership controls and source-authoring/heading actions remain open.
 Persistent accepted/edited/rejected AI decisions remain open; no complete V2 acceptance is claimed.
 
@@ -92,7 +101,7 @@ Its private ignored .env.relay.local file is not committed or bundled; Chrome st
 The relay defaults to one active request, five starts per minute and twenty starts per launch.
 No account-wide monetary budget was configured.
 The exposed chat credential should be rotated before final use; do not put replacement keys in chat, tracked GitHub files, extension storage or the browser bundle.
-Startup and authenticated health were verified; the relay process was stopped after that check.
+Startup and authenticated health were verified; the relay was restarted for this check-in and is ready locally on port 8787.
 Use relay/README.md to start it for the demo, then pair from the extension settings.
 At the user's request, the current key is also stored as the encrypted repository Actions secret OPENAI_API_KEY and its presence was verified.
 GitHub's secret UI does not reveal its value, and cloning the repository does not provide a local relay key to Eddy.
@@ -114,6 +123,10 @@ The assistants must fetch/read current main and the published handoffs; a commit
 Google files remain read only in the current UI; changing a graph never renames or moves source files.
 
 ## Completed action log
+
+- 2026-09-12: Pulled c6d700f, rebuilt it and passed both typechecks plus 34 focused tests for the user's product review.
+  Started the local relay and verified authenticated health without making a new paid request.
+  Published REVIEW_WALKTHROUGH, recorded Eddy's proposal-store handoff and the remaining decision-backup integration, and kept full-MVP acceptance open.
 
 - 2026-09-12: Merged X2-A manual workflow PR #15 as e5dcb88 and pulled main into rajvansh-ui again.
   A Doc-tab/PDF-section project map, personal connection, both navigation directions, independent refresh and restart passed installed fixture testing.

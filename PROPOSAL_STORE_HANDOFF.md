@@ -3,8 +3,9 @@
 Eddy's side of G3-B is implemented. GENERATION_HANDOFF asked for this contract
 to be published before Rajvansh wires the accept/edit/reject controls.
 
-Status: implemented and covered by tests on `partner-data`. **Never exercised
-through the UI**, because no controls call it yet.
+Status: backend merged on main c6d700f from partner-data ddf566d.
+Rajvansh's 34 focused integration checks pass, including the 10 proposal tests.
+**Never exercised through the UI**, because no controls call it yet.
 
 ## What changed in storage
 
@@ -22,8 +23,9 @@ existing suite passes against version 2.
 and `imported`. An accepted suggestion is none of the other two, and conflating
 it with `manual` would erase the fact that a model proposed it.
 
-Backups are now **version 2** and carry decisions. **Version 1 backups still
-import** — `backupSchema` accepts either, and `decisions` is optional.
+The backup schema accepts versions 1 and 2 with optional decisions.
+The actual GraphRepository.exportGraph method still emits version 1 without decisions, and importGraph does not restore decisions.
+Integrating and testing that round trip remains G3-B work; decision backups are not implemented end to end yet.
 
 ## The rule that shapes everything
 

@@ -7,6 +7,8 @@ Choose existing source items without retyping, build a structural baseline, edit
 The local OpenAI relay now generates real suggestions with supporting text and source navigation inside the PDF reader.
 Persistent accept/edit/reject decisions remain the next G3 integration step.
 See [relay setup](./relay/README.md) for the private configuration and startup command.
+For the current product check-in, follow [the browser review walkthrough](./REVIEW_WALKTHROUGH.md).
+Eddy's proposal-store backend is now on main at c6d700f; the UI still displays unsaved AI drafts until G3-A is connected.
 
 PR #14 adds movable/resizable floating panels, saved placement, docking and reset.
 PR #15 adds a visible project-map chooser, Add a PDF to this map, and map continuity when navigating between Docs and PDFs.
