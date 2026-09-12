@@ -122,6 +122,10 @@ No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
+Rajvansh claims UX4-A for the user's unified Add and direct graph editing mockups.
+The requested behavior, additive overlay/layout fields and shared-file boundary are in UX4_HANDOFF.
+This claim does not describe the new runtime as merged or verified yet.
+
 UX3-A is merged in [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) and remains REVIEW for user feedback on the actual Google screens.
 Reload GraphNav on chrome://extensions and refresh open Drive/Docs tabs before following REVIEW_WALKTHROUGH.
 The previously reported stale-content-script problem makes both steps necessary.
