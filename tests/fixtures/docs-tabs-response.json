@@ -1,0 +1,130 @@
+{
+  "_fixture": "Labeled synthetic Google Docs documents.get response with includeTabsContent=true. Not real user content. Shapes only the fields G1-B extraction reads: tabProperties, documentTab.body.content, paragraph elements/style, tables, and text run links.",
+  "title": "GraphNav demo paper",
+  "revisionId": "ALm37BX-fixture-revision-001",
+  "tabs": [
+    {
+      "tabProperties": { "tabId": "t.0", "title": "Overview" },
+      "documentTab": {
+        "body": {
+          "content": [
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "HEADING_1" },
+                "elements": [{ "textRun": { "content": "Background\n" } }]
+              }
+            },
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                "elements": [
+                  { "textRun": { "content": "Wayfinding failures cluster at a small number of junctions. See " } },
+                  {
+                    "textRun": {
+                      "content": "the prior study",
+                      "textStyle": { "link": { "url": "https://example.org/prior-study" } }
+                    }
+                  },
+                  { "textRun": { "content": " for the original framing.\n" } }
+                ]
+              }
+            },
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "HEADING_2" },
+                "elements": [{ "textRun": { "content": "Research questions\n" } }]
+              }
+            },
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                "elements": [{ "textRun": { "content": "How long until a first correct turn?\n" } }]
+              }
+            },
+            {
+              "table": {
+                "tableRows": [
+                  {
+                    "tableCells": [
+                      {
+                        "content": [
+                          {
+                            "paragraph": {
+                              "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                              "elements": [{ "textRun": { "content": "Junction J3\n" } }]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "content": [
+                          {
+                            "paragraph": {
+                              "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                              "elements": [{ "textRun": { "content": "19 backtracks recorded\n" } }]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "childTabs": [
+        {
+          "tabProperties": { "tabId": "t.nested", "title": "Scope and Definitions" },
+          "documentTab": {
+            "body": {
+              "content": [
+                {
+                  "paragraph": {
+                    "paragraphStyle": { "namedStyleType": "HEADING_1" },
+                    "elements": [{ "textRun": { "content": "Terms\n" } }]
+                  }
+                },
+                {
+                  "paragraph": {
+                    "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                    "elements": [{ "textRun": { "content": "A junction offers two or more onward paths.\n" } }]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "tabProperties": { "tabId": "t.methods", "title": "Methods" },
+      "documentTab": {
+        "body": {
+          "content": [
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "HEADING_1" },
+                "elements": [{ "textRun": { "content": "Participants\n" } }]
+              }
+            },
+            {
+              "paragraph": {
+                "paragraphStyle": { "namedStyleType": "NORMAL_TEXT" },
+                "elements": [
+                  {
+                    "textRun": {
+                      "content": "Twenty-four participants completed four timed trials each.\n",
+                      "textStyle": { "link": { "url": "http://insecure.example.org/ignored" } }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
