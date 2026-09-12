@@ -1,39 +1,46 @@
 # Instructions for AI coding assistants
 
-Follow the user's current explicit task. Use this file to preserve the agreed product and coordinate with the other teammate.
+Follow the user's current explicit task. Keep both teammates working toward the same shared milestone. Do not expand product scope without a user decision.
 
 ## Before editing
 
-1. Read `README.md` and the relevant row of `TASK_LIST.md`.
-2. Inspect the current branch, git status, and existing implementation. Preserve unrelated and uncommitted teammate work.
-3. Work on one bounded milestone with a visible completion check. Coordinate ownership before changing shared data types or configuration used by another active branch.
+1. Read README, IDEA, BUILD_PLAN, STATUS, and the relevant TASK_LIST row. These are linked from README.
+2. Inspect branch, git status, and existing implementation. Preserve unrelated and uncommitted teammate work.
+3. Identify the human owner and task ID. Claim the row, record branch and next action, and make the claim visible before overlapping work begins.
+4. Coordinate shared types, configuration, dependencies, and ownership before editing files another active task uses. Work on one bounded task with a visible completion check.
 
 ## Product boundaries
 
-- Build one Chrome extension with a shared graph component and distinct Drive, Docs, and PDF adapters.
-- Each source has an independent graph. Do not silently replace this with a universal cross-document knowledge graph.
-- Keep normal Google editing available. Use a reversible graph overlay/panel in Drive/Docs and an extension-owned reader for PDFs.
-- Read Drive/Docs through authorized APIs; use PDF.js for actual PDF data. Do not scrape the Google editor for document content.
-- Store stable IDs, source identity, and navigation destinations separately from node positions. Include the account context when caching Google sources.
-- Persist personal positions, labels, and connections separately from generated source structure so refresh preserves them.
-- A visual drag changes layout. A source mutation requires an explicit user action, suitable API authorization, and editing permission.
-- Mark inferred relationships as suggestions and ground them in source passages. Containment and citations must not be mislabeled as semantic support.
-- Support text-based PDFs first. Embedded outlines are optional; use page-aware heading fallback and allow corrections. Do not claim scanned-PDF/OCR support until implemented.
+- Build one Chrome extension with a shared graph component and distinct Drive, Docs, and PDF adapters. Each source has an independent graph; cross-document discovery is optional.
+- Preserve normal Google editing. Use a reversible graph overlay/panel for Drive/Docs and an extension-owned reader for PDFs.
+- Read Google sources through authorized APIs and PDFs through PDF.js. Use page context to identify the source; do not scrape Google editor text or use screenshots as the content model.
+- Keep stable IDs, account context, and navigation targets separate from node positions. Label personal concept nodes without source destinations.
+- Store generated structure separately from personal layouts, notes, and connections. Refresh preserves edits for surviving IDs and marks missing targets.
+- A visual drag changes layout. Source writes require an explicit action, suitable authorization, and actual editing permission. Build mode does not grant permissions.
+- Distinguish source containment, explicit references, and personal relationships. Inferred links, if later added, need supporting excerpts and a suggestion label.
+- Support text-based PDFs first. Use bookmarks or page-aware heading anchors with correction. Do not claim automatic argument extraction or OCR without implementation and verification.
 
 ## Implementation and validation
 
-- Use the stack agreed in the README. Add dependencies only when the current milestone needs them; commit the lockfile.
-- Scaffold into a temporary sibling folder if an initializer would overwrite existing project files, then merge intentionally.
-- Verify current official API documentation when an integration detail is uncertain.
-- Use synthetic fixtures or authorized demo content. Never commit tokens, private keys, real user documents, or unrelated production settings.
-- Inspect actual package scripts before running checks. Once configured, run type checking and a production build for substantive code changes, plus a focused browser check of the changed behavior.
-- Test Google integration in the installed extension. For persistence changes, verify reload and refresh preserve a user's edits. For source writes, verify both read-only behavior and an authorized write using demo content.
-- Do not report tests, API connections, or features as working without running the relevant check. Record concrete blockers and any unverified steps.
+- Use the agreed stack and only add dependencies needed for the task. Commit the lockfile. Scaffold in a temporary sibling folder if initialization would overwrite these documents.
+- Verify current official API details when uncertain. Do not assume a narrow Google file grant grants access to an entire folder tree.
+- Use authorized demo content or clearly labeled fixtures. Never commit tokens, private keys, personal source files, or unrelated production settings. Keep Google tokens out of page contexts.
+- Inspect actual package scripts. For substantive code changes, run configured type checks and a production build, plus focused checks for the behavior changed. Do not add tests that merely repeat implementation details.
+- Test Google integration in the installed extension. Verify exact destinations. For persistence, check reopen and Refresh; for source writes, check both read-only behavior and an authorized demo write.
+- Never report checks, features, or API connections as working without evidence. If a check requires the teammate's browser, mark REVIEW or BLOCKED and give the exact click-through they must perform.
+
+## Keep the team context current
+
+- TASK_LIST is the only task-status list. Update the owner's task and handoff row when claiming, blocking, handing over for review, or finishing. Include checks and a PR link when available.
+- STATUS describes merged shared progress. The person merging a milestone updates what works, remaining blockers, next actions for both people, and a short dated action entry.
+- IDEA changes only when the product decision changes. BUILD_PLAN changes when the sequence, ownership, or architecture changes. Record material decisions in STATUS without copying old conversations.
+- README is the entrypoint and home for actual run commands once they exist. CLAUDE points to these same instructions; do not create competing rule sets.
+- These files are maintained during work; they are not an autonomous background tracking system. Do not fabricate completed tasks or silently mark proposed features DONE.
 
 ## Team workflow
 
-- Person A owns `graph-and-papers`; Person B owns `google-integration`. Branch names can be adjusted by the team.
-- Keep commits small and merge working slices through a short PR. Do not reset, force-push, or overwrite a teammate's work.
-- Use the PR template for what changed, why, and how it was checked. Avoid duplicated logs and mandatory long-form review paperwork.
-- Update the relevant task status only when work changes. Leave a concise handoff: what works, files touched, checks run, blockers, and the next task.
-- Finish the requested milestone before expanding into optional AI, behavioral tracking, additional platforms, or deployment.
+- Rajvansh owns UI; partner owns data/actions within the same milestones. Suggested branches are `rajvansh-ui` and `partner-data`. Coordinate when rebalancing tasks.
+- Keep commits small; push and merge working slices through a short PR. Do not reset, force-push, or overwrite teammate work.
+- Bring current main into each working branch at shared checkpoints. Review and test each other's slice before proceeding.
+- Finish with a concise handoff: task ID, what works, files touched, checks actually run, blockers, and next shared checkpoint.
+- Preserve the last 3 hours for deck, demo recording, and rehearsal. Follow BUILD_PLAN's cut order when time runs short.
