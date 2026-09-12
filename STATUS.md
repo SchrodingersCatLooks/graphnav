@@ -1,18 +1,23 @@
 # Current project status
 
-Last shared update: 2026-09-12, after runtime PR #6 merged as `4cfe83d`.
+Last shared update: 2026-09-12, after runtime PR #9 merged as `487b315`.
 
 ## Working on main
 
 [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) merged the saved editor, Google integration, and on-page Drive/Docs graphs.
-Its runtime matches the tested `5b03671` checkpoint.
+[PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) adds graph browsing and saved panel settings.
+The current main runtime matches tested checkpoint `c209a87`.
 Eddy's application work through `4738cb2` is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
 - Browse nested Drive folders into the current map, add personal ideas and labeled connections, edit notes/labels, and attach an existing source to a personal node.
 - The shared React Flow editor runs on the Google page and in the optional My maps workspace.
-- ELK arranges nodes; manual drags become saved pins.
+- ELK arranges nodes in bounded batches and wraps wide sibling layers; manual drags become saved pins.
   Imported containment and personal connections have different line styles.
+- Search, consistent canvas/list pages, cycle-safe branch collapse, and compact focus previews make larger maps accessible.
+  Focus previews preserve saved positions and do not allow dragging; use Show whole map to arrange.
+- Compact, standard, and wide panel presets plus left/right docking persist in extension-owned storage.
+- Check destinations uses Eddy's checker and shows unavailable sources while retaining personal notes.
 - The Docs panel sits on the left, navigates exact document tabs in the same browser tab, highlights the current tab, and restores the panel after navigation.
 - The extension background owns Dexie storage and validated edit commands.
   Selected-only refresh retains the selected membership and personal edits; baselines and expanded folders have separate scope bindings.
@@ -23,7 +28,7 @@ Eddy's application work through `4738cb2` is included through normal merges.
 
 ## Verification and limits
 
-Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 48 tests passed for `5b03671`.
+Node 22.23.2 / npm 10.9.9: typecheck, production build, and all 52 tests passed for `c209a87`.
 Installed Chromium tests use isolated profiles and synthetic Google API responses.
 They cover the on-page select/edit/refresh/restart loop, exact nested-tab navigation, popover/zoom regressions, ordinary host editing, workspace backups, and storage isolation.
 Storage tests cover atomic rollback, stale revisions, account mismatch, attachment identity, and pinned layout preservation.
@@ -35,16 +40,23 @@ Repeated partner-laptop checks are not a routine merge gate.
 
 The graph stores at most 500 nodes and 2,000 relationships; the current canvas shows at most 50 matching nodes.
 Source reads follow at most five Drive pages and report a partial result rather than deleting unseen items.
-Focus/collapse controls, broader performance validation, panel width/docking preferences, group membership controls, PDF reading, source authoring, and AI generation/review remain open.
+The synthetic 500-node document imported and arranged in 868 ms in one measured run, with 50 source/idea nodes displayed per page.
+This includes mocked API responses and is not a real Google latency or production-scale benchmark.
+Group junctions are additional rendered elements; dense relationship-heavy graphs still need broader performance testing.
+Group membership controls, PDF reading, floating placement, source authoring, and AI generation/review remain open.
 Backups currently exclude PDF bytes and future AI decisions.
 No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-Rajvansh continues the remaining graph controls and panel usability, then shared PDF-reader and generation UI tasks.
+Rajvansh continues the shared PDF-reader and selected-content preview UI tasks after this merged checkpoint.
 Eddy should bring main into `partner-data`, read EDITOR_HANDOFF and the current tracker, and continue G0-B/G1-B: the relay and selected-content extraction contract.
 The UI integration now supplies the selected-source service and same-Doc navigation; do not build a second scaffold or competing editor worker.
-The latest partner documentation checkpoint is `a5e7192`; its statement that main has no runtime is superseded by this merge.
+Eddy has fetched main and published the G1-B extraction/draft contract at `f412f9b` on partner-data, with its tracker update on main at `06e34fc`.
+That new contract is not merged by PR #9.
+A temporary integration with this UI checkpoint passed typecheck, build, and all 63 tests.
+Eddy's previously reported intermittent workspace failure did not reproduce in that run; it remains a report to monitor rather than a declared fix.
+EDITOR_HANDOFF records input-validation follow-ups before a real relay call.
 
 The user is unsure who has an OpenAI API project/key.
 G0-A remains blocked on identifying the account owner and configuring a server-held credential and test-spend limit privately.
@@ -102,3 +114,8 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
 - 2026-09-12: Merged PR #6 as `4cfe83d` after typecheck, build, and 48 passing tests.
   Main now contains the shared local editor and source-assisted on-page Drive/Docs integration, including Eddy's work through `4738cb2`.
   Updated README, tracker, and editor handoff directly on main; remaining V1/V2 requirements remain open.
+
+- 2026-09-12: Merged PR #9 as `487b315` for M2-A/M5-A.
+  Verified current main runtime matches `c209a87`, with typecheck/build/52 tests and inspected screenshots.
+  The isolated combination with Eddy's `f412f9b` passes all 63 tests; his branch and current tracker updates are preserved.
+  M2-A/M5-A remain REVIEW for their targeted live-account checks; PDF and AI work remain open.

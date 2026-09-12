@@ -50,10 +50,10 @@ Task IDs are preserved for existing handoffs even where the numbered order chang
 | N1-A | Rajvansh | 2 | Build reusable Add existing / autofill chooser | REVIEW | Chooser/autofill, duplicate-name paths, multi-select, Already added, nested folder browsing, and personal source attachment are merged. Installed fixture tests prove selected-only import/refresh and reopening; direct account walkthrough and PDF reuse remain open. |
 | N1-B | Eddy | 2 | Supply source candidates and selected-item import contract | REVIEW | Rajvansh integrated this bridge in lib/editor using Eddy readers: authorized candidates, validated selections, account separation, atomic import, deduplication and saved selected/baseline membership. Eddy should review the published contract; PDF adapter reuse remains M4. |
 | M2-B | Eddy | 2-3 | Complete Drive import, account scope, and worker edit commands | REVIEW | Drive adapter, account lookup, nested expansion and editor RPC are merged. Eddy reports real imports/restart; combined tests cover selected/baseline refresh and transactions. Review legacy import concurrency/account filtering and the new editor contract before closing. |
-| M2-A | Rajvansh | 3 | Put the reusable editor in the Drive panel | DOING | Merged on-page editor, manual ideas/connections, source picker, baseline, ELK with saved pins, search, inspector, and backups. Installed source loop passes. Still finish focus/collapse/larger-map controls and targeted visual/live navigation checks. |
+| M2-A | Rajvansh | 3 | Put the reusable editor in the Drive panel | REVIEW | PR #9 (487b315) adds focus previews, cycle-safe collapse, shared canvas/list pagination and bounded ELK layout to the merged editor. Typecheck/build/52 tests pass; 500-node synthetic import/layout measured 868 ms, 50 source/idea nodes per view, screenshots inspected. Targeted current live-account walkthrough remains under M0/M6. |
 | M3-A | Rajvansh | 4 | Show a usable graph on the left of Docs | REVIEW | Merged left Docs graph, selected/nested-tab chooser, baseline, current-tab highlight, same-browser-tab navigation and panel reopening. Installed fixtures and zoom/host-editing regressions pass; targeted current live-Doc check remains. |
 | M3-B | Eddy | 4 | Complete Docs import and same-document tab navigation | REVIEW | Rajvansh integrated same-Doc NAVIGATE routing with Eddy tab locators and readers. Exact nested-tab URL and no extra browser tab verified in installed fixture; do not duplicate this handler. |
-| M5-A | Rajvansh | 5 | Finish save/refresh/errors and panel preferences | DOING | Merged saved on-page edits, selected/baseline refresh, missing-in-scope notices, conflict errors, pins and session panel reopening. Width/dock preferences, source-availability UI and larger-layout polish remain. |
+| M5-A | Rajvansh | 5 | Finish save/refresh/errors and panel preferences | REVIEW | PR #9 (487b315) adds persistent width/dock settings and unavailable-destination UI using Eddy's checker; notes and settings survive complete browser restart in installed fixtures. Typecheck/build/52 tests pass; real-account destination check remains under M0/M6. Floating placement remains X4. |
 | M5-B | Eddy | 5 | Prove persistence and refresh through the worker | REVIEW | Eddy refresh/availability tests merged, combined 48 tests pass; new source imports are atomic in editor service. Real deleted-target check, legacy import concurrency, and complete scope/backup acceptance remain open. |
 | G0-B | Eddy | 6 | Build the minimal local AI relay and startup path | TODO | Local authenticated extension-to-relay request reaches the model with a server-held key; restrict origin/payload/rate; document startup for both laptops; stopping the relay leaves manual maps usable |
 | G1-A | Rajvansh | 6 | Select and preview exactly what will be analyzed | TODO | Choose Doc tabs or, after M4, PDF pages; show selected content and limits; Generate requires a deliberate click; unsupported/oversize content is explained |
@@ -98,16 +98,16 @@ These remain future provider/public-release choices, not prerequisites for the b
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M2-A / M5-A on `rajvansh-ui` | PR #6 merged as 4cfe83d. Source-assisted on-page Drive/Docs editor, persistence, ELK, selected-only refresh and same-Doc navigation pass typecheck/build/48 tests. | API project ownership unresolved; PDF reader and AI generation/review are still open. | Continue focus/collapse and usable panel controls, then PDF/generation UI. Read EDITOR_HANDOFF; Eddy can proceed with relay/content extraction against the merged bridge. |
+| Rajvansh | M2-A / M5-A checkpoint merged; next M4-A / G1-A | PR #9 merged as 487b315. Typecheck/build/52 tests pass; temporary integration with Eddy f412f9b also passes all 63 tests. UI settings, focus, collapse, paged lists/canvas, readable layout and source warnings verified in installed fixtures. | Live-account reload/check pending; PDF reader and AI UI open; API project owner unresolved. | Continue PDF reader and selected-content preview against the shared contracts. Eddy should fetch main and read EDITOR_HANDOFF before changing shared messages. |
 | Partner | G1-B / `partner-data` at `f412f9b` | Reported from branch, unmerged. G1-B extraction and draft contract complete with 11 fixture-backed tests; combined suite 58 of 59 passing, the one failure being the known intermittent `workspace.spec.ts:43`, which passes in isolation. Earlier runtime through `4738cb2` is merged on main via PR #6. | G0-B cannot start: the model key and API project owner are unresolved (G0-A). PDF has no reader or real-paper acceptance. No model has been called, so G2-B is unstarted. | Await G0-A, then G0-B relay. Meanwhile M0-B demo PDF and M4-B real-paper checks. |
 
-Eddy's handoff above is current as of `origin/partner-data` at `4738cb2` and was written by Eddy's assistant.
-It reports 40 tests passing on that branch; no one has rerun or certified that runtime on another machine, and none of it is merged.
-The earlier backup ordering assertion is fixed in `88a4d00`; do not carry the old failure forward.
-His imports and exact destination opening are reported live results, while same-browser-tab Docs navigation and restart acceptance remain separate checks.
-The partner runtime was inspected for this plan, not merged by this documentation update.
-After this shared plan revision, each person updates their own task and handoff rows and pushes a checkpoint.
-The merger updates STATUS after reviewed runtime work reaches main.
+Eddy's latest branch report is preserved above, including his reported intermittent workspace test.
+His earlier runtime through `4738cb2` is merged in PR #6.
+Rajvansh separately tested `c209a87` plus Eddy's `f412f9b` in an isolated integration checkout: typecheck, build, and all 63 tests pass, including that workspace test.
+The reported intermittent failure was not reproduced in that run; it is not declared permanently fixed.
+The new G1-B files remain on partner-data for contract review, not on main through PR #9.
+See EDITOR_HANDOFF for the concrete input-validation review follow-ups before connecting a relay.
+A relay can be implemented and tested with a mock provider while the API key is unresolved; an actual model call still requires the account owner's private configuration.
 No future task is marked active or complete solely because it has a scheduled time.
 
 ## M1-A second-machine acceptance

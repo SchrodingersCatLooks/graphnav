@@ -320,7 +320,8 @@ Eddy must verify the actual grant and capabilities, or disclose the broader scop
 ## Exact demonstration scenarios
 
 M6 records the commit, browser/Node versions, expected/actual results, and whether evidence is live or a fixture.
-The complete core target must pass these end-to-end stories on both laptops.
+The complete core target must pass these end-to-end stories on the exact release build using focused automated checks and targeted installed-Chrome verification.
+Use another laptop/account only for a specific unresolved issue, following the current AGENTS validation policy.
 
 1. **Planner:** with AI stopped, add existing sources through autofill without typing their names/URLs, then create a blank map without Google; add three ideas; connect one to two others; edit a label/note; attach an HTTPS source; arrange, close Chrome, reopen, and restore a backup copy.
 2. **Drive organizer:** open the shared folder; import its ten children plus root; expand the nested level; add a personal idea; connect two real files; open one; refresh after a source rename without losing edits.

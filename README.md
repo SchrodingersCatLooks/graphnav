@@ -2,16 +2,16 @@
 
 A Chrome extension for navigating and organizing Drive folders, Google Docs tabs, and research papers through independent interactive graphs.
 
-**Current state:** [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) is merged on main as `4cfe83d`.
+**Current state:** [PR #9](https://github.com/SchrodingersCatLooks/graphnav/pull/9) is merged on main as `487b315`, extending the editor and Google integration from PR #6.
 Drive and Docs now open an editable graph on the page, with existing-source suggestions, selected imports, structural baselines, personal nodes/connections, ELK arrangement, local saving, and backups.
 The Docs graph sits on the left and opens document tabs in the same browser tab.
 The toolbar popup also opens an optional My maps workspace.
 
-**Still open:** PDF reading, GPT generation/evidence review, source-authoring controls, and remaining larger-map/panel refinements.
+**Still open:** PDF reading, GPT generation/evidence review, source-authoring controls, group editing, and floating panel placement.
 The PDF extractor is a tested foundation, not a reader.
 V1 and V2 remain in the requested MVP target; consult TASK_LIST for exact status rather than treating all planned features as shipped.
 
-**Verification:** typecheck, production build, and all 48 tests pass on Node 22.23.2 / npm 10.9.9.
+**Verification:** typecheck, production build, and all 52 tests pass on Node 22.23.2 / npm 10.9.9.
 Installed browser tests use synthetic Google responses and temporary profiles; Eddy separately reports live Google reads/imports/navigation and restart success.
 A fresh live-account run on Rajvansh's account is not claimed.
 
@@ -84,9 +84,15 @@ Repeated partner-laptop acceptance is not a routine gate; test the changed flow 
    Use the inspector to edit labels/notes and open destinations.
    **Arrange map** arranges unpinned nodes; dragging a node pins its position.
    **Hide tools** gives the graph more room.
+   Use **Focus selected** for a compact neighborhood preview, **Collapse branch** for containment, and **Show whole map** to return.
+   Focus previews preserve saved positions; return to the whole map to drag nodes.
+   **Find a node** searches the loaded map, and **Previous 50 / Next 50** keep the list and canvas on the same page.
+   Choose **Panel width** and **Dock left/right** in the footer; these settings survive Chrome restarting.
 9. Use **Refresh source**, close/reopen the panel, and verify your personal edits remain.
    A selected-only map must not suddenly add unselected siblings.
    Export/import a backup through the toolbar or the optional My maps workspace.
+   **Check destinations** checks Google source availability and marks unavailable sources while preserving their notes.
+   A failed check is reported separately from a missing destination.
 10. Open a Doc, refresh it, and click **Graph**.
     Select top-level/nested tabs or build a baseline; select a node and choose **Go to tab in this document**.
     Confirm the original browser tab reaches the exact tab, the graph reopens on the left, and the current tab is highlighted.
@@ -155,16 +161,13 @@ Confirm the partner accepted the repository invitation before treating M0 as com
 - The scaffold is merged; Eddy now owns the M1-B edits to `wxt.config.ts`: public manifest key, `identity`, OAuth client/scopes, and required Google API access.
   Rajvansh retains `components/ExtensionShell.tsx` and `assets/shell.css`; dependency changes remain coordinated.
 
-The scaffold handoff is complete through PR #3.
-Bring main into each working branch while preserving local changes; continue reviewing and merging subsequent slices through PRs.
-M1-B adds the background worker, Chrome Identity, a stable public manifest key, and suitable API permissions in his M1-B slice.
-Those settings are deliberately absent from M1-A.
-Use Eddy's [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md) for the public configuration values.
-After adding the key, both laptops must verify the installed extension ID is `pidejkbkldalibjaehjfpjkcpjpcenpk`.
-Eddy reports the shared folder and nested-Doc reads/imports working on partner-data; Rajvansh's complete own-account acceptance remains open.
-M1-C review uses the implemented contract linked from M1C_HANDOFF; React Flow/Dexie are present on the review branch, while ELK and PDF.js integration remain planned.
-None of that branch runtime is added to main by publishing the plan.
-The merger updates STATUS with verified shared progress after review and brings main into both working branches.
+The scaffold, Google identity/read integration, Dexie editor, and on-page Drive/Docs graphs are merged through PR #6.
+PR #9 adds graph browsing controls, panel preferences, and source-availability UI.
+The public manifest key and read scopes are already present on main.
+Eddy's new G1-B text/draft contract at `f412f9b` remains on partner-data; a temporary combined checkout passes typecheck, build, and all 63 tests.
+Read [EDITOR_HANDOFF.md](./EDITOR_HANDOFF.md) before changing shared messages or integrating generation.
+Bring current main into each working branch with a normal merge, preserving local changes.
+GitHub does not synchronize private maps, Google tokens, or PDF bytes.
 
 The selected stack and official implementation references are in FEATURE_SPEC, with implementation order in BUILD_PLAN.
 Manual maps need no AI server; the planned V2 workflow requires the local model relay described there.
