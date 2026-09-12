@@ -10,6 +10,7 @@ import { browser } from 'wxt/browser';
 import type { Locator } from './graph/types';
 import type { ImportedItem } from './storage/repository';
 import type { GenerationRequest } from './generation/ui-service';
+import type { PanelPlacement } from './panel-placement';
 
 export type SourceItem = {
   /** Stable provider ID. Drive file ID, or `${documentId}:${tabId}` for a tab. */
@@ -52,6 +53,7 @@ export type Request =
   | { type: 'DOC_TEXT_PREVIEW'; documentId: string; tabIds: string[] }
   | { type: 'PANEL_STATE'; source: string; open?: boolean }
   | { type: 'PANEL_PREFERENCES'; kind: 'drive' | 'docs'; preferences?: PanelPreferences }
+  | { type: 'PANEL_PLACEMENT'; kind: 'drive' | 'docs'; placement?: PanelPlacement }
   /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */
   | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string; intoGraphId?: string }
   | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }

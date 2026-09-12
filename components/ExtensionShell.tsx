@@ -4,12 +4,14 @@ import { GraphMark } from './GraphMark';
 import { GoogleConnection } from './GoogleConnection';
 import { GraphEditor } from './editor/GraphEditor';
 import { sendToBackground, type PanelPreferences } from '../lib/messages';
+import { usePanelPlacement } from './usePanelPlacement';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   const [connected, setConnected] = useState(false);
   const [preferences, setPreferences] = useState<PanelPreferences>({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' });
+  const placement = usePanelPlacement(context.kind, preferences);
   const [preferenceError, setPreferenceError] = useState('');
   const preferenceChanged = useRef(false);
   const preferenceQueue = useRef(Promise.resolve());
@@ -66,6 +68,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
   }, [open]);
 
   function close() {
+    placement.cancelGesture();
     interacted.current = true;
     setOpen(false);
     void sendToBackground({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}`, open: false }).catch(() => undefined);
@@ -76,9 +79,10 @@ export function ExtensionShell({ context }: { context: PageContext }) {
     <div ref={surface} className="graphnav-shell" popover="manual">
       {visited && (
         <section
+          ref={placement.panel}
           id="graphnav-panel"
           className={`graphnav-panel editor-panel ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
-          style={{ display: open ? undefined : 'none', width: `min(${preferences.width}px, calc(100% - 32px))`, left: preferences.dock === 'left' ? 16 : 'auto', right: preferences.dock === 'right' ? 16 : 'auto' }}
+          style={{ ...placement.style, display: open ? undefined : 'none' }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="graphnav-title"
@@ -86,7 +90,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
             if (event.key === 'Escape') {
               event.preventDefault();
               event.stopPropagation();
-              close();
+              if (!placement.cancelGesture()) close();
             }
           }}
         >
@@ -98,22 +102,29 @@ export function ExtensionShell({ context }: { context: PageContext }) {
                 <p className="source-label">{context.label}</p>
               </div>
             </div>
+            <div className="panel-header-actions">
+            {placement.floating && <button type="button" className="panel-move" aria-label="Move graph panel" aria-describedby="panel-placement-help" title="Drag to move; arrow keys move, Shift moves faster" {...placement.controls('move')}><span aria-hidden="true">⠿</span> Move</button>}
             <button ref={closeButton} type="button" className="close-button" onClick={close} aria-label="Close graph panel">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                 <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
               </svg>
             </button>
+            </div>
           </header>
 
           <div className="panel-auth"><GoogleConnection onConnected={setConnected} /></div>
-          <GraphEditor layoutKey={`${preferences.width}:${preferences.dock}`} context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
+          <GraphEditor layoutKey={placement.layoutKey} context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
 
           <footer className="panel-footer flex items-center justify-between gap-3">
-            <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>
-            <button className="dock-button" onClick={() => void changePreferences({ ...preferences, dock: preferences.dock === 'left' ? 'right' : 'left' })}>Dock {preferences.dock === 'left' ? 'right' : 'left'}</button>
-            {preferenceError && <span role="alert">{preferenceError}</span>}
-            <kbd>Esc</kbd>
+            {!placement.floating && <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>}
+            <button type="button" className="dock-button" onClick={() => { placement.dock(); changePreferences({ ...preferences, dock: preferences.dock === 'left' ? 'right' : 'left' }); }}>Dock {preferences.dock === 'left' ? 'right' : 'left'}</button>
+            <button type="button" className="dock-button" onClick={placement.toggle}>{placement.floating ? 'Dock panel' : 'Float panel'}</button>
+            <button type="button" className="dock-button" onClick={() => { placement.reset(); changePreferences({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' }); }}>Reset position</button>
+            {placement.floating ? <button type="button" className="panel-resize" aria-label="Resize graph panel" aria-describedby="panel-placement-help" title="Drag to resize; arrow keys resize, Shift resizes faster" {...placement.controls('resize')}>Resize <span aria-hidden="true">↘</span></button> : <kbd>Esc</kbd>}
+            {(preferenceError || placement.error) && <span className="panel-preference-error" role="alert">{preferenceError || placement.error}</span>}
           </footer>
+          <span id="panel-placement-help" className="panel-sr-only">Drag this control or use arrow keys. Hold Shift for larger steps. Escape cancels a drag; otherwise Escape closes the panel.</span>
+          <span className="panel-sr-only" role="status">{placement.announcement}</span>
         </section>
       )}
 

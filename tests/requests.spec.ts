@@ -26,6 +26,9 @@ test('malformed requests are rejected before any handler runs', () => {
   expect(accepts({ type: 'NAVIGATE', locator: { kind: 'ftp', url: 'ftp://x' } })).toBe(false);
   expect(accepts(null)).toBe(false);
   expect(accepts('AUTH_STATUS')).toBe(false);
+  expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'drive', placement: { mode: 'floating', rect: { x: 50, y: 50, width: -5, height: 640 } } })).toBe(false);
+  expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'drive', placement: { mode: 'floating' } })).toBe(false);
+  expect(accepts({ type: 'PANEL_PLACEMENT', kind: 'docs', placement: { mode: 'floating', rect: { x: Infinity, y: 0, width: 400, height: 400 } } })).toBe(false);
 });
 
 test('a personal web locator must be https', () => {

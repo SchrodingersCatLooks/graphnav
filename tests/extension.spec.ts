@@ -219,3 +219,50 @@ test('panel uses worker auth state, connects only on click, and shows a cancelle
   await expect(page.getByRole('alert')).toContainText('Synthetic sign-in cancelled');
   await expect(page.getByText('Google connected', { exact: true })).toHaveCount(0);
 });
+
+test('floating controls support keyboard, cancel a drag, and stay reachable after zoom and viewport changes', async ({ page }, testInfo) => {
+  await page.goto('https://docs.google.com/document/d/fixture-doc/edit');
+  await page.getByRole('button', { name: 'Graph', exact: true }).click();
+  await page.getByRole('button', { name: 'Float panel', exact: true }).click();
+  const panel = page.getByRole('dialog');
+  const move = page.getByRole('button', { name: 'Move graph panel' });
+  const resize = page.getByRole('button', { name: 'Resize graph panel' });
+  const before = (await panel.boundingBox())!;
+  await move.focus(); await page.keyboard.press('Shift+ArrowRight');
+  await expect.poll(async () => (await panel.boundingBox())!.x).toBe(before.x + 40);
+  await resize.focus(); await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await panel.boundingBox())!.width).toBe(before.width - 10);
+  const committed = (await panel.boundingBox())!;
+  const handle = (await move.boundingBox())!;
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await page.mouse.down(); await page.mouse.move(handle.x + 160, handle.y + 30, { steps: 5 });
+  expect((await panel.boundingBox())!.x).toBeGreaterThan(committed.x);
+  await page.keyboard.press('Escape'); await page.mouse.up();
+  await expect(panel).toBeVisible();
+  expect(await panel.boundingBox()).toEqual(committed);
+
+  // Shrinking must clamp the display without overwriting the preferred rectangle.
+  await page.setViewportSize({ width: 390, height: 600 });
+  await expect.poll(async () => { const box = (await panel.boundingBox())!; return box.x >= 16 && box.y >= 16 && box.x + box.width <= 374 && box.y + box.height <= 520; }).toBe(true);
+  await page.getByRole('button', { name: 'Close graph panel' }).click({ trial: true });
+  await page.screenshot({ path: testInfo.outputPath('floating-narrow.png') });
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect.poll(() => panel.boundingBox()).toEqual(committed);
+  await page.evaluate(() => {
+    const rail = document.createElement('div');
+    rail.style.cssText = 'position:fixed;inset:0 0 0 auto;width:100px;z-index:2147483647;background:#ddd';
+    document.body.append(rail); document.body.style.transform = 'translateZ(0)';
+  });
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1.5 });
+  const close = page.getByRole('button', { name: 'Close graph panel' });
+  await expect.poll(() => close.evaluate((element) => {
+    const box = element.getBoundingClientRect(), view = window.visualViewport!;
+    return box.x >= view.offsetLeft && box.y >= view.offsetTop && box.right <= view.offsetLeft + view.width && box.bottom <= view.offsetTop + view.height && document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.tagName === 'GRAPHNAV-UI';
+  })).toBe(true);
+  await close.click();
+  await expect(page.getByRole('button', { name: 'Graph', exact: true })).toBeFocused();
+  await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 }); await cdp.detach();
+  await page.getByRole('textbox', { name: 'Fixture editor' }).fill('Editing still works');
+  await expect(page.getByRole('textbox', { name: 'Fixture editor' })).toHaveText('Editing still works');
+});

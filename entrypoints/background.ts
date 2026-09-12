@@ -16,6 +16,7 @@ import { EditorService } from '../lib/editor/service';
 import { getPageContext } from '../lib/page-context';
 import { RelayClient } from '../lib/generation/relay';
 import { GenerationUiService } from '../lib/generation/ui-service';
+import { panelPlacementSchema } from '../lib/panel-placement';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
 // state worth losing. The database lives in the extension origin; content
@@ -123,6 +124,12 @@ async function handle(raw: unknown, sender: { url?: string; documentId?: string;
       if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
       const value = (await browser.storage.session.get(key))[key];
       return { ok: true, data: { open: !!value && typeof value === 'object' && 'source' in value && 'open' in value && value.source === request.source && value.open === true } };
+    }
+    case 'PANEL_PLACEMENT': {
+      const key = `panel-placement:v1:${request.kind}`;
+      if (request.placement) await browser.storage.local.set({ [key]: request.placement });
+      const stored = panelPlacementSchema.safeParse((await browser.storage.local.get(key))[key]);
+      return { ok: true, data: stored.success ? stored.data : { mode: 'docked' } };
     }
     case 'PANEL_PREFERENCES': {
       const key = `panel-preferences:v1:${request.kind}`;
