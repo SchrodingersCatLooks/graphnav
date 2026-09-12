@@ -6,6 +6,7 @@ import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder, type ScopedImport } from '../lib/google/import';
 import { GraphRepository } from '../lib/storage/repository';
+import { isTrustedSender, requestSchema } from '../lib/requests';
 import type { ImportResult, Request, Response } from '../lib/messages';
 
 // Dexie opens lazily and the worker is stopped when idle, so this holds no
@@ -34,7 +35,13 @@ async function storeImport(scoped: ScopedImport, accountKey: string): Promise<Im
   };
 }
 
-async function handle(request: Request): Promise<Response> {
+async function handle(raw: unknown): Promise<Response> {
+  // Parsed, not cast: an unknown or malformed message is rejected before any
+  // token is touched or any source operation runs.
+  const parsed = requestSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, error: 'Unsupported request.' };
+  const request: Request = parsed.data;
+
   switch (request.type) {
     case 'AUTH_STATUS':
       return { ok: true, data: { connected: await isConnected() } };
@@ -62,15 +69,17 @@ async function handle(request: Request): Promise<Response> {
       return { ok: true, data: await repository.listGraphs() };
     case 'READ_GRAPH':
       return { ok: true, data: await repository.readGraph(request.graphId) };
-    default:
-      return { ok: false, error: `Unknown request: ${JSON.stringify(request)}` };
   }
 }
 
 export default defineBackground(() => {
   // Registered synchronously so Chrome can revive the worker to serve a message.
-  browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-    handle(request as Request)
+  browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (!isTrustedSender(sender)) {
+      sendResponse({ ok: false, error: 'Untrusted sender.' } satisfies Response);
+      return true;
+    }
+    handle(request)
       .then(sendResponse)
       .catch((error: unknown) => {
         const needsAuth = error instanceof AuthRequiredError;
