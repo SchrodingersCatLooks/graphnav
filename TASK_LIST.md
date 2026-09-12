@@ -9,26 +9,26 @@ Use [BUILD_PLAN.md](./BUILD_PLAN.md) for instructions and [STATUS.md](./STATUS.m
 | DOC-0 | Create private repo and initial workflow | DONE | Starter committed in `7139f9e` |
 | DOC-1 | Capture idea notes, joint build plan, and tracking workflow | DONE | IDEA, BUILD_PLAN, TASK_LIST, STATUS, and linked AI instructions |
 | DOC-2 | Specify GitHub checkpoints and larger-source requirements | DONE | AGENTS and BUILD_PLAN include push verification, incremental loading, and performance acceptance criteria |
+| DOC-3 | Define manual V1 followed by GPT-assisted V2 | DONE | IDEA, BUILD_PLAN, AGENTS, README, STATUS, and this tracker reflect the release order |
 
-## Build queue
+## V1 manual build queue
 
-This branch tracks Rajvansh's M1-A work; fetch `partner-data` for Eddy's current claim.
-Hours are elapsed from the start of the proposed build session.
+M1-A has an existing scaffold in [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) and is in REVIEW awaiting final partner-browser confirmation; M1-B is DOING on `partner-data`. Hours describe the original proposed schedule, not actual elapsed time or evidence of completion.
 
 | ID | When | Owner | Task | Status | Done when |
 | --- | --- | --- | --- | --- | --- |
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
-| M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | REVIEW | Type-check, production build, and six synthetic browser tests passed. Partner reports Docs header/close clipping and side-rail overlap still present at `c313a1d`, including failed zoom acceptance. Resolve the second-machine failure, rerun the full checklist on both laptops, and merge after review. |
-| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
-| M1-C | Before M2 | Both | Agree graph types and example data for manual and generated maps | TODO | UI and adapters share a shape with stable graph IDs; personal maps can exist without a source and generated maps retain navigation targets |
-| M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
-| M2-B | 2–4h | Partner | Drive adapter, navigation, initial cache | TODO | Real children/files load and reopen correctly |
+| M1-A | 0.5–2h | Rajvansh | Finish acceptance of existing extension shell in PR #3 | REVIEW | Reload reportedly resolves Eddy's UI; confirm the exact commit and full checklist, including 100% and increased browser zoom, then merge after review. Earlier failures remain recorded below. |
+| M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | DOING | Demo folder and Doc read through the extension, or auth gate recorded |
+| M1-C | Before M2 | Both | Agree source/idea nodes, labeled edges, and edit commands | TODO | UI and adapters share stable IDs, targets, and origin fields |
+| M2-A | 2–4h | Rajvansh | Manual graph editor and Drive overlay | TODO | Add idea, connect/label/edit/remove personal items, and open real source |
+| M2-B | 2–4h | Partner | Drive adapter, edit commands, navigation, initial save | TODO | Real sources plus manual nodes/edges save and reopen with stable IDs |
 | M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
 | M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
 | M4-A | 6–8h | Rajvansh | PDF reader and graph interface | TODO | Same graph beside a real PDF |
 | M4-B | 6–8h | Partner | PDF section extraction and destinations | TODO | At least three section jumps verified; fallback labeled |
-| M5-A | 8–10h | Rajvansh | Create-your-own map, editing generated maps, refresh status, source-action form | TODO | Create a personal map with two nodes and a connection; edit a generated map while preserving destinations; personal edits and one source-action control work |
-| M5-B | 8–10h | Partner | Save/refresh merge and real source creation | TODO | Reopening preserves edits; one authorized write and read-only behavior verified |
+| M5-A | 8–10h | Rajvansh | Complete V1 personal editing and refresh controls | TODO | Full manual editing works across completed surfaces; source form if time allows |
+| M5-B | 8–10h | Partner | Preserve manual edits on refresh and reopening | TODO | Edits survive reload/refresh; missing targets handled; any implemented source write verified |
 | M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | Real navigation verified; larger fixture remains usable within visible-node limit |
 | M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Build/package verified; pagination, bounded loading, storage, and measured limits recorded |
 | M7-A | 12–13h | Rajvansh | Draft deck and product story | TODO | Short deck matches working product |
@@ -37,23 +37,32 @@ Hours are elapsed from the start of the proposed build session.
 
 M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both rows describe parts of the same shared milestone. Merge and test together before the next. If blocked, record the fallback decision in STATUS and reorder the remaining tasks together.
 
-Product clarification for the next shared handoff: both Create your own map and Generate from existing content lead to editable, saved graphs.
-M1-C must account for both origins; M5 implements personal creation/editing and M6 checks reopening both kinds.
-No implementation status changes follow from this clarification.
+## V2 GPT-assisted generation queue
+
+Planned next stage. All tasks are TODO, not evidence of work in progress. Start only after the V1 manual create/connect/edit/navigate/save cycle works and time remains before feature freeze, or continue after the hackathon. Rajvansh owns the visible experience; partner owns extraction/generation/storage within each shared task.
+
+| ID | Owner | Task | Status | Done when |
+| --- | --- | --- | --- | --- |
+| G1 | Both | Select and extract supported content with source anchors | TODO | User can inspect selected Doc/PDF excerpts and their destinations |
+| G2 | Both | Return a structured GPT graph draft through a separate generator | TODO | Bounded concepts/relationships include validated source references; key stays server-side |
+| G3 | Both | Review evidence, accept/edit/reject, and persist decisions | TODO | Manual and accepted edits survive reopening, refresh, and regeneration |
+| G4 | Both | Verify generated and manual workflows together | TODO | Bad references/model failures handled; graph navigation/editor still work without generation |
 
 ## Active handoffs
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-A / `rajvansh-ui` | Popover/viewport implementation passes six synthetic tests, but Eddy's second-machine Docs acceptance still fails at `c313a1d`; see the report below. Current live inspection on Rajvansh's open Doc shows one open manual popover with a fully visible header and close button, above the toolbar and side rail at sampled points. [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3). | Second-machine layout failure remains unresolved; cause and loaded runtime need confirmation. Local observation does not establish partner acceptance or zoom acceptance. | On Eddy's laptop, verify the exact review build and one enabled production copy, reload the extension and refresh Docs, then collect panel-only evidence if clipping persists. Rajvansh owns the UI fix. Retest the full checklist on both laptops before merge; Google Console setup can continue meanwhile. |
-| Partner | Unclaimed | No application work started | Setup unverified | Claim M1-B after M0 |
+| Rajvansh | M1-A / `rajvansh-ui`, [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3) | Reconciled newer main planning documents; `npm run check` passed on Node 22.23.2/npm 10.9.9: type-check, build, six synthetic browser tests. Rajvansh reports Eddy's UI appears fixed after reload; runtime code is unchanged. | Full reloaded-browser checklist and exact tested build are not yet confirmed; M0 demo sources are unchosen. | Obtain the final browser result and complete the scaffold handoff. Eddy owns M1-B manifest/background changes after merge; Rajvansh retains the panel/CSS lane. |
+| Partner | M1-B / `partner-data` | Google Cloud setup done: `graphnav` project, Drive API and Docs API enabled, External/Testing consent screen, both test users, and a Chrome Extension OAuth client bound to extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`. Scopes `drive.metadata.readonly` and `documents.readonly` per BUILD_PLAN. Values recorded in [GOOGLE_SETUP.md](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md). Also ran the M1-A browser acceptance pass on this laptop against `c3ce042` and `c313a1d`; findings reported on PR #3. | No Google API call has been made yet. Manifest wiring and the background auth handler are blocked until the M1-A scaffold is reviewed and merged. M0 demo folder and Doc are still unchosen. | Apply the manifest block from GOOGLE_SETUP.md once M1-A merges, then implement the Connect Google handler and prove one Drive folder read and one Doc read. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
 
 ## M1-A second-machine acceptance
 
 Eddy reports macOS 26.5.2, Chrome 152.0.7977.84, Node 26.8.2, and npm 11.19.1.
-His `npm ci`, `npm run typecheck`, and `npm run build` passed.
+His initial `npm ci`, `npm run typecheck`, and `npm run build` passed.
+Eddy subsequently reports a clean detached-worktree build on pinned Node 22.23.2 / npm 10.9.8 with the same browser failure report.
+Rajvansh later reports that reloading appears to have resolved Eddy's UI; the exact reloaded commit and full checklist results have not yet been supplied.
 Node 26 is an additional reported build result; Node 22 remains the pinned baseline.
 
 | Tested commit | Reported results |
@@ -70,7 +79,13 @@ Rajvansh's subsequent live inspection found one `.graphnav-shell[popover="manual
 The title, close button, and sampled right edge hit-tested above Docs, and the full-page screenshot showed the complete header.
 This was one existing open Doc at its current browser settings; partner reproduction and the full zoom walkthrough remain outstanding.
 
-Next diagnostic handoff: use a separate review worktree so `partner-data` stays intact, record `git rev-parse HEAD`, build with Node 22, enable only that production output, reload GraphNav in Chrome, and refresh the Google tabs.
-If clipping persists, report browser zoom, window dimensions, extension errors, and a screenshot cropped to the panel.
-Claude may inspect only GraphNav's popover state, computed bounds, visual viewport, and the element covering its controls; document text and account data are unnecessary.
-Rerun the entire README acceptance checklist on the same confirmed build rather than carrying passes forward from an older commit.
+Next acceptance handoff: Eddy confirms the exact loaded commit and whether the complete header/X and right edge remain visible at 100% and increased browser zoom after reload.
+He should report the remaining README checklist results for that same build rather than carrying older passes forward.
+No additional CSS patch is justified solely by the earlier failure report while the reload outcome is being confirmed.
+The runtime diff from `c313a1d` through `fb2695d` is empty; those later checkpoints changed Markdown only.
+
+Eddy's M1-B task/handoff rows above are synchronized from his own `partner-data` commit `9f68af6`, not newly assigned or claimed by Rajvansh.
+His Google Console configuration is reported complete; no real Google API read is yet reported.
+After the scaffold merges, he owns the public key, Identity/OAuth/API manifest configuration and background worker.
+Rajvansh retains the shell component and CSS; both coordinate dependency changes and agree M1-C before graph implementation.
+M0 still requires an authorized shared demo folder and a Doc containing at least one nested tab.

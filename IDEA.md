@@ -16,6 +16,27 @@ The primary job is navigation and organization. A graph is useful when it helps 
 
 Suggested pitch: **Turn the information you already use into a map you can navigate and organize.** The differentiation to demonstrate is working inside existing applications and on existing files. Do not claim graph interfaces themselves are new.
 
+## Product versions
+
+**Current decision: ship V1 with manual graph creation and editing first, then build V2 with GPT-assisted graph generation.** V2 is a planned development stage, not an implemented feature. Both versions use the same graph, source navigation, and persistence system.
+
+| Version | User experience | Role of automation |
+| --- | --- | --- |
+| V1 Manual graph | Start a personal graph or import a source outline; add source-linked nodes and idea nodes, connect them, label/edit/remove personal relationships, arrange the view, navigate, and save | APIs and PDF parsing may import real structure and source destinations. People create the meaningful conceptual connections. No model is required. |
+| V2 Generate a draft | Select content, request a generated draft, inspect proposed concepts/relationships and their supporting passages, accept/edit/reject them, then navigate and save | GPT proposes an editable graph over selected content. It does not replace the graph editor or silently establish relationships as facts. |
+
+Manual does not mean retyping every folder and tab. Automatically importing containment or explicit source links is compatible with V1. The distinguishing V1 completion check is a user-created idea and labeled relationship that can be edited, reopened, and followed to a real source. Source nodes retain provider titles/IDs; personal display labels do not rename original files.
+
+A user can remove personal nodes/edges or hide source items from a view. Those actions never delete the original source. Source mutations such as creating a folder or renaming a Doc tab remain separate explicit actions with permission checks.
+
+## What makes the product useful beyond generation
+
+The product's lasting value comes from its source integrations, exact navigation destinations, an editable visual workspace, and saved user-authored relationships. V1 must be useful while generation is unavailable. V2 speeds up getting to a useful draft; switching model providers should not require replacing the editor, graph format, or saved work. A generated summary or diagram alone is not the complete experience.
+
+V2 follows this sequence: select a bounded set of supported sources, extract content with stable passage/page/tab references, generate structured proposals, verify cited passages and targets against the input, present evidence for review, then save accepted edits separately from future generated drafts. Distinguish source nodes from idea nodes, and imported structure from manual, AI-suggested, and AI-accepted relationships. Verifying that an excerpt exists does not prove the model's interpretation is correct; the user must be able to inspect it.
+
+Start V2 with one selected text-based Doc or PDF before expanding to collections of selected files. Drive metadata alone cannot establish semantic relationships; selected documents need readable content and appropriate access. Independent graphs remain supported, and cross-source analysis is limited to what the user selects.
+
 ## One extension with three experiences
 
 ### Two ways to start, one editable graph
@@ -32,9 +53,9 @@ These are starting choices, not separate products or permanently locked modes.
 Both lead to the same editable graph controls and saved personal state.
 Explore and Build describe the controls currently shown, independently of how the graph was first created.
 
-Automatic generation of an editable map is a core feature.
-The first generation uses source structure such as folders, tabs, and PDF section anchors.
-Discovering additional meaning-based relationships is a separate possible enhancement; it is not required to generate the starting graph.
+Both manual creation and generated editable maps belong to the intended product.
+V1 may import source structure such as folders, tabs, and PDF section anchors while users create meaningful connections.
+V2 adds the content analysis and proposed concepts/relationships described above; structural imports alone do not fulfill that generation stage.
 
 The choices are specified here for implementation in the later milestones; the current M1-A shell does not implement them.
 
@@ -59,9 +80,8 @@ Authors can use graphs to plan and organize their own material. Readers can gene
 - Selecting a node shows its label, type, and available details. Do not require generated summaries for previews.
 - A document tab opens that tab. A paper section opens its real page or destination. A folder expands its children or opens in Drive.
 - Start with a local neighborhood and expand on demand. Keep a simple outline/list fallback available as scope allows.
-- Distinguish `contains`, explicit `references`, and personal `related` connections. A personal connection can carry a short explanation.
-- Concept or note nodes may be personal annotations with no source destination.
-  Label them accordingly; they can stand on their own in a new map and connect to real source nodes as work develops.
+- Distinguish `contains`, explicit `references`, and personal labeled relationships such as `related`, `supports`, or `addresses`. Store a short explanation and origin separately from the relationship label; a manual label records the user's interpretation.
+- Let users add, rename, edit, and remove personal concept/note nodes and connections. They may have no source destination; label them accordingly and allow attachment to real source nodes. Do not present a personal label change as renaming a source file.
 
 ## How the extension works
 
@@ -90,14 +110,11 @@ For tonight, Refresh is manual and the interface shows when data was last refres
 
 ## Tonight's concrete target
 
-One installed extension demonstrates a real Drive folder graph, a real tabbed Doc graph, and one text-based paper map.
-All reuse the same graph component.
-Also show starting a personal map with two nodes and a connection, then reopening it.
-Show editing a generated map while retaining its real navigation destinations, focus, and at least one real source creation action if authorization is working.
+Tonight targets V1: one installed extension with a shared manual graph editor, real Drive/Docs navigation, and one text-based paper map as time permits. First prove the full manual cycle on one supported surface: import or attach a source, add an idea, create and label a relationship, edit/remove personal items, follow a source destination, save, reopen, and refresh without losing edits. Then reuse it across the other surfaces. A real source creation action remains a follow-on target after the manual graph works.
 
 For PDF extraction, embedded bookmarks are the first choice. Otherwise extract text with page positions, propose heading anchors, and allow correction. A manually corrected section is not an automatically understood argument. Full argument extraction, citation discovery, and arbitrary scanned PDFs are later work.
 
-AI coding assistants help build the application. Product AI is optional: later, suggest a few connections with supporting passages and require acceptance before storing them as personal edges.
+AI coding assistants help implement both versions. GPT-assisted graph generation is the planned V2 stage. Start it only after the V1 manual acceptance check passes and sufficient build time remains, or continue it after the hackathon. Do not describe an unimplemented V2 as working.
 
 ## Decisions and later possibilities
 
@@ -108,6 +125,8 @@ AI coding assistants help build the application. Product AI is optional: later, 
 | Other management websites | Future adapters can translate their content into the same graph format; each needs its own integration |
 | Papers as sections, ideas, arguments, references | Start with section/page navigation and personal idea connections; add deeper extraction later |
 | Author organization | Start with folder creation and Doc tab actions; defer drag-to-move, deletion, and broad restructuring |
-| Cross-source links and inferred links | Optional after navigation, persistence, and the demo work |
+| Manual meaningful connections | Core V1, including editable labels, idea nodes, and source attachments |
+| GPT-assisted concepts and relationships | Planned V2 with source evidence, review, and preserved edits |
+| Cross-source links | Supported as a future selected-scope option; no forced universal graph |
 
 The concept-map pictures are visual inspiration. Their example subject matter is not part of the product requirements.

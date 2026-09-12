@@ -7,6 +7,14 @@ It adds a Graph button and reversible empty panel on My Drive, Drive folders, an
 Google data, interactive source graphs, sign-in, PDFs, and saved state are not implemented.
 [TASK_LIST.md](./TASK_LIST.md) tracks this branch's review; [STATUS.md](./STATUS.md) describes merged shared progress and is updated by the merger.
 
+**Release order:** V1 provides manual graph creation/editing, source navigation, and saving.
+V2 adds GPT-assisted drafts with evidence and accept/edit/reject controls.
+Both remain planned beyond the current shell.
+
+**Acceptance:** earlier second-machine Docs clipping and zoom failures remain in the test history.
+Rajvansh now reports that reloading appears to have fixed Eddy's UI; confirmation of the exact build and full reloaded-browser checklist is still pending.
+See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
+
 ## Start here
 
 | File | What it answers | When to update |
@@ -127,11 +135,15 @@ Confirm the partner accepted the repository invitation before treating M0 as com
   The shell uses a non-modal manual popover and tracks the visual viewport to keep controls above page toolbars and within the visible window.
 - `lib/page-context.ts` reads the URL only; it does not scrape Google content.
 - `entrypoints/popup/` explains how to find the Graph button.
-- `wxt.config.ts`, `package.json`, and `package-lock.json` are shared configuration owned by Rajvansh during M1-A.
+- After the scaffold merges, Eddy owns the M1-B edits to `wxt.config.ts`: public manifest key, `identity`, OAuth client/scopes, and required Google API access.
+  Rajvansh retains `components/ExtensionShell.tsx` and `assets/shell.css`; dependency changes remain coordinated.
 
 Review and merge the scaffold before both people edit shared configuration.
 M1-B adds the background worker, Chrome Identity, a stable public manifest key, and suitable API permissions after the handoff.
 Those settings are deliberately absent from M1-A.
+Use Eddy's [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md) for the public configuration values.
+After adding the key, both laptops must verify the installed extension ID is `pidejkbkldalibjaehjfpjkcpjpcenpk`.
+M0 still needs one shared demo folder and a Doc with a nested tab; Google Console setup alone does not prove an API read.
 M1-C remains the joint agreement on graph types and fixtures; React Flow and ELK arrive with M2, and PDF.js with M4.
 The merger updates STATUS with verified shared progress after review and brings main into both working branches.
 
