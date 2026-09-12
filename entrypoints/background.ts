@@ -5,6 +5,7 @@ import { getAccountKey } from '../lib/google/account';
 import { checkTargets } from '../lib/google/availability';
 import { listFolderChildren } from '../lib/google/drive';
 import { getDocumentTabs } from '../lib/google/docs';
+import { extractSelectedTabs } from '../lib/google/docs-content';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository, storageError } from '../lib/storage/repository';
 import { pdfReaderPath } from '../lib/pdf/navigation';
@@ -88,6 +89,13 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       return { ok: true, data: await listFolderChildren(request.folderId) };
     case 'GET_DOC_TABS':
       return { ok: true, data: await getDocumentTabs(request.documentId) };
+    case 'DOC_TEXT_PREVIEW': {
+      const account = await getAccountKey();
+      const data = await extractSelectedTabs(request.documentId, request.tabIds, account);
+      if (await getAccountKey() !== account) throw new Error('Your Google account changed. Preview the selection again.');
+      if (data.tabs.length !== request.tabIds.length) throw new Error('A selected tab is no longer available. Reload the tab list and select again.');
+      return { ok: true, data };
+    }
     case 'PANEL_STATE': {
       const context = sender.url ? getPageContext(sender.url) : null;
       if (!context || sender.tab?.id === undefined || !request.source.startsWith(`${context.kind}:`)) return { ok: false, error: 'Panel state requires a supported source tab.' };

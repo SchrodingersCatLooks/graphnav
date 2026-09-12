@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { browser } from 'wxt/browser';
 import type { PDFDocumentProxy } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -12,6 +12,8 @@ import { pdfReaderPath, type PdfLocator } from '../../lib/pdf/navigation';
 import { loadPdf } from '../../lib/pdf/runtime';
 import { locatorSchema } from '../../lib/graph/types';
 import { storageError } from '../../lib/storage/repository';
+import { extractSelectedPages } from '../../lib/pdf/selected-text';
+import type { GenerationSource } from '../../lib/generation/selection';
 import './style.css';
 
 const library = new PdfLibrary();
@@ -24,6 +26,12 @@ function Reader() {
   const [missing, setMissing] = useState<string | null>(null), [target, setTarget] = useState<PdfLocator | null>(null), [zoom, setZoom] = useState(1);
   const targetRef = useRef<PdfLocator | null>(null), mapRef = useRef<string | undefined>(undefined);
   const params = useRef(new URLSearchParams(location.search));
+  const generationSource = useMemo<GenerationSource | undefined>(() => loaded ? {
+    id: `pdf:${loaded.extraction.fingerprint}`, kind: 'pdf',
+    disclosure: 'Only the pages you choose are read for this preview. The PDF stays on this laptop; previewing sends nothing to AI.',
+    choices: async () => Array.from({ length: loaded.document.numPages }, (_, pageIndex) => ({ id: String(pageIndex), title: `Page ${pageIndex + 1}`, detail: loaded.extraction.sections.filter((section) => section.pageIndex === pageIndex).map((section) => section.title).join(' · ') })),
+    read: (ids, signal) => extractSelectedPages(loaded.document, loaded.extraction.fingerprint, ids.map(Number), signal),
+  } : undefined, [loaded]);
   async function refreshLibrary() { setSavedPdfs(await library.list()); }
   function goTo(locator: PdfLocator, mapId = mapRef.current) {
     targetRef.current = locator; setTarget(locator); mapRef.current = mapId;
@@ -99,7 +107,7 @@ function Reader() {
     {error && <div className="reader-error" role="alert">{error}<button onClick={() => setError('')}>Dismiss</button></div>}
     {loading && <p className="reader-notice" role="status">Opening PDF and reading its outline…</p>}
     {loaded && target ? <main className="reader-body">
-      <section className="paper-graph" aria-label="Paper graph"><GraphEditor key={loaded.key} initialGraphId={loaded.initialGraphId} onBusyChange={setGraphBusy} onGraphChange={(id) => { if (targetRef.current) { mapRef.current = id; history.replaceState(null, '', pdfReaderPath(targetRef.current, id)); } }} onNavigatePdf={navigatePdf} sourceTools={(props) => <PdfSourcePicker {...props} extraction={loaded.extraction} title={loaded.title} library={library} />} /></section>
+      <section className="paper-graph" aria-label="Paper graph"><GraphEditor generationSource={generationSource} key={loaded.key} initialGraphId={loaded.initialGraphId} onBusyChange={setGraphBusy} onGraphChange={(id) => { if (targetRef.current) { mapRef.current = id; history.replaceState(null, '', pdfReaderPath(targetRef.current, id)); } }} onNavigatePdf={navigatePdf} sourceTools={(props) => <PdfSourcePicker {...props} extraction={loaded.extraction} title={loaded.title} library={library} />} /></section>
       <section className="paper-reading" aria-label="Paper reader"><div className="page-toolbar"><button disabled={target.pageIndex === 0} onClick={() => goTo({ kind: 'pdf', fingerprint: target.fingerprint, pageIndex: target.pageIndex - 1 })}>Previous page</button><label>Page<input aria-label="PDF page number" type="number" min={1} max={loaded.document.numPages} value={target.pageIndex + 1} onChange={(event) => { const page = Number(event.target.value); if (Number.isInteger(page) && page >= 1 && page <= loaded.document.numPages) goTo({ kind: 'pdf', fingerprint: target.fingerprint, pageIndex: page - 1 }); }} /></label><span>of {loaded.document.numPages}</span><button disabled={target.pageIndex + 1 === loaded.document.numPages} onClick={() => goTo({ kind: 'pdf', fingerprint: target.fingerprint, pageIndex: target.pageIndex + 1 })}>Next page</button><label>Zoom<select aria-label="PDF zoom" value={zoom} onChange={(event) => setZoom(Number(event.target.value))}><option value={.75}>75%</option><option value={1}>Fit width</option><option value={1.5}>150%</option><option value={2}>200%</option></select></label></div>
         <PdfPage document={loaded.document} target={target} zoom={zoom} />
         <footer className="reader-footer"><span>Original PDF saved in this Chrome profile. JSON graph backups exclude PDF bytes.</span><button disabled={loading || graphBusy} onClick={() => { if (confirm('Remove the saved PDF bytes from this Chrome profile? Your graph and notes will remain. You will need the original PDF to read it again.')) void library.remove(loaded.extraction.fingerprint).then(async () => { setLoaded(null); setTarget(null); setMissing(loaded.extraction.fingerprint); await loaded.document.loadingTask.destroy(); await refreshLibrary(); }).catch((reason) => setError(storageError(reason))); }}>Remove saved PDF</button></footer>

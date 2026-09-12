@@ -147,3 +147,27 @@ test('the instructions forbid the things validation enforces', async () => {
   expect(instructions).toContain('Do not invent URLs');
   expect(instructions).toContain('return empty lists rather than guessing');
 });
+
+test('an empty draft still needs the correct schema and input identity', async () => {
+  const { input } = await buildInput();
+  expect((await requestDraft(input, providerReturning({ kind: 'json', text: JSON.stringify({ nodes: [], relationships: [] }) }))).status).toBe('invalid');
+});
+
+test('timeout ignores late successful output from a provider that does not cooperate with abort', async () => {
+  const { input, hash } = await buildInput();
+  const outcome = await requestDraft(input, providerReturning(() => new Promise((resolve) => setTimeout(() => resolve({ kind: 'json', text: goodDraft(hash) }), 80))), 10);
+  expect(outcome.status).toBe('timeout');
+});
+
+test('caller cancellation returns promptly and invalid input never calls the provider', async () => {
+  const { input } = await buildInput();
+  const controller = new AbortController();
+  let called = false;
+  const request = requestDraft(input, providerReturning(() => { called = true; controller.abort(); return new Promise(() => {}); }), 100, controller.signal);
+  expect((await request).status).toBe('cancelled');
+  expect(called).toBe(true);
+  called = false;
+  const invalid = await requestDraft({ ...input, totalCharacters: 1 }, providerReturning(() => { called = true; return new Promise(() => {}); }));
+  expect(invalid.status).toBe('invalid');
+  expect(called).toBe(false);
+});

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { GraphMark } from '../GraphMark';
 import { GraphCanvas, type Selection } from '../graph/GraphCanvas';
 import { destinationUrl, effectiveLabel, LIMITS, type Graph, type GraphSnapshot, type GraphNode, type Locator } from '../../lib/graph/types';
@@ -8,14 +8,18 @@ import { SourcePicker } from './SourcePicker';
 import { sendToBackground, type CheckTargetsResult } from '../../lib/messages';
 import { projectGraph } from '../../lib/graph/view';
 import { pdfReaderPath, type PdfLocator } from '../../lib/pdf/navigation';
+import { GenerationPanel } from '../generation/GenerationPanel';
+import { docsGenerationSource, type GenerationSource } from '../../lib/generation/selection';
 import './editor.css';
 
 const storageError = (reason: unknown) => reason instanceof Error ? reason.message : 'The change could not be saved. Please retry.';
 type Action = (current: GraphSnapshot | null) => Promise<string | void>;
 export type SourceToolsProps = { snapshot: GraphSnapshot | null; selectedNode?: GraphNode; busy: boolean; apply: (action: Action) => Promise<boolean> };
-type Props = { context?: SourceContext; authEpoch?: number; activeTabId?: string; layoutKey?: string; initialGraphId?: string | null; sourceTools?: (props: SourceToolsProps) => ReactNode; onNavigatePdf?: (locator: PdfLocator) => Promise<void>; onBusyChange?: (busy: boolean) => void; onGraphChange?: (id: string) => void };
-export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = 'workspace', initialGraphId, sourceTools, onNavigatePdf, onBusyChange, onGraphChange }: Props) {
+type Props = { generationSource?: GenerationSource; context?: SourceContext; authEpoch?: number; activeTabId?: string; layoutKey?: string; initialGraphId?: string | null; sourceTools?: (props: SourceToolsProps) => ReactNode; onNavigatePdf?: (locator: PdfLocator) => Promise<void>; onBusyChange?: (busy: boolean) => void; onGraphChange?: (id: string) => void };
+export function GraphEditor({ generationSource, context, authEpoch = 0, activeTabId, layoutKey = 'workspace', initialGraphId, sourceTools, onNavigatePdf, onBusyChange, onGraphChange }: Props) {
   const embedded = !!context || !!sourceTools;
+  const docsSource = useMemo(() => context?.kind === 'docs' ? docsGenerationSource(context.sourceId) : undefined, [context?.kind, context?.sourceId, authEpoch]);
+  const aiSource = generationSource ?? docsSource;
   const [toolsOpen, setToolsOpen] = useState(true);
   const [canvasVersion, setCanvasVersion] = useState(0);
   const previousLayout = useRef(layoutKey);
@@ -145,6 +149,7 @@ export function GraphEditor({ context, authEpoch = 0, activeTabId, layoutKey = '
       <aside className="sidebar" aria-label="Map editor">
         {context && <SourcePicker context={context} snapshot={snapshot} selectedNode={selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined} busy={busy || dirty} authEpoch={authEpoch} apply={applySources} />}
         {sourceTools?.({ snapshot, selectedNode: selection?.itemType === 'node' ? snapshot?.nodes.find((node) => node.id === selection.itemId && node.origin === 'manual') : undefined, busy: busy || dirty, apply: applySources })}
+        {aiSource && <GenerationPanel source={aiSource} graphKey={`${snapshot?.graph.id ?? 'new'}:${snapshot?.graph.contentRevision ?? 0}`} busy={busy || dirty} />}
         <section className="map-picker">
           <h1>Your workspace</h1><p className="muted">Ideas, connections, and a place to return to.</p>
           {graphs.length > 0 && <label>Open a map<select aria-label="Open a map" disabled={busy || dirty} value={snapshot?.graph.id ?? ''} onChange={(event) => { const id = event.target.value; setSelection(null); setQuery(''); void perform(async () => id); }}><option value="" disabled>Choose a map</option>{graphs.map((graph) => <option key={graph.id} value={graph.id}>{graph.title}</option>)}</select></label>}

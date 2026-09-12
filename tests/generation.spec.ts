@@ -193,7 +193,33 @@ test('the input hash changes when the source text changes, marking evidence stal
   const { input, hash } = await buildInput();
   const edited: GenerationInput = {
     ...input,
-    passages: input.passages.map((p, i) => (i === 0 ? { ...p, text: `${p.text} An added sentence.` } : p)),
+    totalCharacters: input.totalCharacters + ' An added sentence.'.length,
+    passages: input.passages.map((p, i) => (i === 0 ? { ...p, text: `${p.text} An added sentence.`, charCount: p.charCount + ' An added sentence.'.length } : p)),
   };
   expect(await hashGenerationInput(edited)).not.toBe(hash);
+});
+
+test('the passage cap applies across the entire selected document', () => {
+  const document: DocsApiDocument = { tabs: ['a', 'b'].map((tabId) => ({
+    tabProperties: { tabId, title: tabId },
+    documentTab: { body: { content: Array.from({ length: 120 }, (_, i) => ({ paragraph: { paragraphStyle: { namedStyleType: 'HEADING_1' }, elements: [{ textRun: { content: `Heading ${i}` } }] } })) } },
+  })) };
+  const result = extractFromDocument(document, DOC, ['a', 'b'], ACCOUNT);
+  expect(result.tabs.flatMap((tab) => tab.passages)).toHaveLength(200);
+  expect(result.truncated).toBe(true);
+});
+
+test('identical text in another account or allowed map context has a different input hash', async () => {
+  const { input, hash } = await buildInput();
+  const otherAccount = { ...input, passages: input.passages.map((passage) => ({ ...passage, accountKey: 'other-account', sourceId: `google-docs:other-account:${DOC}` })) };
+  expect(await hashGenerationInput(otherAccount)).not.toBe(hash);
+  expect(await hashGenerationInput({ ...input, existingNodeIds: ['different-map-node'] })).not.toBe(hash);
+});
+
+test('fabricated counts and duplicate or foreign passages fail before any provider sees content', async () => {
+  const { input } = await buildInput();
+  expect(generationInputSchema.safeParse({ ...input, totalCharacters: 1 }).success).toBe(false);
+  expect(generationInputSchema.safeParse({ ...input, passages: [{ ...input.passages[0], charCount: 1 }] }).success).toBe(false);
+  expect(generationInputSchema.safeParse({ ...input, passages: [input.passages[0], input.passages[0]] }).success).toBe(false);
+  expect(generationInputSchema.safeParse({ ...input, passages: [{ ...input.passages[0], locator: { kind: 'docs', documentId: 'another-document', tabId: 't.0' } }] }).success).toBe(false);
 });

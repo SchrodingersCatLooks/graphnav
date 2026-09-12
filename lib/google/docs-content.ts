@@ -1,7 +1,8 @@
 /**
  * Reads the text of selected Google Docs tabs (G1-B).
  *
- * Only tabs the user picked are read. Nested tabs are not pulled in implicitly,
+ * Only tabs the user picked are processed into passages.
+ * Google returns the document body; selection limits processing and submission. Nested tabs are not pulled in implicitly,
  * because "selected" has to mean what the user chose. Text is grouped under its
  * nearest heading so a reviewer can see where a proposal came from, and the
  * whole read is capped so one request cannot send an entire document.
@@ -58,7 +59,7 @@ function paragraphText(paragraph: Paragraph, links: Set<string>): string {
     const run = element.textRun;
     if (!run?.content) continue;
     text += run.content;
-    // Links are resolved from what was selected; unselected content is never fetched.
+    // Only links encountered while processing the selected tabs are collected.
     const url = run.textStyle?.link?.url;
     if (url && /^https:\/\//i.test(url)) links.add(url);
   }
@@ -118,7 +119,7 @@ export function extractFromDocument(
   const sourceId = `google-docs:${accountKey}:${documentId}`;
   const links = new Set<string>();
 
-  let totalCharacters = 0;
+  let totalCharacters = 0, totalPassages = 0;
   let truncated = false;
   const tabs: ExtractedTab[] = [];
 
@@ -133,14 +134,14 @@ export function extractFromDocument(
       const text = buffer.join('\n').trim();
       buffer = [];
       if (!text) return;
-      if (passages.length >= GENERATION_LIMITS.maxPassages) { truncated = true; return; }
+      if (totalPassages >= GENERATION_LIMITS.maxPassages) { truncated = true; return; }
 
       const remaining = GENERATION_LIMITS.maxCharacters - totalCharacters;
       if (remaining <= 0) { truncated = true; return; }
       const bounded = text.length > remaining ? text.slice(0, remaining) : text;
       if (bounded.length < text.length) truncated = true;
 
-      totalCharacters += bounded.length;
+      totalCharacters += bounded.length; totalPassages += 1;
       passages.push({
         passageId: `${tabId}:${index++}`,
         sourceId,

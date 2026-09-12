@@ -42,6 +42,7 @@ export type Request =
   | { type: 'ACCOUNT_KEY' }
   | { type: 'LIST_FOLDER'; folderId: string }
   | { type: 'GET_DOC_TABS'; documentId: string }
+  | { type: 'DOC_TEXT_PREVIEW'; documentId: string; tabIds: string[] }
   | { type: 'PANEL_STATE'; source: string; open?: boolean }
   | { type: 'PANEL_PREFERENCES'; kind: 'drive' | 'docs'; preferences?: PanelPreferences }
   /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */

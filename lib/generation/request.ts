@@ -10,6 +10,7 @@
 
 import {
   GENERATION_LIMITS,
+  generationInputSchema,
   hashGenerationInput,
   validateDraft,
   type GenerationInput,
@@ -44,6 +45,7 @@ export type GenerationOutcome =
   /** Well-formed transport, unusable content. Never repaired. */
   | { status: 'invalid'; error: string }
   | { status: 'timeout' }
+  | { status: 'cancelled' }
   /** The relay or network failed. Manual maps keep working. */
   | { status: 'unavailable'; error: string }
   | { status: 'busy' };
@@ -99,23 +101,31 @@ export async function requestDraft(
   input: GenerationInput,
   provider: DraftProvider,
   timeoutMs: number = REQUEST_TIMEOUT_MS,
+  signal?: AbortSignal,
 ): Promise<GenerationOutcome> {
   if (active) return { status: 'busy' };
+  const checked = generationInputSchema.safeParse(input);
+  if (!checked.success) return { status: 'invalid', error: checked.error.issues[0]?.message ?? 'The selected content is invalid.' };
+  input = checked.data;
+  if (signal?.aborted) return { status: 'cancelled' };
   active = true;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const cancel = () => controller.abort();
+  signal?.addEventListener('abort', cancel, { once: true });
+  const timer = setTimeout(() => controller.abort(), Math.min(REQUEST_TIMEOUT_MS, Math.max(1, timeoutMs)));
 
   try {
     const inputHash = await hashGenerationInput(input);
     const instructions = buildInstructions(input).replace('${inputHash}', inputHash);
 
-    const reply = await provider.propose({
-      instructions,
-      input: buildInputPayload(input, inputHash),
-      timeoutMs,
-      signal: controller.signal,
-    });
+    if (controller.signal.aborted) return { status: signal?.aborted ? 'cancelled' : 'timeout' };
+    const aborted = new Promise<never>((_resolve, reject) => controller.signal.addEventListener('abort', () => reject(new Error('Request ended.')), { once: true }));
+    const reply = await Promise.race([
+      provider.propose({ instructions, input: buildInputPayload(input, inputHash), timeoutMs, signal: controller.signal }),
+      aborted,
+    ]);
+    if (controller.signal.aborted) return { status: signal?.aborted ? 'cancelled' : 'timeout' };
 
     if (reply.kind === 'refusal') return { status: 'refused', reason: reply.reason };
 
@@ -126,25 +136,20 @@ export async function requestDraft(
       return { status: 'invalid', error: 'The model did not return usable JSON.' };
     }
 
-    // A valid answer proposing nothing is a real result, not a failure.
-    const draft = parsed as { nodes?: unknown[]; relationships?: unknown[] } | null;
-    if (draft && Array.isArray(draft.nodes) && Array.isArray(draft.relationships)
-      && draft.nodes.length === 0 && draft.relationships.length === 0) {
-      return { status: 'empty' };
-    }
-
     const validated = validateDraft(parsed, input, inputHash);
     if (!validated.ok) return { status: 'invalid', error: validated.error };
+    if (!validated.draft.nodes.length && !validated.draft.relationships.length) return { status: 'empty' };
 
     return { status: 'draft', draft: validated.draft, inputHash };
   } catch (error) {
-    if (controller.signal.aborted) return { status: 'timeout' };
+    if (controller.signal.aborted) return { status: signal?.aborted ? 'cancelled' : 'timeout' };
     return {
       status: 'unavailable',
       error: error instanceof Error ? error.message : 'The AI relay could not be reached.',
     };
   } finally {
     clearTimeout(timer);
+    signal?.removeEventListener('abort', cancel);
     active = false;
   }
 }
