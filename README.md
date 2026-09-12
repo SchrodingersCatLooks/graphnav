@@ -16,6 +16,12 @@ The newer storage/editor/auth UI work is in [PR #6](https://github.com/Schroding
 V2 adds GPT-assisted drafts with evidence and accept/edit/reject controls.
 The first manual workspace is implemented on this branch; source integration and the broader V1 checks remain open.
 
+**Current finish target:** the user wants the V1 + V2 MVP by 6 AM, September 12, before a 4 PM local Eastern submission.
+[BUILD_PLAN.md](./BUILD_PLAN.md#ordered-work-and-paired-ownership) has the complete ordered route with a Rajvansh lane, an Eddy lane, dependencies, and pass/fail gates.
+It includes Drive graphs on the page, a left Docs graph, real AI suggestions with saved review decisions, PDF reuse, and the final demo.
+The schedule is an aggressive target, not a completion claim; it reserves sleep, meals, and pitch preparation after code freeze.
+Every open task has an individual owner in [TASK_LIST.md](./TASK_LIST.md).
+
 **Historical M1-A acceptance:** its full second-machine checklist passed after correctly reloading the extension and Google tabs.
 Eddy corrected his earlier clipping/zoom report because a stale content script was still running.
 The accepted code includes the popover/visualViewport fix; both-laptop acceptance is recorded.
@@ -26,7 +32,7 @@ See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
 | File | What it answers | When to update |
 | --- | --- | --- |
 | [IDEA.md](./IDEA.md) | What are we building and why? | When the team changes product scope |
-| [BUILD_PLAN.md](./BUILD_PLAN.md) | In what order, with which tools, and who does what? | When the shared schedule or architecture changes |
+| [BUILD_PLAN.md](./BUILD_PLAN.md) | Full V1 + V2 route, each person's work, deadlines, dependencies, and acceptance checks | When the shared schedule or architecture changes |
 | [TASK_LIST.md](./TASK_LIST.md) | What is each person doing next? | When claiming, blocking, reviewing, or finishing a task |
 | [STATUS.md](./STATUS.md) | What works, what is blocked, and what happens next? | After a merged milestone or shared blocker changes |
 | [AGENTS.md](./AGENTS.md) | How should AI work in this repository? | When the team changes its workflow |

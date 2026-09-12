@@ -5,6 +5,10 @@ The user approved IndexedDB/Dexie, excluded AWS for V1, and explicitly asked Raj
 That rebalances the initial repository work to Rajvansh; Eddy keeps Google authentication, reads, and source adapters.
 This response is a concrete implementation handoff for review, not a claim of Eddy's acceptance or second-laptop OAuth verification.
 
+Later planning checkpoint: Eddy has now added the import/account/worker foundation on `partner-data` at `c6e6b5e`.
+The implementation examples below remain the original contract handoff; do not rebuild work already present in that branch.
+[BUILD_PLAN.md](./BUILD_PLAN.md) and [TASK_LIST.md](./TASK_LIST.md) now provide the complete V1 + V2 sequence, individual assignments, 6 AM code-freeze target, and 4 PM submission schedule.
+
 ## Sign-off and counterproposal
 
 I agree with the SourceGraph/PersonalOverlay separation in meaning: refresh must never regenerate personal work.

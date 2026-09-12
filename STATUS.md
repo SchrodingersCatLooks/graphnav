@@ -19,6 +19,11 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
 - Eddy now reports real folder and nested-Doc reads passing at M1-B checkpoint `a83d545`, with the expected extension ID.
   That code and Rajvansh's local-storage/editor work are integrated on `rajvansh-ui` for [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) review, not merged into main.
 - Demo source IDs are recorded in GOOGLE_SETUP.md; access and real reads on Rajvansh's account remain unverified.
+- Eddy's newer `partner-data` checkpoint `c6e6b5e` adds Drive/Docs import mapping, account lookup, navigation, and worker request validation/tests.
+  He reports real imports and exact destinations passing; browser-restart acceptance and Rajvansh's own-account acceptance remain open.
+  The current navigation opens a new browser tab, so the desired same-tab Docs behavior remains M3-B work.
+  This planning update inspected those changes but did not merge or independently verify them.
+  Rajvansh's screenshots show connected status, the expected extension ID, and a small personal map; raw source reads and the full acceptance sequence remain pending.
 
 ## Version status
 
@@ -26,6 +31,7 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
   Imported structure is allowed, and personal ideas with meaningful labeled relationships remain core.
 - **V2 GPT-assisted:** planned next stage, implementation not started.
   It will generate grounded, editable drafts through the same graph/navigation/storage system.
+  The user now requires V2 in the current MVP effort rather than leaving it optional after the hackathon.
 
 ## Current shared milestone
 
@@ -37,6 +43,8 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
   Rajvansh retains visible UI ownership; Eddy reviews the concrete contract and supplies verified account context and source adapters.
   [M1C_HANDOFF.md](./M1C_HANDOFF.md) records the response to his proposal and ownership; TASK_LIST tracks unmerged work.
 - Next shared checkpoint: the installed extension reads the shared folder and tabbed Doc, and both lanes agree stable graph/node/edge IDs, source destinations, relationship labels/origins, and editing commands.
+- The complete forward route is in [BUILD_PLAN.md](./BUILD_PLAN.md), with individual A/B tasks in TASK_LIST.
+  Target code freeze is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan reserves sleep, meals, deck/demo preparation, and submission buffer.
 
 ## Blockers
 
@@ -54,7 +62,10 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - Manual Refresh and local personal state are the prototype persistence model.
 - Local graph storage uses extension-owned IndexedDB through Dexie, with no AWS or cloud sync in V1.
   Personal edits and source identity remain separate; exact shared types are awaiting Eddy's integration review.
-- Current release order: V1 manual graph creation/editing, navigation, and saving; V2 GPT-assisted editable drafts over selected content. V2 is planned and has not started. Additional platforms remain optional; the last 3 hours stay reserved for presentation preparation.
+- Current release order: first prove V1 on-page manual editing/navigation/saving, then V2 editable drafts over selected content, and reuse both for the PDF experience.
+  V2 is required by the current target but remains unimplemented.
+  Docs uses a left graph with same-document tab navigation; the personal workspace is optional for Google workflows.
+  The 6 AM target is aggressive; any reduction of the complete MVP requires an explicit scope decision and accurate feature claims.
 - Code and task updates must be committed and pushed at working checkpoints, with a returned GitHub commit or PR link. Users' graph data remains separate.
 - Larger-source design requires incremental loading, a bounded visible graph, separate adapters/storage, and versioned personal state. Performance remains untested until implementation.
 
@@ -74,5 +85,8 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 - 2026-09-12: Updated the shared blocker after Eddy's M1-B handoff: his real reads pass; Rajvansh's second-account check is pending.
   Recorded the user's approved local-storage direction and linked the combined PR #6 review.
   Main still contains only the accepted scaffold; no new milestone is marked merged or DONE.
+
+- 2026-09-12: DOC-4 records the user's full V1 + V2 target, on-page/left-Docs experience, individual task ownership, and deadline with protected rest/presentation time.
+  Updated the plan using the observed `88a4d00` UI and `c6e6b5e` partner checkpoints; no runtime change, merge, live source acceptance, or new passing application test is claimed.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.
