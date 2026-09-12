@@ -15,7 +15,7 @@ import {
   validateDraft,
   type GenerationInput,
   type GraphDraft,
-} from './types';
+} from './types.ts';
 
 /** One request at a time, and never longer than this. */
 export const REQUEST_TIMEOUT_MS = 60_000;
