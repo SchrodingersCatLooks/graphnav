@@ -11,14 +11,19 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
   Context changes, Graph/X toggle, Escape focus restoration, host editing, and the popover/viewport layout are covered by the acceptance record.
 - Node 22.23.2/npm 10.9.9: type-check, production build, and six synthetic browser tests passed.
   Eddy reports a clean build on Node 22.23.2/npm 10.9.8 and the full Chrome 152.0.7977.84/macOS 26.5.2 checklist passing after a proper reload.
-  His accepted content-script hash matches the current local production bundle.
+  His accepted content-script hash matches the M1-A merge checkpoint.
 
 ## What is not implemented or verified
 
 - No Google authentication or real API reads, manual graph editor, PDF reader, source actions, persistence, or GPT generator in the merged scaffold.
-- Eddy reports Google Cloud configuration complete on `partner-data` at `9f68af6`; manifest wiring and the background auth handler are next.
-- M0 demo source links and access for both accounts remain unconfirmed.
-  Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, plus a Drive folder with ten subfolders including one nested level.
+- Eddy now reports real folder and nested-Doc reads passing at M1-B checkpoint `a83d545`, with the expected extension ID.
+  That code and Rajvansh's local-storage/editor work are integrated on `rajvansh-ui` for [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6) review, not merged into main.
+- Demo source IDs are recorded in GOOGLE_SETUP.md; access and real reads on Rajvansh's account remain unverified.
+- Eddy's newer `partner-data` checkpoint `c6e6b5e` adds Drive/Docs import mapping, account lookup, navigation, and worker request validation/tests.
+  He reports real imports and exact destinations passing; browser-restart acceptance and Rajvansh's own-account acceptance remain open.
+  The current navigation opens a new browser tab, so the desired same-tab Docs behavior remains M3-B work.
+  This planning update inspected those changes but did not merge or independently verify them.
+  Rajvansh's screenshots show connected status, the expected extension ID, and a small personal map; raw source reads and the full acceptance sequence remain pending.
 
 ## Version status
 
@@ -26,18 +31,20 @@ Last documentation update: 2026-09-12. Update this file after a merged milestone
   Imported structure is allowed, and personal ideas with meaningful labeled relationships remain core.
 - **V2 GPT-assisted:** planned next stage, implementation not started.
   It will generate grounded, editable drafts through the same graph/navigation/storage system.
+  The user now requires V2 in the current MVP effort rather than leaving it optional after the hackathon.
 
 ## Current shared milestone
 
 **M1-B and M1-C: prove real Google reads and agree the shared graph format.**
 
-- Eddy brings main into `partner-data` without resetting or force-pushing.
-  He now owns M1-B changes to `wxt.config.ts` for the public key, Identity permission, OAuth client/scopes, required API access, and the background worker.
-  The exact configuration is in [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md).
-  After the key is added, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
-- Rajvansh retains panel/CSS ownership and coordinates M1-C with Eddy before implementing the M2 graph UI.
-  Dependency changes remain coordinated.
+- Eddy owns the implemented manifest/auth/read worker and the next Drive adapter integration.
+  Rajvansh still needs to confirm extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk` and the real demo reads in his own Chrome profile.
+- The user approved Dexie/IndexedDB without AWS and assigned the initial storage implementation to Rajvansh.
+  Rajvansh retains visible UI ownership; Eddy reviews the concrete contract and supplies verified account context and source adapters.
+  [M1C_HANDOFF.md](./M1C_HANDOFF.md) records the response to his proposal and ownership; TASK_LIST tracks unmerged work.
 - Next shared checkpoint: the installed extension reads the shared folder and tabbed Doc, and both lanes agree stable graph/node/edge IDs, source destinations, relationship labels/origins, and editing commands.
+- The complete forward route is in [BUILD_PLAN.md](./BUILD_PLAN.md), with individual A/B tasks in TASK_LIST.
+  Target code freeze is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan reserves sleep, meals, deck/demo preparation, and submission buffer.
 
 ## Blockers
 
@@ -45,16 +52,30 @@ The scaffold handoff no longer blocks M1-B.
 Eddy corrected the previous second-machine failure report: an improperly reloaded extension left a stale content script in the tab.
 After a proper reload, the popover/visualViewport fix passes the full checklist, including header/X reachability and increased zoom.
 No further UI defect is established by that earlier report, and no new runtime patch was needed.
-Google API reads and demo-source access still need verification; M0 remains open.
+Google API reads pass on Eddy's laptop according to his handoff.
+The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M0 remains open until both-account access is confirmed.
 
 ## Decision record
 
 - Independent Drive, Docs, and paper graphs share one extension and graph component.
 - Rajvansh and partner now work on UI and data within each common milestone. This replaces the earlier split that assigned the whole PDF experience to one person.
 - Manual Refresh and local personal state are the prototype persistence model.
-- Current release order: V1 manual graph creation/editing, navigation, and saving; V2 GPT-assisted editable drafts over selected content. V2 is planned and has not started. Additional platforms remain optional; the last 3 hours stay reserved for presentation preparation.
+- Local graph storage uses extension-owned IndexedDB through Dexie, with no AWS or cloud sync in V1.
+  Personal edits and source identity remain separate; exact shared types are awaiting Eddy's integration review.
+- Current release order: first prove V1 on-page manual editing/navigation/saving, then V2 editable drafts over selected content, and reuse both for the PDF experience.
+  V2 is required by the current target but remains unimplemented.
+  Docs uses a left graph with same-document tab navigation; the personal workspace is optional for Google workflows.
+  The 6 AM target is aggressive; any reduction of the complete MVP requires an explicit scope decision and accurate feature claims.
 - Code and task updates must be committed and pushed at working checkpoints, with a returned GitHub commit or PR link. Users' graph data remains separate.
 - Larger-source design requires incremental loading, a bounded visible graph, separate adapters/storage, and versioned personal state. Performance remains untested until implementation.
+
+- Feature coverage audit: FEATURE_SPEC now traces manual planning, on-page Drive/Docs, content-aware AI, PDF reading, many/group connections, selected source combinations, author actions, placement, persistence, and expansion boundaries.
+  Original completion requirements have explicit X tasks; the earlier blanket deferral is not treated as a user-approved scope reduction.
+  The deadline needs actual checkpoint reassessment, and the account owner must approve any Google write grant before real authoring actions.
+
+- Source-assisted V1 is now explicit: ready-to-add suggestions and autofilled source nodes, Add selected, and editable structural baselines must work without GPT.
+  BUILD_PLAN supplies 15 dependency-ordered steps, and N1 assigns the shared chooser/contract before Drive, Docs, PDF, and AI integration.
+  Current runtime/main acceptance is unchanged by this planning clarification.
 
 ## Completed action log
 
@@ -68,5 +89,21 @@ Google API reads and demo-source access still need verification; M0 remains open
 - 2026-09-12: Merged M1-A PR #3 as `92a76ce` after Eddy's corrected full second-machine acceptance.
   Verified main contains the tested scaffold and matches the accepted runtime; marked M1-A DONE and handed M1-B manifest/background ownership to Eddy.
   M0 sources and M1-C remain open; no Google API read is claimed.
+
+- 2026-09-12: Updated the shared blocker after Eddy's M1-B handoff: his real reads pass; Rajvansh's second-account check is pending.
+  Recorded the user's approved local-storage direction and linked the combined PR #6 review.
+  Main still contains only the accepted scaffold; no new milestone is marked merged or DONE.
+
+- 2026-09-12: DOC-4 records the user's full V1 + V2 target, on-page/left-Docs experience, individual task ownership, and deadline with protected rest/presentation time.
+  Updated the plan using the observed `88a4d00` UI and `c6e6b5e` partner checkpoints; no runtime change, merge, live source acceptance, or new passing application test is claimed.
+
+- 2026-09-12: DOC-5 publishes the feature/use-case specification after auditing IDEA history, runtime contracts, and official integration documentation.
+  Added paired completion/expansion tasks and removed contradictory blanket scope deferrals; main/runtime remain unchanged and no new acceptance is claimed.
+
+- 2026-09-12: DOC-6 records the user's source-assisted manual workflow and replaces expired feature slots with concrete ordered lane instructions, tools, handoffs, and gates.
+  Added N1-A/N1-B, reordered the existing task rows without resetting evidence, and preserved Eddy's latest reported handoff; documentation only.
+
+- 2026-09-12: DOC-7 prepares the shared plan/tracker/specification for a documentation-only PR to main at the user's request.
+  Runtime, dependencies, configuration, and tests remain unchanged; PR #6 still holds the unmerged application work.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.

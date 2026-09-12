@@ -18,14 +18,25 @@ Suggested pitch: **Turn the information you already use into a map you can navig
 
 ## Product versions
 
-**Current decision: ship V1 with manual graph creation and editing first, then build V2 with GPT-assisted graph generation.** V2 is a planned development stage, not an implemented feature. Both versions use the same graph, source navigation, and persistence system.
+**Current decision: complete the initial V1 manual workflow, then deliver V2 GPT-assisted graph generation in the same MVP effort.**
+The user explicitly wants the complete route through V2 by the 6 AM code-freeze target on September 12, ahead of a 4 PM local Eastern submission.
+V2 is required by that target but is not yet implemented.
+Both versions use the same graph, source navigation, and persistence system.
+The timeboxes and explicit fallback decision points are in BUILD_PLAN.
 
 | Version | User experience | Role of automation |
 | --- | --- | --- |
-| V1 Manual graph | Start a personal graph or import a source outline; add source-linked nodes and idea nodes, connect them, label/edit/remove personal relationships, arrange the view, navigate, and save | APIs and PDF parsing may import real structure and source destinations. People create the meaningful conceptual connections. No model is required. |
+| V1 Manual graph | Start a personal graph or import a source outline; add source-linked nodes and idea nodes, connect them, label/edit/remove personal relationships, arrange the view, navigate, and save | APIs and PDF parsing must offer source suggestions, autofilled nodes, and an editable structural baseline without GPT. People create the meaningful conceptual connections. No model is required. |
 | V2 Generate a draft | Select content, request a generated draft, inspect proposed concepts/relationships and their supporting passages, accept/edit/reject them, then navigate and save | GPT proposes an editable graph over selected content. It does not replace the graph editor or silently establish relationships as facts. |
 
 Manual does not mean retyping every folder and tab. Automatically importing containment or explicit source links is compatible with V1. The distinguishing V1 completion check is a user-created idea and labeled relationship that can be edited, reopened, and followed to a real source. Source nodes retain provider titles/IDs; personal display labels do not rename original files.
+
+**Assisted manual creation is required.**
+When opening a source graph, offer existing folders/files, tabs/sub-tabs, or PDF sections/pages with their names and destinations already filled in.
+Users can add selected items, build a baseline from the source with one action, or create an original idea.
+Both source suggestions and baseline creation work without GPT.
+Using GPT is the user's choice; the V2 generation feature remains part of our release target and does not gate source import or editing.
+Previously saved maps reopen as saved rather than being regenerated on every visit.
 
 A user can remove personal nodes/edges or hide source items from a view. Those actions never delete the original source. Source mutations such as creating a folder or renaming a Doc tab remain separate explicit actions with permission checks.
 
@@ -54,10 +65,11 @@ Both lead to the same editable graph controls and saved personal state.
 Explore and Build describe the controls currently shown, independently of how the graph was first created.
 
 Both manual creation and generated editable maps belong to the intended product.
-V1 may import source structure such as folders, tabs, and PDF section anchors while users create meaningful connections.
+V1 must offer ready-to-add source items and automatic baseline import for folders, tabs, and PDF section/page anchors while users create meaningful connections.
 V2 adds the content analysis and proposed concepts/relationships described above; structural imports alone do not fulfill that generation stage.
 
-The choices are specified here for implementation in the later milestones; the current M1-A shell does not implement them.
+The manual workspace foundation exists on the review branch; source-page integration and generation remain open tasks.
+Use TASK_LIST for current evidence and STATUS for what is merged.
 
 ### Supported source experiences
 
@@ -75,7 +87,11 @@ Authors can use graphs to plan and organize their own material. Readers can gene
 
 ## Interaction rules
 
-- Keep a persistent Graph button on supported pages. Opening the map is optional; closing it restores the normal interface.
+- Keep a persistent Graph button on supported pages.
+  Opening the map is optional; closing it restores the normal interface.
+- The primary Drive and Docs workflow runs inside the existing source page.
+  In Docs, place the graph on the left while the original document stays editable and tab-node clicks navigate within that document.
+  The separate My maps workspace remains an optional place for personal maps, not a required detour for source navigation.
 - Use the same graph controls across Drive, Docs, and the PDF reader: expand/collapse, focus, zoom, search, select, and open.
 - Selecting a node shows its label, type, and available details. Do not require generated summaries for previews.
 - A document tab opens that tab. A paper section opens its real page or destination. A folder expands its children or opens in Drive.
@@ -106,15 +122,26 @@ The scope boundary is practical: tab and folder creation can change the real sou
 4. **Personal edit:** autosave changes to layout, labels, notes, and connections.
 5. **Refresh:** read the source again and update generated nodes while preserving personal edits for surviving source IDs. Mark missing destinations instead of silently reassigning them.
 
-For tonight, Refresh is manual and the interface shows when data was last refreshed. Cache is scoped by source and Google account. Google source access must still be authorized; a cached graph does not grant new access. Graph metadata lives in extension local storage; saved PDF bytes live in IndexedDB. Local data survives browser restarts but is not team sync or a permanent cloud backup, and uninstalling the extension can remove it.
+For the MVP, Refresh is manual and the interface shows when data was last refreshed.
+Cache is scoped by source and Google account.
+Google source access must still be authorized; a cached graph does not grant new access.
+Graph records and saved PDF bytes belong in extension-owned IndexedDB through Dexie, with small panel preferences separate.
+Local data survives browser restarts but is not team sync or a permanent cloud backup, and uninstalling the extension can remove it.
 
 ## Tonight's concrete target
 
-Tonight targets V1: one installed extension with a shared manual graph editor, real Drive/Docs navigation, and one text-based paper map as time permits. First prove the full manual cycle on one supported surface: import or attach a source, add an idea, create and label a relationship, edit/remove personal items, follow a source destination, save, reopen, and refresh without losing edits. Then reuse it across the other surfaces. A real source creation action remains a follow-on target after the manual graph works.
+The complete hackathon MVP now includes V1 and V2: one installed extension with manual editing, on-page Drive/Docs navigation, grounded AI draft review, persistent personal work, and one text-based PDF experience.
+First prove the full manual cycle on the Google surfaces: import or attach a source, add an idea, connect and label it, edit/remove personal items, follow a destination, save, reopen, and refresh without losing edits.
+Then prove selected-Doc generation with inspectable evidence, accept/edit/reject, and preserved decisions; reuse that path for PDF text.
+PDF remains in the complete target, but an explicit user-approved scope reduction can prioritize a working Drive/Docs/AI demo if the deadline is missed.
+Real source creation remains an intended authoring requirement, now explicitly tracked under X3.
+The earlier plan postponed it without a resolved delivery decision; FEATURE_SPEC separates this completion work from the core navigation target so the tradeoff stays visible.
 
 For PDF extraction, embedded bookmarks are the first choice. Otherwise extract text with page positions, propose heading anchors, and allow correction. A manually corrected section is not an automatically understood argument. Full argument extraction, citation discovery, and arbitrary scanned PDFs are later work.
 
-AI coding assistants help implement both versions. GPT-assisted graph generation is the planned V2 stage. Start it only after the V1 manual acceptance check passes and sufficient build time remains, or continue it after the hackathon. Do not describe an unimplemented V2 as working.
+AI coding assistants help implement both versions.
+Begin the V2 implementation after the initial V1 on-page manual acceptance gate; it does not wait for every PDF feature or cosmetic improvement.
+Do not silently defer V2 or describe an unimplemented generator as working.
 
 ## Decisions and later possibilities
 
@@ -126,7 +153,9 @@ AI coding assistants help implement both versions. GPT-assisted graph generation
 | Papers as sections, ideas, arguments, references | Start with section/page navigation and personal idea connections; add deeper extraction later |
 | Author organization | Start with folder creation and Doc tab actions; defer drag-to-move, deletion, and broad restructuring |
 | Manual meaningful connections | Core V1, including editable labels, idea nodes, and source attachments |
-| GPT-assisted concepts and relationships | Planned V2 with source evidence, review, and preserved edits |
-| Cross-source links | Supported as a future selected-scope option; no forced universal graph |
+| GPT-assisted concepts and relationships | Required in the current MVP target, with source evidence, review, and preserved edits; implementation remains open |
+| Cross-source links | Intended selected-source project-map workflow tracked as X2; independent maps remain supported; no forced universal graph |
+
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) maps these use cases to concrete features, tools, contracts, owners, and tests, including original requirements left without a delivery slot by the earlier schedule.
 
 The concept-map pictures are visual inspiration. Their example subject matter is not part of the product requirements.

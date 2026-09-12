@@ -4,17 +4,24 @@ A Chrome extension for navigating and organizing Drive folders, Google Docs tabs
 
 **Current state:** the M1-A extension shell is merged and accepted through [PR #3](https://github.com/SchrodingersCatLooks/graphnav/pull/3).
 It adds a Graph button and reversible empty panel on My Drive, Drive folders, and Google Docs, plus a toolbar popup with launch instructions.
-Google data, interactive source graphs, sign-in, PDFs, and saved state are not implemented.
+Google data, interactive source graphs, sign-in, PDFs, and saved state are not implemented in this merged scaffold.
+Newer personal-editor/storage/auth work is available for review in [PR #6](https://github.com/SchrodingersCatLooks/graphnav/pull/6); follow [its branch-specific build and acceptance instructions](https://github.com/SchrodingersCatLooks/graphnav/blob/3adc4da/README.md) to test that version.
 [TASK_LIST.md](./TASK_LIST.md) tracks the next work; [STATUS.md](./STATUS.md) records the merged result and M1-B handoff.
 
 **Release order:** V1 provides manual graph creation/editing, source navigation, and saving.
 V2 adds GPT-assisted drafts with evidence and accept/edit/reject controls.
-Both remain planned beyond the current shell.
+Both remain planned beyond the current shell on main, with partial implementation on the review branches.
+The shared target includes assisted manual creation, editable source baselines without GPT, and V2 evidence-backed generation.
 
 **Acceptance:** the full second-machine checklist passes after correctly reloading the extension and Google tabs.
 Eddy corrected his earlier clipping/zoom report because a stale content script was still running.
 The accepted code includes the popover/visualViewport fix; both-laptop acceptance is recorded.
 See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
+
+**Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
+[FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
+The code-freeze target is 6 AM and submission is 4 PM on September 12, local Eastern time; the plan includes rest and pitch preparation.
+Publishing these documents does not merge the application features they describe.
 
 ## Start here
 
@@ -22,6 +29,9 @@ See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
 | --- | --- | --- |
 | [IDEA.md](./IDEA.md) | What are we building and why? | When the team changes product scope |
 | [BUILD_PLAN.md](./BUILD_PLAN.md) | In what order, with which tools, and who does what? | When the shared schedule or architecture changes |
+| [FEATURE_SPEC.md](./FEATURE_SPEC.md) | Which workflows, controls, APIs, data, and tests must fit together? | When requirements or integration contracts change |
+| [STORAGE_DESIGN.md](./STORAGE_DESIGN.md) | What is the local storage direction and implemented review-branch subset? | When storage contracts change |
+| [M1C_HANDOFF.md](./M1C_HANDOFF.md) | What is the current shared contract and Google integration handoff? | At integration checkpoints |
 | [TASK_LIST.md](./TASK_LIST.md) | What is each person doing next? | When claiming, blocking, reviewing, or finishing a task |
 | [STATUS.md](./STATUS.md) | What works, what is blocked, and what happens next? | After a merged milestone or shared blocker changes |
 | [AGENTS.md](./AGENTS.md) | How should AI work in this repository? | When the team changes its workflow |
@@ -145,13 +155,13 @@ M1-B adds the background worker, Chrome Identity, a stable public manifest key, 
 Those settings are deliberately absent from M1-A.
 Use Eddy's [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md) for the public configuration values.
 After adding the key, both laptops must verify the installed extension ID is `pidejkbkldalibjaehjfpjkcpjpcenpk`.
-Eddy is preparing the shared demo folder and a Doc with a nested tab.
-M0 stays open until their links and both-account access are confirmed; Google Console setup alone does not prove an API read.
-M1-C remains the joint agreement on graph types and fixtures; React Flow and ELK arrive with M2, and PDF.js with M4.
+Eddy reports the shared folder and nested-Doc reads/imports working on partner-data; Rajvansh's complete own-account acceptance remains open.
+M1-C review uses the implemented contract linked from M1C_HANDOFF; React Flow/Dexie are present on the review branch, while ELK and PDF.js integration remain planned.
+None of that branch runtime is added to main by publishing the plan.
 The merger updates STATUS with verified shared progress after review and brings main into both working branches.
 
-The selected stack and official implementation references remain in BUILD_PLAN.
-No hosted website is required for the local extension demo.
+The selected stack and official implementation references are in FEATURE_SPEC, with implementation order in BUILD_PLAN.
+Manual maps need no AI server; the planned V2 workflow requires the local model relay described there.
 
 ## Provenance
 
