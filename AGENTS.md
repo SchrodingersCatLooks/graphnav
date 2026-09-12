@@ -13,7 +13,8 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
 ## Product boundaries
 
 - Current target includes V1 manual graph creation/editing, source navigation, and persistence, followed by V2 GPT-assisted draft generation in the same build session.
-  V2 is required by the user's current target, not yet implemented, and must not be silently deferred or described as working.
+  V2 is required by the user's current target.
+  Selected-content generation and saved review are implemented; use TASK_LIST and actual validation to distinguish the core workflow from unfinished requirements.
   Prove the initial on-page V1 loop before applying AI drafts to live graphs; do not make manual editing depend on a model.
   The user removed the 6 AM code freeze.
   Continue the full V1/V2 scope and usability work toward the 4 PM submission in the user's local Eastern time, preserving human rest, meals, pitch preparation, and submission planning.

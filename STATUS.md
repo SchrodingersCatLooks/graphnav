@@ -1,8 +1,14 @@
 # Current project status
 
-Last shared update: 2026-09-12, UX4 unified Add and saved direct graph editing.
+Last shared update: 2026-09-12, presentation-readiness audit of main runtime 2553ef7.
 
 ## Working on main
+
+**Presentation audit, 2026-09-12:** main runtime [2553ef7](https://github.com/SchrodingersCatLooks/graphnav/commit/2553ef7) passes extension and relay typechecks, production build, ZIP packaging, and all 163 tests in 1.5 minutes on Node 22.23.2 / npm 10.9.9.
+Eddy's morning work adds saved AI review/decision backups, undo, direct canvas create/rename/delete, PDF-map reopening verification, and a shared visual theme.
+The package-install test checks the stable extension ID and extension pages.
+Tests use isolated Chromium, synthetic Google responses, authored PDFs, and a synthetic AI provider; this audit does not establish current live Google access or paid generation on the presentation laptop.
+Core manual/source-assisted graphs and saved AI review are implemented; the remaining requirements and final real demo acceptance stay open in TASK_LIST.
 
 [PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19) (3266257, runtime 12f238d) implements the requested Add, card and connection editor behavior.
 Add combines personal ideas with a scrollable source tree and ranked name search.
@@ -32,7 +38,7 @@ UX4 now opens the chosen graph ready to edit and combines source autofill and id
 Done editing remains available to pause dragging.
 Drive's Automated path selects one recognized Google Doc at the current folder level and previews only selected tab text in the overlay.
 It does not crawl Drive or infer content from folder names.
-The graph container is saved, while generated suggestions remain unsaved previews until G3-A.
+The graph container is saved; suggestions remain drafts until the user explicitly saves review decisions through the now-connected G3 controls.
 Connected Google-context maps are account scoped before their first source import.
 Both typechecks, production build and all 139 tests (1.1 minutes) passed on Node 22.23.2 / npm 10.9.9.
 Before the full suite, overview navigation and compact-launcher checks each passed three repeated runs after the startup fix.
@@ -58,7 +64,7 @@ Chrome remains responsible for the account offered by sign-in.
 [PR #11](https://github.com/SchrodingersCatLooks/graphnav/pull/11) adds selected-content preview and integrates Eddy work through 179d98f.
 [PR #14](https://github.com/SchrodingersCatLooks/graphnav/pull/14) adds floating panel movement, resizing and saved placement.
 [PR #15](https://github.com/SchrodingersCatLooks/graphnav/pull/15) adds the selected project-map workflow across Docs and PDFs.
-The current main runtime includes UX4 at 12f238d and Eddy's ddf566d proposal-store backend, preserved through c6d700f.
+The current main runtime is 2553ef7, including UX4 and Eddy's morning review, backup, undo, canvas interaction, packaging, and theme checkpoints.
 Eddy's application work through 179d98f is included through normal merges.
 
 - Drive and Docs offer Add existing with source names, kinds, paths, and destinations filled in; choose selected items or build a structural baseline without GPT.
@@ -94,12 +100,12 @@ Eddy's application work through 179d98f is included through normal merges.
   One real OpenAI request returned eight ideas and eight connections from two explicitly selected authored PDF pages, with exact evidence navigation and unchanged saved graph.
 - Eddy's authored six-page demo paper and generation/scale tests are now included on main.
 - Eddy's additive proposal-decision table and typed acceptance/recall methods are now merged.
-  Their storage tests pass, but no browser control calls them yet; generated suggestions remain unsaved previews in the current UI.
-  Proposal decisions are not yet included by the editor's actual export/import methods despite the newer backup schema accepting them.
+  Browser controls now accept, rename, and dismiss suggestions, then save decisions atomically.
+  Version 2 backups include decisions, restore their copied record IDs, and retain compatibility with version 1 backups.
 
 ## Verification and limits
 
-The current UX4 runtime passed both typechecks, production build and all 142 tests in 1.3 minutes.
+The earlier UX4 runtime passed both typechecks, production build and all 142 tests in 1.3 minutes.
 Earlier checkpoint: Node 22.23.2 / npm 10.9.9: extension and relay typechecks, production build and all 134 tests passed; the final full suite completed in 56.3 seconds.
 Screenshots of the Drive, Docs and PDF layouts were inspected.
 The user still needs to reload the existing extension, refresh Google tabs and retest the reported live Google screens using REVIEW_WALKTHROUGH.
@@ -133,34 +139,26 @@ This includes mocked API responses and is not a real Google latency or productio
 Group junctions are additional rendered elements; dense relationship-heavy graphs still need broader performance testing.
 PDF limits are 20 MiB per file, 300 pages, and 100 MiB total saved PDF bytes.
 Password-protected PDFs and OCR are unsupported.
-Group membership controls, mixed-source workflow completion, source authoring, and persistent AI review remain open.
-Backups currently exclude PDF bytes and future AI decisions.
+Group membership controls, combined multi-source AI input, source authoring, deeper Docs heading navigation, and final live acceptance remain open.
+Backups include AI decisions but exclude original PDF bytes.
 No complete-MVP or production-scale acceptance is claimed.
 
 ## Next work and account action
 
-UX4-A is merged and verified in PR #19.
-Read UX4_HANDOFF for the additive overlay/layout fields before editing the shared schema.
-Rajvansh next continues G3-A's persistent AI review UI using Eddy's existing proposal store.
+Main runtime 2553ef7 includes the core manual, source-assisted, and saved AI-review workflows.
+Eddy implemented the morning G3 UI/backup integration plus direct create/rename/delete, bounded undo, and a shared visual theme.
+Rajvansh is auditing that merged runtime for presentation readiness, without changing application code.
 
-UX3-A is merged in [PR #18](https://github.com/SchrodingersCatLooks/graphnav/pull/18) and remains REVIEW for user feedback on the actual Google screens.
-Reload GraphNav on chrome://extensions and refresh open Drive/Docs tabs before following REVIEW_WALKTHROUGH.
-The previously reported stale-content-script problem makes both steps necessary.
-Rajvansh next addresses concrete usability feedback and connects G3-A proposal review controls to PROPOSAL_STORE_HANDOFF.
-Eddy retains proposal storage and decision-backup integration.
-UX3 changes no schema, adapters, manifest, provider settings or proposal contracts.
-The existing openPageMap API remains available, but the opening UI no longer calls it to create graphs automatically.
+On the demo laptop, reload the existing GraphNav installation in chrome://extensions, then refresh Drive/Docs tabs.
+Keep the existing installation to retain local maps.
+Verify the actual demo folder, one nested Doc tab destination, one manual connection, a close/reopen, and one selected-content AI review/save.
+The prior stale-content-script issue makes both extension reload and page refresh necessary.
+Use relay/README.md for private startup and pairing; a successful health response alone does not establish live generation.
+Record a backup demo and export the chosen graph; keep its original PDF available separately.
 
-G1 selected-content preview and G2 relay generation/evidence display are merged through PR #13.
-Eddy should bring main into partner-data and read GENERATION_HANDOFF before editing shared generation/type/request files.
-His relay work through a8325dc is merged and reconciled with the extension client.
-Eddy owns G3-B proposal persistence, decisions, additive migration and atomic acceptance/backup methods.
-Rajvansh owns the G3-A review UI; X2-A's manual project-map selection/navigation is now merged.
-Eddy's typed proposal-store/decision handoff is now present in PROPOSAL_STORE_HANDOFF at ddf566d and on main c6d700f.
-Rajvansh can review and connect G3-A after the user's current usability check-in.
-The remaining G3-B review includes decision backup export/import; the editor still emits version 1 snapshots without decisions.
-Combined multi-source AI input, group membership controls and source-authoring/heading actions remain open.
-Persistent accepted/edited/rejected AI decisions remain open; no complete V2 acceptance is claimed.
+Read TASK_LIST for the remaining scope instead of treating the presentation deadline as completion.
+Combined multi-source AI input, group membership controls, source-authoring/heading actions, and full real-content usefulness acceptance remain open.
+No production or complete-wishlist acceptance is claimed.
 
 The replacement private key authenticated successfully and completed one real gpt-5-mini-2025-08-07 request in 24,973 ms, using 757 input and 1,552 output tokens.
 Its private ignored .env.relay.local file is not committed or bundled; Chrome stores only a separate relay pairing code.
@@ -298,3 +296,8 @@ For the next entry, record: date, task IDs, actual result, checks performed, com
   The popup draft reset was reproduced and fixed by retaining draft state outside the edge renderer.
   The updated PDF test helper now waits for the editor before deciding which creation control to use.
   Main tracker, README, walkthrough and UX4 storage handoff were updated.
+
+- 2026-09-12: Rajvansh audited main runtime 2553ef7 for the presentation after fetching Eddy's morning work.
+  Extension/relay typechecks, build, ZIP, all 163 tests (1.5 minutes), and the packaged identity/page test passed.
+  Corrected stale G3 review/backup claims in README, STATUS, TASK_LIST and the V2 instruction; application code was unchanged.
+  Inspected Drive and PDF-review screenshots; current live-account/model walkthrough, deck, recording and rehearsal remain human demo preparation.

@@ -22,14 +22,14 @@ The local OpenAI relay now generates real suggestions with supporting text and s
 Suggestions can be added to the map, renamed on the way in, or dismissed, and those decisions persist: regenerating reports what you already decided instead of offering it again.
 See [relay setup](./relay/README.md) for the private configuration and startup command.
 For the current product check-in, follow [the browser review walkthrough](./REVIEW_WALKTHROUGH.md).
-Eddy's proposal-store backend is now on main at c6d700f; the UI still displays unsaved AI drafts until G3-A is connected.
+Eddy's morning checkpoints connect review controls to durable proposal decisions, including backup/import and undo.
 
 PR #14 adds movable/resizable floating panels, saved placement, docking and reset.
 PR #15 adds a visible project-map chooser, Add a PDF to this map, and map continuity when navigating between Docs and PDFs.
-**Still open:** accepted/edited/rejected AI persistence, source-authoring controls, group editing, mixed-source workflow completion and final demo acceptance.
+**Still open:** source-authoring controls, group editing, combined multi-source AI input, deeper Docs heading navigation, and final live demo acceptance.
 V1 and V2 remain in the requested MVP target; TASK_LIST records precise status.
 
-**Latest editor checkpoint:** UX4-A, [PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19).
+**Earlier editor checkpoint:** UX4-A, [PR #19](https://github.com/SchrodingersCatLooks/graphnav/pull/19).
 The unified Add menu, card dimensions, connection labels/direction and window controls use the existing saved graph and PersonalOverlay storage.
 Extension and relay typechecks, production build and all 142 tests (1.3 minutes) passed on Node 22.23.2 / npm 10.9.9.
 Installed tests use synthetic Google responses, authored PDF bytes and a local test AI provider.
@@ -41,7 +41,7 @@ The full suite passed 118/119; one browser-fixture startup timed out before the 
 That test passed three isolated reruns; the startup flake remains recorded under M6-B.
 Installed browser tests use isolated profiles, synthetic Google responses, actual authored PDF bytes and a local HTTP test provider.
 Separately, one actual OpenAI request returned eight ideas/eight connections from two authored PDF pages, with exact evidence navigation and unchanged saved graph.
-No fresh Google-account acceptance or full saved-review loop is implied.
+That earlier live request did not exercise saved review; the later installed-browser review test covers saving and regenerating with a synthetic provider.
 
 **Shared implementation plan:** [BUILD_PLAN.md](./BUILD_PLAN.md) gives the 15-step order, tools, exact instructions for Rajvansh and Eddy, dependencies, and acceptance gates.
 [FEATURE_SPEC.md](./FEATURE_SPEC.md) defines the use cases and contracts, and [TASK_LIST.md](./TASK_LIST.md) lists the corresponding owner/status rows in execution order.
@@ -50,6 +50,12 @@ Implementation continues toward the full V1/V2 target; submission remains 4 PM o
 Publishing these documents does not merge the application features they describe.
 **Documentation workflow:** keep planning, task claims, progress, and status directly updated on main at each checkpoint.
 Use the [shared-documentation procedure](./AGENTS.md#shared-documentation-lives-on-main) so both assistants see current information while feature code remains on its working branch.
+
+**Presentation audit, 2026-09-12:** main runtime [2553ef7](https://github.com/SchrodingersCatLooks/graphnav/commit/2553ef7) passes extension and relay typechecks, production build, ZIP packaging, and all 163 tests in 1.5 minutes on Node 22.23.2 / npm 10.9.9.
+Eddy's morning work adds saved AI review/decision backups, undo, direct canvas create/rename/delete, PDF-map reopening verification, and a shared visual theme.
+The package-install test checks the stable extension ID and extension pages.
+Tests use isolated Chromium, synthetic Google responses, authored PDFs, and a synthetic AI provider; this audit does not establish current live Google access or paid generation on the presentation laptop.
+Core manual/source-assisted graphs and saved AI review are implemented; the remaining requirements and final real demo acceptance stay open in TASK_LIST.
 
 ## Start here
 
