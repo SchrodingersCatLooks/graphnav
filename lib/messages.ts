@@ -43,6 +43,7 @@ export type Request =
   | { type: 'LIST_FOLDER'; folderId: string }
   | { type: 'GET_DOC_TABS'; documentId: string }
   | { type: 'PANEL_STATE'; source: string; open?: boolean }
+  | { type: 'PANEL_PREFERENCES'; kind: 'drive' | 'docs'; preferences?: PanelPreferences }
   /** `intoGraphId` expands a folder into an existing map instead of starting a new one. */
   | { type: 'IMPORT_DRIVE_FOLDER'; folderId: string; intoGraphId?: string }
   | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }
@@ -56,6 +57,7 @@ export type Response<T = unknown> =
   | { ok: false; error: string; needsAuth?: boolean };
 
 export type AuthStatus = { connected: boolean };
+export type PanelPreferences = { width: 420 | 580 | 780; dock: 'left' | 'right' };
 export type AccountKeyResult = { accountKey: string };
 /** Returned after an import so the caller can open the stored graph. */
 /** One source scope ready to hand to the repository. */

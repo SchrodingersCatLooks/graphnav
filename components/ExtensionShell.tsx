@@ -3,12 +3,16 @@ import type { PageContext } from '../lib/page-context';
 import { GraphMark } from './GraphMark';
 import { GoogleConnection } from './GoogleConnection';
 import { GraphEditor } from './editor/GraphEditor';
-import { sendToBackground } from '../lib/messages';
+import { sendToBackground, type PanelPreferences } from '../lib/messages';
 
 export function ExtensionShell({ context }: { context: PageContext }) {
   const [open, setOpen] = useState(false);
   const [visited, setVisited] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [preferences, setPreferences] = useState<PanelPreferences>({ width: context.kind === 'docs' ? 580 : 780, dock: context.kind === 'docs' ? 'left' : 'right' });
+  const [preferenceError, setPreferenceError] = useState('');
+  const preferenceChanged = useRef(false);
+  const preferenceQueue = useRef(Promise.resolve());
   const surface = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -18,8 +22,21 @@ export function ExtensionShell({ context }: { context: PageContext }) {
     void sendToBackground<{ open: boolean }>({ type: 'PANEL_STATE', source: `${context.kind}:${context.sourceId}` }).then((result) => {
       if (alive && !interacted.current && result.ok && result.data.open) { setVisited(true); setOpen(true); }
     }).catch(() => undefined);
+    void sendToBackground<PanelPreferences>({ type: 'PANEL_PREFERENCES', kind: context.kind }).then((result) => { if (alive && !preferenceChanged.current && result.ok) setPreferences(result.data); }).catch(() => undefined);
     return () => { alive = false; };
   }, []);
+  function changePreferences(next: PanelPreferences) {
+    preferenceChanged.current = true;
+    setPreferences(next); setPreferenceError('');
+    // Keep rapid changes in order, including after a failed write.
+    preferenceQueue.current = preferenceQueue.current.then(async () => {
+      try {
+        const result = await sendToBackground({ type: 'PANEL_PREFERENCES', kind: context.kind, preferences: next });
+        if (!result.ok) throw new Error(result.error);
+        setPreferenceError('');
+      } catch { setPreferenceError('Panel preference could not be saved.'); }
+    });
+  }
 
   useLayoutEffect(() => {
     const element = surface.current!;
@@ -61,7 +78,7 @@ export function ExtensionShell({ context }: { context: PageContext }) {
         <section
           id="graphnav-panel"
           className={`graphnav-panel editor-panel ${context.kind === 'docs' ? 'docs-panel' : ''} flex flex-col`}
-          style={open ? undefined : { display: 'none' }}
+          style={{ display: open ? undefined : 'none', width: `min(${preferences.width}px, calc(100% - 32px))`, left: preferences.dock === 'left' ? 16 : 'auto', right: preferences.dock === 'right' ? 16 : 'auto' }}
           role="dialog"
           aria-modal="false"
           aria-labelledby="graphnav-title"
@@ -89,10 +106,12 @@ export function ExtensionShell({ context }: { context: PageContext }) {
           </header>
 
           <div className="panel-auth"><GoogleConnection onConnected={setConnected} /></div>
-          <GraphEditor context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
+          <GraphEditor layoutKey={`${preferences.width}:${preferences.dock}`} context={context} activeTabId={context.tabId} authEpoch={Number(connected)} />
 
           <footer className="panel-footer flex items-center justify-between gap-3">
-            <span>Your Google files stay unchanged. Close to return to your page.</span>
+            <label className="panel-width-label">Panel width<select aria-label="Panel width" value={preferences.width} onChange={(event) => void changePreferences({ ...preferences, width: Number(event.target.value) as PanelPreferences['width'] })}><option value={420}>Compact</option><option value={580}>Standard</option><option value={780}>Wide</option></select></label>
+            <button className="dock-button" onClick={() => void changePreferences({ ...preferences, dock: preferences.dock === 'left' ? 'right' : 'left' })}>Dock {preferences.dock === 'left' ? 'right' : 'left'}</button>
+            {preferenceError && <span role="alert">{preferenceError}</span>}
             <kbd>Esc</kbd>
           </footer>
         </section>

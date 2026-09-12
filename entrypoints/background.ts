@@ -8,7 +8,7 @@ import { getDocumentTabs } from '../lib/google/docs';
 import { importDocTabs, importDriveFolder } from '../lib/google/import';
 import { GraphRepository, storageError } from '../lib/storage/repository';
 import { destinationUrl } from '../lib/graph/types';
-import { isTrustedSender, requestSchema } from '../lib/requests';
+import { isTrustedSender, requestSchema, panelPreferencesSchema } from '../lib/requests';
 import type { ImportResult, Request, Response, ScopedImport } from '../lib/messages';
 import { EditorService } from '../lib/editor/service';
 import { getPageContext } from '../lib/page-context';
@@ -95,6 +95,12 @@ async function handle(raw: unknown, sender: { url?: string; tab?: { id?: number 
       if (request.open !== undefined) await browser.storage.session.set({ [key]: { source: request.source, open: request.open } });
       const value = (await browser.storage.session.get(key))[key];
       return { ok: true, data: { open: !!value && typeof value === 'object' && 'source' in value && 'open' in value && value.source === request.source && value.open === true } };
+    }
+    case 'PANEL_PREFERENCES': {
+      const key = `panel-preferences:v1:${request.kind}`;
+      if (request.preferences) await browser.storage.local.set({ [key]: request.preferences });
+      const stored = panelPreferencesSchema.safeParse((await browser.storage.local.get(key))[key]);
+      return { ok: true, data: stored.success ? stored.data : { width: request.kind === 'docs' ? 580 : 780, dock: request.kind === 'docs' ? 'left' : 'right' } };
     }
     case 'IMPORT_DRIVE_FOLDER':
       return { ok: true, data: await storeImport(await importDriveFolder(request.folderId, await getAccountKey()), request.intoGraphId) };
