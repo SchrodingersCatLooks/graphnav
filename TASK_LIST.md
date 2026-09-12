@@ -20,14 +20,14 @@ Hours are elapsed from the start of the proposed build session.
 | M0 | 0–0.5h | Both | Confirm access, clone, choose demo sources and roles | TODO | Both can pull; same folder/Doc/PDF chosen |
 | M1-A | 0.5–2h | Rajvansh | Scaffold extension and add Graph button/panel | REVIEW | Installed Docs toolbar overlap reproduced and fixed in the build; type-check, production build, and six browser tests pass, including toolbar hit-testing and 150% zoom. Live recheck after extension reload, both-laptop acceptance, and reviewed merge remain required. |
 | M1-B | 0.5–2h | Partner | Configure Google sign-in and first real reads | TODO | Demo folder and Doc read through the extension, or auth gate recorded |
-| M1-C | Before M2 | Both | Agree graph types and example data | TODO | UI and adapters consume the same shape |
+| M1-C | Before M2 | Both | Agree graph types and example data for manual and generated maps | TODO | UI and adapters share a shape with stable graph IDs; personal maps can exist without a source and generated maps retain navigation targets |
 | M2-A | 2–4h | Rajvansh | Shared graph controls and Drive overlay | TODO | Expand/focus/open works with live adapter |
 | M2-B | 2–4h | Partner | Drive adapter, navigation, initial cache | TODO | Real children/files load and reopen correctly |
 | M3-A | 4–6h | Rajvansh | Reuse graph in Docs panel | TODO | Selected tab and usable controls appear in Docs |
 | M3-B | 4–6h | Partner | Docs tab extraction and exact navigation | TODO | Top-level and nested tab clicks verified |
 | M4-A | 6–8h | Rajvansh | PDF reader and graph interface | TODO | Same graph beside a real PDF |
 | M4-B | 6–8h | Partner | PDF section extraction and destinations | TODO | At least three section jumps verified; fallback labeled |
-| M5-A | 8–10h | Rajvansh | Notes/connections, refresh status, creation form | TODO | Personal edits and one source-action control work |
+| M5-A | 8–10h | Rajvansh | Create-your-own map, editing generated maps, refresh status, source-action form | TODO | Create a personal map with two nodes and a connection; edit a generated map while preserving destinations; personal edits and one source-action control work |
 | M5-B | 8–10h | Partner | Save/refresh merge and real source creation | TODO | Reopening preserves edits; one authorized write and read-only behavior verified |
 | M6-A | 10–12h | Rajvansh | Interface polish and integrated walkthrough | TODO | Real navigation verified; larger fixture remains usable within visible-node limit |
 | M6-B | 10–12h | Partner | Fix integration bugs and package extension | TODO | Build/package verified; pagination, bounded loading, storage, and measured limits recorded |
@@ -36,6 +36,10 @@ Hours are elapsed from the start of the proposed build session.
 | M8 | 13–15h | Both | Rehearse pitch, demo, handoffs, and questions | TODO | Full run fits organizer's time limit |
 
 M1-A and M1-B run in parallel; agree M1-C before M2. For M2 through M6, both rows describe parts of the same shared milestone. Merge and test together before the next. If blocked, record the fallback decision in STATUS and reorder the remaining tasks together.
+
+Product clarification for the next shared handoff: both Create your own map and Generate from existing content lead to editable, saved graphs.
+M1-C must account for both origins; M5 implements personal creation/editing and M6 checks reopening both kinds.
+No implementation status changes follow from this clarification.
 
 ## Active handoffs
 

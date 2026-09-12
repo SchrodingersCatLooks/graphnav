@@ -12,6 +12,19 @@ This is a proposed 15-hour schedule measured from when you start: **12 hours bui
 
 Both spend the same blocks on the same milestone. For example, during Docs work you build the tab panel while your partner supplies the tab data and click action. During PDF work you build the reader while your partner supplies section anchors. Neither person builds a separate product. Rebalance a task whenever one person is blocked.
 
+## Two starting paths
+
+The user chooses **Create your own map** or **Generate from existing content**, then edits the resulting graph with the same controls.
+Creating a personal map starts empty and allows idea/note nodes without an existing source.
+Generating a map creates real nodes and navigation destinations from a Drive folder, Doc, or PDF, then allows personal edits and extra connections.
+Automatic generation is core; optional meaning-based suggestions are a separate feature.
+
+Keep M1-A scoped to its shell and M1-B to authorized reads.
+Agree support for both graph origins in M1-C before graph and storage code diverge.
+M2 through M4 build the source-generated paths; M5 adds the personal creation path and editing/persistence for both.
+During M6, verify both creating a personal map and editing a generated map, including reopening each without losing personal work.
+These are planned acceptance checks, not completed features.
+
 ## The schedule
 
 | Time from start | Shared result | You | Partner | Both verify before moving on |
@@ -73,10 +86,13 @@ If auth has no successful read by hour 2, stop spending both people's time on it
 
 Agree on this small data contract before writing adapters:
 
-- **Graph:** source kind, source ID, account key where relevant, refresh time, nodes, and edges.
+- **Graph:** stable graph ID, origin (`manual` or `generated`), optional source kind/source ID for a manual map, account key where relevant, refresh time when applicable, nodes, and edges.
+  A source-generated map must retain its source identity.
+  Personal maps must be creatable and reopenable before a source is attached.
 - **Node:** stable ID, title, type, and a target such as file ID, document ID plus tab ID, or PDF fingerprint plus destination/page. Personal notes may have no external target.
 - **Edge:** stable ID, source node, target node, and type (`contains`, `references`, `related`); include provenance for non-structural edges.
-- **Personal state:** positions, collapsed nodes, notes, and custom edges, stored separately from the source graph.
+- **Personal state:** positions, collapsed nodes, personal concept/note nodes, notes, and custom edges, stored separately from generated source data.
+  Refresh applies to source-generated data and preserves the person's additions.
 - **Adapter:** `load`, `refresh`, and `navigate`, with optional supported creation actions. No token in graph data.
 
 Suggested ownership: you own `components/graph/` and visible entrypoints; partner owns `lib/adapters/`, `lib/storage/`, and the background worker. Agree together on `lib/graph/types.ts`. Only one person edits shared types, package files, or WXT configuration at a time; hand off changes explicitly.
@@ -90,6 +106,10 @@ Suggested ownership: you own `components/graph/` and visible entrypoints; partne
 **PDF:** start with a local text-based PDF in our extension-owned reader. Use PDF.js bookmarks when present; otherwise propose page-aware heading anchors and let the user correct them. Use bundled code/workers. Do not attempt to inject into Chrome's built-in PDF viewer. Remote URL import is optional; local file selection keeps the first reader independent of publisher restrictions.
 
 **Creation:** first ship one working source action, then add the others if time permits. Target folder creation and Doc tab add/rename. Google Docs exposes `addDocumentTab` and `updateDocumentTabProperties` requests. Verify against the actual account before claiming support. [Docs write requests](https://developers.google.com/workspace/docs/api/reference/rest/v1/documents/request).
+
+**Personal authoring in M5:** expose Create your own map, add personal nodes and connections, and save them without requiring Google access or a PDF.
+Use the same authoring controls to edit a generated map while keeping source destinations intact.
+Adding a personal node does not create a Google file or modify a PDF; real source creation remains a separate explicit action.
 
 ## How to use AI without getting out of sync
 

@@ -1,6 +1,10 @@
 # GraphNav product context
 
-GraphNav is a Chrome extension that lets people navigate and organize existing information through interactive graphs. A node opens something real: a folder, file, document tab, or paper section. Information stays in its original application.
+GraphNav is a Chrome extension that lets people create and edit interactive maps for navigation, planning, and organization.
+People can start their own map as they work or generate a map from existing information and then edit it.
+A source-backed node opens something real: a folder, file, document tab, or paper section.
+Personal idea and note nodes can exist before they have a source destination.
+Source information stays in its original application.
 
 This file preserves the useful product material from the attached **Graph navigation idea notes**, including its Applications and Caching screenshots, together with the team's clarifications in this conversation. Opposition sections and rebuttal discussions are omitted. The source document is unchanged. Implementation choices and tonight's limits are recorded separately below and in [BUILD_PLAN.md](./BUILD_PLAN.md).
 
@@ -13,6 +17,28 @@ The primary job is navigation and organization. A graph is useful when it helps 
 Suggested pitch: **Turn the information you already use into a map you can navigate and organize.** The differentiation to demonstrate is working inside existing applications and on existing files. Do not claim graph interfaces themselves are new.
 
 ## One extension with three experiences
+
+### Two ways to start, one editable graph
+
+Both starting options are part of the intended product:
+
+1. **Create your own map:** start with an empty personal graph, add idea or note nodes, and connect them while planning or working on a project.
+   Add source destinations when there is something real to open.
+   Creating a personal map does not require existing Drive files or a PDF.
+2. **Generate from existing content:** choose an accessible Drive folder, Google Doc, or local PDF and let GraphNav create its starting nodes, structure, and navigation destinations.
+   Then rearrange the map and add personal notes, concept nodes, and connections.
+
+These are starting choices, not separate products or permanently locked modes.
+Both lead to the same editable graph controls and saved personal state.
+Explore and Build describe the controls currently shown, independently of how the graph was first created.
+
+Automatic generation of an editable map is a core feature.
+The first generation uses source structure such as folders, tabs, and PDF section anchors.
+Discovering additional meaning-based relationships is a separate possible enhancement; it is not required to generate the starting graph.
+
+The choices are specified here for implementation in the later milestones; the current M1-A shell does not implement them.
+
+### Supported source experiences
 
 | Surface | Explore existing content | Build and organize |
 | --- | --- | --- |
@@ -34,7 +60,8 @@ Authors can use graphs to plan and organize their own material. Readers can gene
 - A document tab opens that tab. A paper section opens its real page or destination. A folder expands its children or opens in Drive.
 - Start with a local neighborhood and expand on demand. Keep a simple outline/list fallback available as scope allows.
 - Distinguish `contains`, explicit `references`, and personal `related` connections. A personal connection can carry a short explanation.
-- Concept or note nodes may be personal annotations with no source destination. Label them accordingly and attach them to real source nodes.
+- Concept or note nodes may be personal annotations with no source destination.
+  Label them accordingly; they can stand on their own in a new map and connect to real source nodes as work develops.
 
 ## How the extension works
 
@@ -52,9 +79,10 @@ The scope boundary is practical: tab and folder creation can change the real sou
 
 ## How it becomes a lasting part of the user's workflow
 
-1. **First open:** read the current source through its API or PDF data and generate the initial graph.
+1. **Start:** create an empty personal map, or read the selected source through its API or PDF data and generate the initial graph.
 2. **Save:** cache the source structure plus personal layout, notes, and connections.
-3. **Reopen:** recognize the same source and restore the saved graph. Do not rebuild it from scratch on every click.
+3. **Reopen:** restore the saved graph by its stable graph ID and, for a generated map, its source and account context.
+   Do not rebuild it from scratch on every click.
 4. **Personal edit:** autosave changes to layout, labels, notes, and connections.
 5. **Refresh:** read the source again and update generated nodes while preserving personal edits for surviving source IDs. Mark missing destinations instead of silently reassigning them.
 
@@ -62,7 +90,10 @@ For tonight, Refresh is manual and the interface shows when data was last refres
 
 ## Tonight's concrete target
 
-One installed extension demonstrates a real Drive folder graph, a real tabbed Doc graph, and one text-based paper map. All reuse the same graph component. Show accurate navigation, focus, one saved personal connection, reopening, and at least one real source creation action if authorization is working.
+One installed extension demonstrates a real Drive folder graph, a real tabbed Doc graph, and one text-based paper map.
+All reuse the same graph component.
+Also show starting a personal map with two nodes and a connection, then reopening it.
+Show editing a generated map while retaining its real navigation destinations, focus, and at least one real source creation action if authorization is working.
 
 For PDF extraction, embedded bookmarks are the first choice. Otherwise extract text with page positions, propose heading anchors, and allow correction. A manually corrected section is not an automatically understood argument. Full argument extraction, citation discovery, and arbitrary scanned PDFs are later work.
 
