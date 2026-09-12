@@ -73,6 +73,10 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
   Original completion requirements have explicit X tasks; the earlier blanket deferral is not treated as a user-approved scope reduction.
   The deadline needs actual checkpoint reassessment, and the account owner must approve any Google write grant before real authoring actions.
 
+- Source-assisted V1 is now explicit: ready-to-add suggestions and autofilled source nodes, Add selected, and editable structural baselines must work without GPT.
+  BUILD_PLAN supplies 15 dependency-ordered steps, and N1 assigns the shared chooser/contract before Drive, Docs, PDF, and AI integration.
+  Current runtime/main acceptance is unchanged by this planning clarification.
+
 ## Completed action log
 
 - 2026-09-12: Added the initial repository workflow starter.
@@ -95,5 +99,8 @@ The remaining M1-B acceptance blocker is Rajvansh's own account/browser check; M
 
 - 2026-09-12: DOC-5 publishes the feature/use-case specification after auditing IDEA history, runtime contracts, and official integration documentation.
   Added paired completion/expansion tasks and removed contradictory blanket scope deferrals; main/runtime remain unchanged and no new acceptance is claimed.
+
+- 2026-09-12: DOC-6 records the user's source-assisted manual workflow and replaces expired feature slots with concrete ordered lane instructions, tools, handoffs, and gates.
+  Added N1-A/N1-B, reordered the existing task rows without resetting evidence, and preserved Eddy's latest reported handoff; documentation only.
 
 For the next entry, record: date, task IDs, actual result, checks performed, commit or PR when available, and next checkpoint. Keep this short; do not duplicate the full task list.

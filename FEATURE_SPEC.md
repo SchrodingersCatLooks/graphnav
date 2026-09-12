@@ -23,6 +23,52 @@ Three coverage labels keep the promise honest:
 Do not describe all applications as complete unless their acceptance cases pass.
 The remaining work cannot be made certain to fit before 6 AM by adding more items to a schedule.
 
+## Required assisted creation, including manual mode
+
+The user explicitly requires source suggestions and autofill before GPT integration.
+Existing Drive folders/files, Doc tabs/sub-tabs, and parsed PDF sections/pages are ready-to-add node candidates.
+Manual means the user chooses nodes and connections; it must not mean retyping known titles or copying URLs.
+
+1. After authorization, opening Graph on a supported page restores the saved map and offers suggestions from the current source.
+   If no map exists, show Add existing items, Build baseline from this source, and Add an idea.
+2. Add existing items opens a reusable chooser with current items, parent/path context, search within the disclosed scope, multi-select, Add selected, and Already added indicators.
+   Selecting a real item fills its label/type/destination from the source response.
+3. Build baseline previews the scope and imports its structure with one action, including names and real destinations.
+   It uses source APIs or PDF parsing and works with the AI relay stopped.
+4. Generate with AI separately analyzes selected text to propose meaningful concepts and connections for review.
+   Baseline creation is already automatic without GPT; V2 adds content interpretation.
+5. Every result remains editable in the same on-page graph or PDF reader, including personal labels/notes, connections, layout, and adding more existing items later.
+
+Use source order and proximity to the current folder/tab to rank initial candidates deterministically.
+Do not present name matching as an AI inference or claim discovery of unseen content.
+Show both title and context for identical names; key candidates by account/source/locator identity, never title.
+Opening or filtering the picker is read-only with respect to live graph membership.
+No-match state offers a new personal idea; source creation is a separate X3 action.
+
+### Candidate and selection contract
+
+N1-B owns the shared candidate contract and Drive implementation; M3-B and M4-B supply Docs/PDF candidates through the same interface.
+N1-A owns the shared chooser; M3-A and M4-A integrate it in those surfaces.
+These are proposed contract fields, not already shipped messages.
+
+| Object / operation | Required fields and behavior |
+| --- | --- |
+| Candidate | Stable candidate key, verified account/source context, provider resource ID, typed locator, source title, display kind, parent/path context, and permitted capabilities |
+| Candidate page | Items, cursor, scope label, freshness, complete/partial state; listing does not persist live nodes |
+| Add selected | Target graph ID, expected revision, selected candidate identities, request ID, optional deliberate personal overrides; worker revalidates identity/account and persists atomically |
+| Build baseline | Explicit source and bounded outline scope, target/new-map choice, root/parent preview, and completion/continuation state |
+| Saved membership | Distinguish an explicitly selected set from a baseline outline; version/default the new binding fields deliberately and test existing maps/backups |
+
+Already added is derived from the target graph and canonical locator identity, not a stale global picker flag.
+Re-adding an existing candidate selects or unhides it only through a clear user action; it never duplicates a source node or overwrites its personal label/layout.
+Add selected imports only chosen items and previewed structural context, without fabricating containment to unselected parents.
+Refreshing a selected-only binding updates those records without silently importing all source siblings.
+Do not reuse a destructive complete-folder reconciliation for a hand-selected subset.
+A source rename updates the base title while personal overrides remain intact.
+
+**Acceptance without GPT:** select existing items without typing titles/URLs; distinguish equal titles; add twice without duplicates; cancel without changing membership; keep previous manual edits; load another result page; reject a wrong-account candidate; refresh without adding unselected siblings.
+Repeat this workflow in Drive, nested Docs tabs, and PDF sections at their integration gates.
+
 ## User workflow coverage
 
 Each row defines an observable result, the implementation used, and the task owners.
@@ -31,10 +77,10 @@ A tasks belong to Rajvansh and B tasks belong to Eddy.
 | Case | User and desired result | Features and integration | Owner tasks | Coverage and acceptance |
 | --- | --- | --- | --- | --- |
 | UC-01 | Start planning before any files exist | Blank map; idea/note nodes; editable labels/notes; several labeled connections per node; later attach a source; map chooser | M2-A, M2-B, M5-A, M5-B | Core: create an idea without Google, connect it to two nodes, attach a real destination later, reopen unchanged |
-| UC-02 | Open an existing Drive folder as a map | Current-source detection; root/file/folder nodes; expand/collapse; paginated child reads; separate Expand and Open actions; explicit Refresh | M2-A, M2-B | Core: ten demo children plus root; expand the nested folder; open a real file; partial loading preserves unseen personal work |
-| UC-03 | Work in a Doc while using its graph | Reusable left graph panel; top/nested tabs; current-tab indicator; same-browser-tab navigation; source remains editable | M3-A, M3-B | Core: click all four demo tabs including the nested one; type and scroll normally; no required My maps detour |
+| UC-02 | Open an existing Drive folder as a map | Current-source suggestions and autofill; select individual items or build a baseline; root/file/folder nodes; expand/collapse; paginated child reads; separate Expand and Open actions; explicit Refresh | N1-A, N1-B, M2-A, M2-B | Core: source suggestions/autofill and an editable baseline work with GPT off; ten demo children plus root; expand the nested folder; open a real file; partial loading preserves unseen personal work |
+| UC-03 | Work in a Doc while using its graph | Reusable left graph panel; ready-to-add top/nested tab suggestions and autofilled destinations; baseline map; current-tab indicator; same-browser-tab navigation; source remains editable | M3-A, M3-B | Core: click all four demo tabs including the nested one; type and scroll normally; no required My maps detour |
 | UC-04 | Understand content inside tabs, not just tab names | Docs paragraphs, headings, table text, and explicit links become anchored passages; selected text can produce concept nodes and semantic links | G1-A, G1-B, G2-A, G2-B, G3-A, G3-B | Core: concepts cite actual content in two selected tabs; clicking evidence reaches the correct tab and shows the excerpt; tab-title import alone fails this case |
-| UC-05 | Read someone else's accessible paper | Local PDF picker; our reader beside the shared graph; bookmark/section/page nodes; preview; exact page jumps; personal notes | M4-A, M4-B | Core: author need not install GraphNav; three jumps land correctly; PDF and personal graph reopen together |
+| UC-05 | Read someone else's accessible paper | Local PDF picker; our reader beside the shared graph; selectable/autofilled bookmark/section/page nodes and baseline; preview; exact page jumps; personal notes | M4-A, M4-B | Core: author need not install GraphNav; three jumps land correctly; PDF and personal graph reopen together |
 | UC-06 | Ask AI to build a useful editable map | Select Doc tabs or PDF pages; preview scope; generate concepts and supported relationships; evidence; accept/edit/reject | G0-A through G4-B | Core: real Doc and PDF runs produce inspectable non-containment links; reviewed work persists through regeneration |
 | UC-07 | Make connections beyond a tree | Arbitrary pairwise links including cycles; labels such as supports, depends on, addresses; node may connect to many others | M2-A, M2-B | Core: connect one idea to three existing nodes across branches; no forced single parent for personal relationships |
 | UC-08 | Express one relationship involving several things | Member selector with From/To or peer roles; one labeled junction with spokes; add/remove members without expanding into false pairwise claims | X1-A, X1-B | Completion: Budget + Staff jointly constrain Launch; edit members, save, reopen, and remove a member without corrupting the graph |
@@ -100,7 +146,7 @@ The panel must contain the actual editor, not only connection status or a button
 Use one controller for graph commands with two transports: direct extension-origin repository access for workspace/reader, and typed background messages for Google content scripts.
 Only the transport and source context differ between surfaces.
 
-- Toolbar: source/map name, source chooser, Explore/Build, Add idea, Connect, Search, Refresh, Generate, and reachable Close.
+- Toolbar: source/map name, Add existing, Build baseline, Explore/Build, Add idea, Connect, Search, Refresh, Generate with AI, and reachable Close.
 - Canvas: distinguish folders, documents, tabs, PDF sections, ideas, and relationship junctions using icons and labels, not color alone.
 - Selection: click selects and previews; a visible Open action or keyboard command navigates; dragging never opens or moves a source.
   A tab's explicit navigation action must keep the existing Doc browser tab.
@@ -276,7 +322,7 @@ Eddy must verify the actual grant and capabilities, or disclose the broader scop
 M6 records the commit, browser/Node versions, expected/actual results, and whether evidence is live or a fixture.
 The complete core target must pass these end-to-end stories on both laptops.
 
-1. **Planner:** create a blank map without Google; add three ideas; connect one to two others; edit a label/note; attach an HTTPS source; arrange, close Chrome, reopen, and restore a backup copy.
+1. **Planner:** with AI stopped, add existing sources through autofill without typing their names/URLs, then create a blank map without Google; add three ideas; connect one to two others; edit a label/note; attach an HTTPS source; arrange, close Chrome, reopen, and restore a backup copy.
 2. **Drive organizer:** open the shared folder; import its ten children plus root; expand the nested level; add a personal idea; connect two real files; open one; refresh after a source rename without losing edits.
 3. **Doc author/reader:** stay in the original editable Doc with a left panel; navigate all top/nested tabs; select two meaningful tabs; Generate; inspect supported non-containment connections; accept, edit, reject; reopen and regenerate.
 4. **Paper reader:** open the authorized text PDF; use three section/page anchors; select pages; generate and review a grounded draft; add a personal note/edge; reopen with bytes restored; test backup reattachment.

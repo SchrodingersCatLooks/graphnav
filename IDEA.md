@@ -26,10 +26,17 @@ The timeboxes and explicit fallback decision points are in BUILD_PLAN.
 
 | Version | User experience | Role of automation |
 | --- | --- | --- |
-| V1 Manual graph | Start a personal graph or import a source outline; add source-linked nodes and idea nodes, connect them, label/edit/remove personal relationships, arrange the view, navigate, and save | APIs and PDF parsing may import real structure and source destinations. People create the meaningful conceptual connections. No model is required. |
+| V1 Manual graph | Start a personal graph or import a source outline; add source-linked nodes and idea nodes, connect them, label/edit/remove personal relationships, arrange the view, navigate, and save | APIs and PDF parsing must offer source suggestions, autofilled nodes, and an editable structural baseline without GPT. People create the meaningful conceptual connections. No model is required. |
 | V2 Generate a draft | Select content, request a generated draft, inspect proposed concepts/relationships and their supporting passages, accept/edit/reject them, then navigate and save | GPT proposes an editable graph over selected content. It does not replace the graph editor or silently establish relationships as facts. |
 
 Manual does not mean retyping every folder and tab. Automatically importing containment or explicit source links is compatible with V1. The distinguishing V1 completion check is a user-created idea and labeled relationship that can be edited, reopened, and followed to a real source. Source nodes retain provider titles/IDs; personal display labels do not rename original files.
+
+**Assisted manual creation is required.**
+When opening a source graph, offer existing folders/files, tabs/sub-tabs, or PDF sections/pages with their names and destinations already filled in.
+Users can add selected items, build a baseline from the source with one action, or create an original idea.
+Both source suggestions and baseline creation work without GPT.
+Using GPT is the user's choice; the V2 generation feature remains part of our release target and does not gate source import or editing.
+Previously saved maps reopen as saved rather than being regenerated on every visit.
 
 A user can remove personal nodes/edges or hide source items from a view. Those actions never delete the original source. Source mutations such as creating a folder or renaming a Doc tab remain separate explicit actions with permission checks.
 
@@ -58,7 +65,7 @@ Both lead to the same editable graph controls and saved personal state.
 Explore and Build describe the controls currently shown, independently of how the graph was first created.
 
 Both manual creation and generated editable maps belong to the intended product.
-V1 may import source structure such as folders, tabs, and PDF section anchors while users create meaningful connections.
+V1 must offer ready-to-add source items and automatic baseline import for folders, tabs, and PDF section/page anchors while users create meaningful connections.
 V2 adds the content analysis and proposed concepts/relationships described above; structural imports alone do not fulfill that generation stage.
 
 The manual workspace foundation exists on the review branch; source-page integration and generation remain open tasks.

@@ -16,7 +16,9 @@ FEATURE_SPEC traces existing use cases to implementation; its Completion rows ar
   V2 is required by the user's current target, not yet implemented, and must not be silently deferred or described as working.
   Prove the initial on-page V1 loop before applying AI drafts to live graphs; do not make manual editing depend on a model.
   Follow BUILD_PLAN's September 12 checkpoints toward a 6 AM code freeze and 4 PM submission in the user's local Eastern time.
-- Manual editing is a core acceptance requirement: add/edit/remove personal idea nodes and labeled edges, attach real source destinations, and preserve edits through reopening/refresh. Structural API/PDF imports are still allowed in V1.
+- Manual editing is a core acceptance requirement: add/edit/remove personal idea nodes and labeled edges, attach real source destinations, and preserve edits through reopening/refresh. Source-assisted selection/autofill and automatic structural baseline imports are required in V1 and must work with GPT unavailable.
+  Users select existing files/tabs/sections with names and locators prefilled; never make manual mode require retyping known source titles or copying URLs.
+  Keep Add existing, Build baseline, and Generate with AI distinct, and preserve selected-only graph membership on Refresh.
 
 - Build one Chrome extension with a shared graph component and distinct Drive, Docs, and PDF adapters. Each source has an independent graph; cross-document discovery is optional.
 - Preserve normal Google editing. Use a reversible graph overlay/panel for Drive/Docs and an extension-owned reader for PDFs.

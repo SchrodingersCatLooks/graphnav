@@ -1,287 +1,329 @@
-# GraphNav: execution plan through V1 and V2
+# GraphNav: ordered implementation through V1 and V2
 
-Updated 2026-09-12 at Rajvansh's request.
-The target now includes a real V2 AI workflow in this build session.
-V2 is no longer an optional after-hackathon item.
-This plan describes intended work; [TASK_LIST.md](./TASK_LIST.md) is the only task-status list, and [STATUS.md](./STATUS.md) distinguishes merged progress from branch work.
+This is the implementation order for Rajvansh on `rajvansh-ui` and Eddy on `partner-data`.
+[FEATURE_SPEC](./FEATURE_SPEC.md) defines the detailed behavior, APIs, data invariants, and use cases.
+[TASK_LIST](./TASK_LIST.md) is the only task-status list; its Order column refers to the numbered steps below.
+[STATUS](./STATUS.md) distinguishes merged progress from unmerged work.
+Read these together and preserve existing implementation.
 
-## Read the feature contract with this schedule
+## Product behavior to build
 
-[FEATURE_SPEC.md](./FEATURE_SPEC.md) defines 16 user workflows, exact tools/APIs, reusable controls, extraction and AI contracts, storage changes, and acceptance stories.
-It is the feature-level companion to this execution sequence.
-The earlier schedule omitted explicit implementation for some original authoring and connection requirements; the new X tasks preserve those requirements without claiming a delivery decision was already made.
-Core is the currently targeted navigation MVP; Completion is the rest of the described experience needing a reconciled delivery slot; Expansion is a separately scoped provider/public-release track.
-No coverage label is an implementation status or user-approved scope reduction.
+Manual creation must be assisted by existing source information.
+A user who already has folders, files, or Doc tabs should not type their titles or destinations again.
+Both starting paths remain available: build a map yourself, or start from existing content and edit the result.
 
-## Finish line
+| User action | Expected behavior | Needs GPT? |
+| --- | --- | --- |
+| Add an idea | Create a personal idea/note before a source exists; optionally attach a source later | No |
+| Add existing items | Automatically show relevant folders/files, Doc tabs/sub-tabs, or PDF sections/pages; select items with names, types, hierarchy, and destinations already filled in | No |
+| Build baseline from this source | Preview scope, then create a bounded editable folder/tab/section map with real containment and destinations | No |
+| Generate with AI | Select readable content; propose concepts and meaningful relationships; inspect evidence; accept/edit/reject | Yes |
 
-Build one Chrome extension that works alongside the user's existing information.
-The complete hackathon MVP passes these eight checks:
+The picker automatically recommends known source items, not guessed semantic relationships.
+Initially rank the current source and its immediate contents first, preserve tab order/hierarchy, and filter matching names within the disclosed scope.
+Do not claim personal relevance or inferred meaning from a title match.
+An existing saved map opens as saved; suggestions and generation must not rebuild or replace it on every visit.
 
-1. Open GraphNav inside a real Drive folder and get nodes from its folders/files without typing them again.
-2. Open a real Doc and use a graph on the left while continuing to edit the document.
-   Top-level and nested tab nodes navigate within that document; opening a separate workspace tab is optional.
-3. Create personal idea/note nodes, connect one node to several others, label/edit/remove relationships, and attach real destinations.
-4. Restore graphs, notes, connections, positions, and view after reopening; Refresh preserves personal work and identifies unavailable targets.
-5. Select supported Doc content, generate an actual AI draft with useful connections beyond the existing folder/tab tree, and inspect its supporting excerpts.
-6. Accept, edit, or reject suggestions; reopen and regenerate without losing those decisions or duplicating accepted work.
-7. Open a local text-based PDF in the extension reader, navigate at least three section/page anchors, and reuse the same manual and AI workflow over selected PDF text.
-8. Run the agreed final build on both laptops, recover an exported backup, and perform a rehearsed demonstration from that exact commit.
-
-This is an installed hackathon MVP for the two test accounts, not a public Chrome Web Store release.
-Google graphs stay on Google pages; the extension-owned PDF reader and optional personal workspace have their own tabs.
-Google APIs supply authorized metadata/Doc content; PDF.js supplies local PDF text and destinations.
-AI proposes semantic relationships over selected text; ordinary imports and personal editing work without AI.
-
-## Deadline and realistic scope
-
-The user wants code finished by **6:00 AM** and submission by **4:00 PM**, September 12, in their local Eastern time.
-Use the laptop's Eastern clock, including daylight saving, rather than assuming a fixed UTC offset from the user's shorthand “EST.”
-The table below budgets approximately 4 hours 40 minutes from 1:20 AM to 6:00 AM with both people working concurrently.
-These are aggressive timeboxes, not estimates proving that every item fits or guarantees of completion.
-Live Google behavior, the first real model request, and PDF integration are the largest uncertainties.
-The 1:20-based slots are the original budget; by the feature audit around 2 AM, the early slots have elapsed without newly verified runtime gates.
-Start the next implementation checkpoint with the actual clock and results; do not pretend elapsed slots or newly documented completion work fit automatically.
-Reassess at each gate using actual results; never mark a failed gate complete to match the clock.
-
-**Protect the Drive + Docs + real AI + saved editing loop first.**
-PDF remains part of the complete MVP, with a bounded slot after that loop.
-If a required feature cannot fit, Rajvansh makes an explicit scope decision at the checkpoint, and the tracker/deck name the missing feature.
-A reduced Drive/Docs/AI demo is a possible fallback, not an automatic declaration that the complete MVP is finished.
+Google workflows use an editable graph overlay on the existing source page, with Docs on the left and same-document tab navigation.
+The PDF uses our own reader with a graph beside it.
+The standalone My maps workspace remains available for personal planning.
+Every starting path uses the same editor and local saving.
 
 ## Ordered work and paired ownership
 
-Each row is a shared integration checkpoint, with one concrete lane per person.
-A dependency is a working interface/result, so UI can use labeled fixtures while Eddy finishes its data side.
-Source and model acceptance still require real reads and a real model response.
+Steps are dependencies, not promises that a fixed number of minutes will be sufficient.
+Start API account setup during step 1; most of it can proceed independently of the UI.
+Eddy can prepare a reviewed data contract while Rajvansh builds its controls against clearly labeled fixtures.
+Each gate still needs real integration evidence before its tasks become DONE.
 
-| Step and target time | Rajvansh: interface and review | Eddy: data and runtime | Exit check before moving on |
-| --- | --- | --- | --- |
-| 1. Baseline and access, now to 1:40 | M0-A, M1-C-A: verify own-account reads, finish PR #6 review handoff, and confirm API project/budget readiness under G0-A | M0-B, M1-C-B, M1-B: review the shared types, keep demo sources ready, and prepare the current import checkpoint for integration | Both use a known commit and the fixed extension ID; real folder/Doc reads pass; contract ownership is explicit; an API credential/budget owner is identified |
-| 2. Drive graph on the page, 1:40-2:25 | M2-A: reuse the graph/editor inside the existing panel; import current folder, expand/focus, add/connect/edit, open a real destination | M2-B: finish the existing import messages, scope/account resolution, paginated child loading, and validated graph-edit messages | Current folder plus its ten demo children appear; a personal idea links to a file; navigation, editing, and reopening work inside Drive |
-| 3. Docs graph on the left, 2:25-3:05 | M3-A: reuse the editor in a left panel with a reachable close button, current-tab selection, and sufficient room for normal editing | M3-B: integrate the existing tab mapper and implement/test exact top-level and nested tab navigation | Four demo tabs plus the document root appear with correct nesting; clicking a tab opens it in the same Doc; typing, scrolling, and zoom remain usable |
-| 4. V1 durability and selected text, 3:05-3:25 | M5-A + G1-A: show refresh/save/errors, prove reopen, and add a selected-tab/text preview for Generate | M5-B + G1-B: verify refresh/account/worker behavior and extract bounded Doc text with stable source anchors | One complete on-page create/connect/edit/navigate/reopen/refresh loop passes; the exact text to send to AI is inspectable |
-| 5. Real AI draft, 3:25-4:00 | G2-A: integrate Generate, progress, cancel, retry, and draft preview using the agreed response shape | G0-B + G2-B: implement a small local model relay, make a real structured request, validate references, and return a bounded draft | A real selected Doc produces inspectable concepts and non-containment relationships; unselected content and provider keys do not enter the page |
-| 6. Review and keep AI work, 4:00-4:30 | G3-A: show evidence and accept/edit/reject controls in the existing graph, distinguishing suggestions from saved items | G3-B: persist drafts/decisions with an additive migration; apply accepted records transactionally and deduplicate regeneration | Accept one suggestion, edit another, reject another, reopen, refresh, regenerate; previous decisions and personal work survive |
-| 7. PDF using the same graph, 4:30-5:15 | M4-A: local-file picker, extension-owned PDF reader, graph beside the page, and reuse selection/review controls | M4-B: PDF.js text/bookmark extraction, SHA-256 byte identity, stored bytes, correct page anchors, and the same generation input | Three section jumps work; reopening restores the PDF and edits; a real selected-text PDF draft can be reviewed and saved |
-| 8. Integrated release gate, 5:15-6:00 | G4-A + M6-A: run the real walkthrough, fix blocking UI issues, and verify readable graphs on both laptops | G4-B + M6-B: run checks, exercise errors/upgrades/limits, verify server startup, and package the agreed commit | Both-laptop acceptance evidence, passing checks, working backup/restore, reproducible setup, and a packaged commit; freeze code at 6:00 |
+| Order | Feature / result | Rajvansh's lane | Eddy's lane | Tools / prerequisite |
+| --- | --- | --- | --- | --- |
+| 1 | One agreed working baseline and accounts | M0-A, M1-C-A, G0-A: review/integrate, own-account checks, API setup | M0-B, M1-B, M1-C-B: demo sources, contract review, current import handoff | Git, Node 22, WXT, existing Dexie/Google code |
+| 2 | Reusable source suggestions and autofill | N1-A: Add existing chooser with selection, search, context, Already added | N1-B, M2-B: source candidate contract, selected-item import, worker edit operations | React, Zod, Drive API, typed extension messages; step 1 |
+| 3 | Assisted manual and baseline graphs inside Drive | M2-A: shared on-page editor, explicit Add selected / Build baseline, connections, navigation | M2-B: bounded folder reads/imports, account scope, idempotent writes | React Flow, ELK, Drive API, Dexie; step 2 |
+| 4 | The same experience for Docs tabs/sub-tabs | M3-A: left panel, tab picker, current tab, same-Doc navigation | M3-B: nested tab candidates, selected/full-outline imports, validated same-tab destination | Docs API and shared editor; step 3 |
+| 5 | Durable editing, refresh, and panel layout | M5-A: save/error/refresh UI, focus/search/resize/dock recovery | M5-B: restart, partial refresh, selected membership, accounts, conflicts | Dexie, browser messaging, visualViewport; steps 3-4 |
+| 6 | Real selected text and a working AI connection | G1-A: choose tabs/text scope and preview; G0-A: private credential setup | G1-B: anchored passages; G0-B: local authenticated relay and real smoke test | Docs API, Node/TypeScript, OpenAI SDK, Zod; steps 1/4 |
+| 7 | AI-generated draft inside the current graph | G2-A: Generate/progress/cancel/retry and preview | G2-B: structured request, bounded draft, reference/evidence validation | Responses API, shared draft types; step 6 |
+| 8 | Review and preserve AI suggestions | G3-A: evidence, accept/edit/reject, distinguish draft/saved items | G3-B: additive migration, atomic acceptance, persistent decisions | Shared editor + Dexie; steps 5/7 |
+| 9 | PDF baseline, assisted editing, and AI reuse | M4-A: file picker, reader, section suggestions, shared editor/review | M4-B: PDF bytes, bookmarks/text/anchors, restore and reattachment | PDF.js, shared candidate/passage interfaces; steps 2/5/8 |
+| 10 | Group relationships | X1-A: several members in one labeled connection | X1-B: membership operations/invariants and deletion behavior | Existing junction/member-list model; steps 3/5 |
+| 11 | Chosen sources combined in one map | X2-A: Add another source, cross-source links and selection | X2-B: multiple bindings, canonical reuse, scoped refresh/generation | Existing adapters and repository; steps 8/9 |
+| 12 | Real folder/tab authoring | X3-A: explicit Create folder / Add tab / Rename tab controls | X3-B: minimal write grant, capabilities, Google mutations/readback | Drive files.create, Docs batchUpdate; step 4 plus account approval |
+| 13 | Placement and deeper navigation refinements | X4-A, X7-A: floating panel, heading/bookmark controls | X4-B, X7-B: saved rectangle, locator migration/resolution | Pointer events, visualViewport, Docs anchors; steps 4/5/6 |
+| 14 | Freeze a verified release | G4-A, M6-A: full visual/user walkthrough on both laptops | G4-B, M6-B: failures, limits, checks, packaging/startup | Playwright, real Chrome, npm check, WXT zip; all features claimed for release |
+| 15 | Demonstrate and submit | M7-A, M8-A: deck, pitch, submission | M7-B, M8-B: live demo, recording, technical verification | Exact frozen commit, real screenshots, rehearsal |
 
-M5 and G1 are small separate commits within step 4, not two assistants editing the same files simultaneously.
-Eddy can prepare G0-B after his Google work passes while Rajvansh finishes its visual acceptance.
-A full PDF implementation is not a prerequisite for proving V2 on a Doc.
-The manual acceptance gate must pass on the initial Google surfaces before AI proposals can modify a live graph.
+Steps 1-9 establish the core V1 + V2 workflow; steps 10-13 complete the additional described interactions.
+This gives those requirements a concrete order rather than leaving them in an unordered backlog.
+Their ordering does not mean they have been implemented, or that the user approved dropping them if time runs short.
+Additional providers, OCR, public distribution, and optional cloud sync remain separately scoped X5/X6 expansion work.
 
-## Step 1: reconcile the actual starting point
+## Step 1: integrate the working foundation
 
-Do not rebuild the scaffold or database.
-Read the current remote branches and preserve existing work before choosing the next commit.
-The observed starting evidence for this plan is:
+**Tasks:** M0-A, M0-B, M1-B, M1-C-A, M1-C-B, G0-A.
+**Tools:** Git, Node 22, existing WXT extension, Chrome Identity, Dexie.
 
-- Main contains accepted M1-A through PR #3, followed by the status update in PR #5.
-- `rajvansh-ui` runtime checkpoint `88a4d00` supplies the personal workspace, Dexie repository, source/personal separation, backup/import, and visible auth state.
-  Its clean install, type-check, build, and 22 automated tests passed locally.
-- Eddy's `partner-data` at `c6e6b5e` includes `88a4d00`, import code from `9e2a084`, account lookup, navigation, and sender/request validation tests.
-  His handoff reports live imports with eleven Drive nodes and five Doc nodes, repeated-import reuse, and correct nested-tab/folder destinations.
-  Its new runtime is not automatically present in Rajvansh's branch or main.
-  Read and review it before integration; fresh complete acceptance is still required.
-- Rajvansh's screenshots show Google connected, the expected extension ID in the workspace URL, and two personal nodes with a connection and Saved locally.
-  They do not prove the two demo reads, browser restart, backup restore, or full installed acceptance.
-- Eddy's older ordering-sensitive backup assertion report is addressed by the identity-based assertion in `88a4d00`.
-  Rerun checks on the combined import checkpoint instead of carrying forward either an old failure or an old pass.
+1. Rajvansh inspects `git status`, fetches both branches, and reviews Eddy's current changes before integrating them through a normal merge.
+   Keep the existing workspace/storage code and stable manifest key.
+2. Eddy reviews `lib/graph/types.ts`, `lib/storage/repository.ts`, and M1C_HANDOFF, then identifies the exact current import/request checkpoint.
+   Settle shared message/type ownership before either person changes it.
+3. Both build the same agreed commit, reload the installed extension and source tabs, and run the real demo reads on their own Google accounts.
+4. Rajvansh confirms the API project and test budget; the credential owner configures the eventual relay privately.
+   Eddy prepares meaningful authorized Doc text and a text PDF for later model tests.
 
-Use [README](./README.md) for current run/reload commands and [M1C_HANDOFF](./M1C_HANDOFF.md) for the exact demo IDs and real read requests.
-The raw folder response has ten children; its imported graph should normally have eleven nodes including the root.
-The raw Doc response has four tabs; its imported graph should normally have five nodes including the document root.
-Record these separately to avoid misreporting a successful import as an extra-item defect.
+**Gate:** same commit/extension ID, working own-account reads, contract ownership, accessible fixtures, and an identified API account owner.
+**Known evidence:** `88a4d00` has the personal editor/storage/auth UI with 22 passing automated tests; `partner-data` at `c6e6b5e` includes it plus import/navigation/request work reported by Eddy.
+Main remains at `240f9f2` when this plan was inspected; these newer runtime changes are not merged by a planning update.
+Raw demo reads return ten folder children and four Doc tabs; baseline imports include their roots and normally contain eleven and five nodes respectively.
 
-## Shared architecture and file ownership
+## Step 2: build source suggestions before AI
 
-| Area | Primary owner | Contract and boundaries |
+**Tasks:** N1-A, N1-B, M2-B.
+**Tools:** shared React chooser, Zod, Drive API reads, background messages, existing repository.
+
+1. Eddy adds a read-only candidate listing over his existing source reads.
+   Return stable source/locator identity, title, type, parent/path context, and pagination/completeness metadata; listing candidates must not create live graph nodes.
+2. Rajvansh builds a reusable Add existing chooser with current-source recommendations, searchable labels, hierarchy, checkboxes, Add selected, and Already added state.
+   Selecting an item automatically supplies its real label and destination; typing is only needed to filter or supply a personal override.
+3. Eddy adds an atomic Add selected operation targeting an explicit graph ID and revision, with account validation and duplicate protection.
+   It imports only the chosen items plus any root/parent explicitly shown in the selection preview.
+4. Both agree how saved source bindings distinguish selected-item membership from a baseline outline.
+   Refreshing metadata for chosen nodes must not add every previously unselected source item.
+5. Rajvansh uses the same chooser to attach an existing source to a personal idea without changing the idea's label/notes unless the user chooses to.
+
+**Handoff:** Eddy pushes candidate/add-selection types and a fixture; Rajvansh implements against that exact shape; both integrate before completing the gate.
+**Gate:** with GPT unavailable, select three real Drive items without typing their names/URLs; two identically named items remain distinguishable by path/identity; repeated Add does not duplicate nodes; opening the chooser alone does not change the graph.
+The shared chooser starts with Drive; step 4 supplies Docs and step 9 supplies PDF through the same interface.
+
+## Step 3: mount the editor inside Drive
+
+**Tasks:** M2-A, M2-B.
+**Tools:** `components/ExtensionShell.tsx`, shared graph/controller from the workspace, React Flow, ELK, Drive API, Dexie.
+
+1. Rajvansh extracts reusable editor controls from `entrypoints/workspace/main.tsx` and mounts them in the existing popover panel.
+   Keep the optional workspace working and preserve the tested top-layer/viewport behavior.
+2. Offer Add existing, Add idea, and Build baseline from this folder.
+   Build baseline previews its bounded scope and fills in names, containment, and real destinations automatically.
+3. Eddy reuses IMPORT_DRIVE_FOLDER and paginated child reads, adds the selected-items path, and routes edits/view changes through the single background repository.
+   Content scripts must not open IndexedDB on the Google origin.
+4. Rajvansh adds readable typed nodes, accessible connections, labels/notes, Open versus Expand, search/focus/collapse, a list fallback, and bounded automatic layout.
+   Preserve manually pinned positions and never treat a visual drag as a Drive move.
+
+**Gate:** inside the actual Drive page, add chosen existing items manually and build a baseline in a separate test map; connect an idea to two files, edit a label, open a real destination, and reopen the map.
+A separate My maps tab is not required for this workflow.
+
+## Step 4: reuse assisted creation in Docs
+
+**Tasks:** M3-A, M3-B.
+**Tools:** Docs API `documents.get` with `includeTabsContent=true`, shared chooser/editor, validated source navigation.
+
+1. Eddy traverses top-level and nested tabs and supplies candidates with document ID, tab ID, title, parent, and ordering.
+   Support both Add selected tabs and Build baseline from this document using the same identity rules as Drive.
+2. Rajvansh puts the graph on the left, uses indented tab suggestions with parent context, and highlights the current source tab.
+   Add tab nodes with one selection, without requiring users to type a title or copy a tab URL.
+3. Eddy adds a current-source-tab navigation disposition to the existing NAVIGATE contract.
+   The current implementation opens a new browser tab; that does not fulfill same-document navigation.
+4. Rajvansh verifies actual tab changes, source-page context changes, typing, scrolling, keyboard focus, and 100%/150% browser zoom.
+
+**Gate:** all four demo tabs including the nested sub-tab are selectable/autofilled; the baseline includes the document root; each tab destination opens within the original editable Doc.
+No GPT request occurs during suggestions or baseline creation.
+
+## Step 5: prove durable editing and refresh
+
+**Tasks:** M5-A, M5-B, completion of shared M2 controls.
+**Tools:** Dexie transactions, existing revision checks, extension settings, visualViewport.
+
+1. Eddy persists graph commands, selected-source membership, view and layout through the worker; test worker suspension and full browser restart.
+2. Rajvansh shows saving/saved/failure/conflict states, Refresh, last refresh time, partial results, and unavailable-source explanations.
+   Autosave must not report success before the write succeeds.
+3. Eddy verifies that rename, partial pagination, missing/moved items, account change, and duplicate imports preserve personal links/notes and stable identities.
+   Selected-only maps retain their chosen membership; baseline maps disclose newly available source items.
+4. Rajvansh verifies saved width/dock, accessible Close/Escape, pinned nodes, bounded focus/search, and backup recovery.
+   Keep panel geometry separate from graph coordinates and pan/zoom.
+
+**Gate:** the real on-page manual create/select/connect/edit/navigate/reopen/refresh cycle passes with AI off; errors do not lose edits or expose another account's imported data.
+This gate precedes applying AI proposals to live graphs.
+
+## Step 6: extract selected content and connect the model
+
+**Tasks:** G0-A, G0-B, G1-A, G1-B.
+**Tools:** Docs API, anchored passage types, Zod, a local Node/TypeScript relay, official OpenAI SDK.
+
+1. Eddy extracts selected tab paragraphs and table text with source/tab identity, passage IDs, locators, and version/hash.
+   Keep explicit source links separate from inferred relationships; disclose unsupported/omitted content.
+2. Rajvansh adds selected-tab controls and a preview of exactly what text will be submitted.
+   Initial limits: one Doc or PDF, 20,000 selected characters, one active request, and a 60-second timeout; show oversize errors rather than silently truncating.
+3. Eddy creates the small local relay with a server-held key, exact-origin allowlist, local authentication, payload/rate limits, and a documented startup command.
+   The account owner supplies the credential privately; no key enters the extension or GitHub.
+4. Both agree the input/draft Zod schemas and a labeled fixture before G2 UI integration.
+   Eddy makes a real smoke request, records the actual accessible model ID/latency/usage, and handles authentication failure explicitly.
+
+**Gate:** selected passages resolve to real tabs and match the preview; the relay reaches the model; unselected text is excluded and manual maps work with the relay stopped.
+The relay package/startup path is planned work, not a currently available command.
+
+## Step 7: generate a real graph draft
+
+**Tasks:** G2-A, G2-B.
+**Tools:** Responses API structured output, shared draft schema, application validation.
+
+1. Eddy sends selected passages plus relevant existing graph IDs and prior decisions, requesting bounded concept nodes and labeled relationships with evidence.
+   Start with at most 20 new nodes and 30 ordinary connections; permit an empty result when evidence is insufficient.
+2. Validate schema, lengths, unique IDs, member references, selected-source boundaries, excerpts, and source version before returning the draft.
+   Resolve destinations from application-owned locators instead of model-invented URLs.
+3. Rajvansh renders draft proposals distinctly inside the current surface and provides Generate, progress, cancel, retry, and empty/failure states.
+4. Both verify that cancellation, stale revision, duplicate clicks, late responses, and prompt-like source text cannot overwrite the live map.
+
+**Gate:** a real selected Doc produces inspectable connections beyond containment, with correct evidence and no live writes before acceptance.
+The model proposes meaning; a schema or matching excerpt does not itself prove the interpretation.
+
+## Step 8: review, edit, and save generated work
+
+**Tasks:** G3-A, G3-B.
+**Tools:** shared inspector/editor, additive Dexie upgrade, versioned backup/draft records.
+
+1. Rajvansh shows the supporting excerpt and Open source for each suggestion, with individual accept/edit/reject and selection-based acceptance.
+2. Eddy adds generation runs/decisions and provenance through an additive migration that preserves existing version-1 maps and backup import.
+   The current schema has manual/imported origins and no proposal store; this work cannot be skipped.
+3. Apply accepted nodes/relationships and the decision in one transaction with graph revision checks and temporary-ID mapping.
+4. Preserve accepted edits and exact rejected/removed decisions across Refresh and regeneration; suppress exact duplicates and mark changed-source evidence stale.
+
+**Gate:** accept one proposal, edit another, reject another, restart Chrome, refresh sources, and generate again without losing decisions or resurrecting exact rejected items.
+Do not claim perfect semantic deduplication of paraphrased suggestions.
+
+## Step 9: reuse the whole workflow for PDFs
+
+**Tasks:** M4-A, M4-B.
+**Tools:** bundled `pdfjs-dist` and worker, our reader entrypoint, shared source chooser/editor/passage pipeline, Dexie blobs.
+
+1. Rajvansh coordinates one root dependency/lockfile change and builds a local PDF picker and readable page viewer with the graph beside it.
+2. Eddy uses bookmarks/destinations first, then page-aware heading candidates or a labeled page fallback, and supplies ready-to-add candidates to the same chooser.
+   A reader can Add selected sections or Build baseline without GPT.
+3. Persist original bytes under a SHA-256 fingerprint and resolve typed page/section locators through our reader.
+   Correct one-based PDF.js page requests versus zero-based stored page indices explicitly.
+4. Reuse selected-page preview, anchored text, generation, review, and saved personal editing from steps 6-8.
+   Inspect extraction on the demo PDF; empty/scanned/unsupported/oversize content must have clear states.
+5. Backup UI states whether bytes are included; the initial graph backup requires retaining or reattaching the original PDF with a fingerprint check.
+
+**Gate:** three real section/page jumps, manual selection with no retyping, editable baseline with AI off, one real selected-PDF AI draft, and reopening with PDF/graph restored.
+
+## Step 10: finish grouped connections
+
+**Tasks:** X1-A, X1-B.
+**Tools:** existing relationship member lists, React Flow junction renderer, repository validation.
+
+1. Rajvansh adds multi-member selection with From/To or peer roles and an editable relationship label.
+2. Eddy validates unique members, same-graph membership, valid roles, atomic changes, and cleanup when a member is removed.
+3. Render one junction with spokes and persist its layout; do not replace a joint relationship with every possible pairwise claim.
+
+**Gate:** create Budget + Staff jointly constrain Launch, edit membership, save/reopen/export/import, and verify the meaning remains one relationship.
+This can begin after step 5 if the core integration is already progressing and shared-file ownership is clear.
+
+## Step 11: combine chosen sources in one project map
+
+**Tasks:** X2-A, X2-B.
+**Tools:** existing chooser and adapters, multiple source bindings, canonical identities, selected-content generation.
+
+1. Rajvansh adds Add another source to the existing map using the same autofill picker; offer a deliberate choice between the current map and a new independent map.
+2. Eddy imports selected source nodes into the target graph, reuses canonical source records, and keeps refresh membership/account checks per binding.
+   Never create relationship members pointing to another graph's node IDs.
+3. Connect a Doc tab to a PDF section manually, then extend the bounded AI selection contract to the explicitly chosen sources.
+   Reconcile a Drive file's identity with its Docs content deliberately and keep one verified Google account plus local files initially.
+
+**Gate:** a mixed project map navigates both sources, refreshes one without disturbing the other, and leaves a separate paper map independent.
+AI only analyzes the selected content within the same disclosed limits.
+
+## Step 12: add real source-authoring actions
+
+**Tasks:** X3-A, X3-B.
+**Tools:** Drive `files.create`, Docs `documents.batchUpdate`, explicit OAuth grant and capability checks.
+
+1. Eddy verifies the minimal write authorization for the selected demo sources and documents the exact account action before requesting it.
+   Current read-only scopes do not grant authoring access.
+2. Rajvansh adds distinct Create folder, Add tab, and Rename tab controls with destination/parent/name preview and visible success/failure.
+   Personal label changes stay separate from real source renames.
+3. Eddy performs authorized folder creation and tab add/property updates, checks capabilities/revisions, and reconciles real returned IDs through readback.
+   Avoid blind retries of non-idempotent writes that might create duplicates.
+4. Both test an authorized demo write and a read-only case without changing unrelated sources.
+
+**Gate:** real created/renamed items appear in Google and GraphNav; read-only users retain personal graph editing; graph dragging never performs a source write.
+Grant investigation can start during step 1; it must not block read-only suggestions or baseline creation.
+
+## Step 13: finish placement and deeper source navigation
+
+**Tasks:** X4-A, X4-B, X7-A, X7-B.
+**Tools:** pointer events, visualViewport/popover, extension preferences, Docs heading/bookmark locators.
+
+1. Complete floating placement as a separate small checkpoint: Rajvansh adds drag/resize/dock/reset and Eddy persists/clamps the rectangle independently of graph view.
+2. Complete deeper navigation as another checkpoint: Eddy adds tab-aware heading/bookmark locators through a tested migration; Rajvansh shows section nodes and evidence controls.
+3. Test actual Chrome deep links, stale-anchor fallback to tab/excerpt, viewport resize, browser zoom, keyboard close/focus, and normal document editing.
+
+**Gate:** saved panel geometry cannot strand controls offscreen, and deeper source destinations either reach the verified anchor or clearly use the correct fallback.
+Do not claim arbitrary paragraph highlighting from text offsets alone.
+
+## Step 14: run the release acceptance and freeze
+
+**Tasks:** G4-A, G4-B, M6-A, M6-B.
+**Tools:** pinned Node 22, `npm ci`, `npm run check`, `npm run zip`, temporary test profiles, actual Chrome/accounts.
+
+Rajvansh checks the user-facing result; Eddy checks data/runtime behavior; both run the agreed release on their laptops.
+Record commit, extension ID, browser/Node versions, expected/actual outcome, and live versus fixture evidence.
+
+| Release story | Required evidence |
+| --- | --- |
+| Assisted manual without AI | In Drive, choose real items without typing names/URLs, disambiguate equal titles, avoid duplicates, add an idea/edge, save/reopen |
+| Editable source baselines without AI | Build bounded folder, nested-Doc, and PDF baselines; labels/destinations populate; personal edits survive Refresh |
+| Google overlay | Graph/editor remains on source page; Docs navigation uses original tab; close/focus/typing/scrolling/zoom work |
+| Real AI | Selected Doc and PDF drafts show evidence and useful non-containment links; accept/edit/reject, reopen/regenerate, preserve decisions |
+| Data safety and recovery | Transactions, account scope, concurrent edits, partial refresh, missing targets, migrations, backup copies, PDF reattachment, and worker/browser restart |
+| Failure and limits | Auth cancel/denial, empty/oversize input, model refusal/timeout/invalid evidence, late responses, prompt-like text, quota failure; no misleading saved/complete state |
+| Readability and scale | Labeled 500-node fixture with at most 50 visible; record actual render timing, search/focus behavior, pin preservation, and overflow controls |
+| Intended-product completion | Group links, mixed-source map, authorized source action, placement, and heading navigation pass when claimed; open requirements remain named if incomplete |
+| Reproducible setup | Clean install/check/build/zip, relay startup, package and backup tested from the exact release commit; no secrets/private demo content committed |
+
+The current implementation limits are 500 stored nodes, 2,000 relationships, 32 members, and a 5 MB JSON backup.
+Any limit change requires explicit implementation/testing rather than a plan-only claim.
+Do not repeat tests without a changed build or unresolved concern, but do not carry old passes forward to a new runtime.
+The merger updates STATUS only after the verified slice reaches main.
+
+## Deadline, rest, and submission
+
+The user's target is code freeze at 6 AM and submission at 4 PM on September 12, local Eastern time.
+The earlier 1:20-based feature timeboxes have been replaced by dependency order because their elapsed slots are not reliable remaining estimates.
+At every gate, compare actual progress with the clock and record blockers instead of silently removing requirements.
+Begin release acceptance by 5:15 AM; if required functionality is missing, make an explicit scope/deadline decision and state the incomplete capabilities accurately.
+At 6 AM, save/freeze the verified checkpoint and preserve the planned rest/pitch blocks.
+This plan defines the full work; it does not guarantee that every remaining feature can fit before that target.
+
+## Step 15: prepare the pitch and submit
+
+**Tasks:** M7-A, M7-B, M8-A, M8-B.
+**Tools:** frozen extension/package, actual screenshots, slide deck, backup recording, organizer submission flow.
+
+| Local Eastern time | Rajvansh | Eddy |
 | --- | --- | --- |
-| Panels, popup, workspace, shared graph/editor, visual styles, PDF reader UI | Rajvansh | Reuse components; Google pages must offer the core workflow without leaving for My maps; Docs defaults to the left |
-| Google auth/account/reads, import adapters, background dispatcher, request validation | Eddy | Preserve the stable manifest key; keep tokens in the worker; validate exact sender origin, request shape, graph ownership, and account scope |
-| Existing graph/storage contract | Rajvansh through M1-C review, then Eddy for integration/storage extensions | Keep the implemented UUID/locator/member-list contract; M1C_HANDOFF is the baseline; announce shared-type changes before editing |
-| Content extraction and generation contracts, model relay, proposal validation | Eddy | Rajvansh reviews the draft/input types before building controls; return references into selected input, not invented navigation URLs |
-| V2 database/backup migrations and decision persistence | Eddy, reviewed by Rajvansh | Additive upgrades preserve existing records and import older backups; no delete-and-recreate migration |
-| Root dependencies/lockfile and React Flow/ELK/PDF.js UI additions | Rajvansh | Coordinate additions once; Eddy owns a separate relay package if needed and requests root changes explicitly |
-| Planning and release status | Rajvansh as coordinator; each owner maintains their task evidence | User requested this shared plan revision; after this checkpoint each person edits their own rows and the merger updates STATUS |
+| 6:00-11:00 AM | Sleep after saving the checkpoint | Sleep |
+| 11:00-11:30 AM | Breakfast | Breakfast |
+| 11:30 AM-1:00 PM | Deck: problem, assisted creation, source navigation, meaningful AI connection, evidence, saved work, tested limits | Clean demo setup, relay startup, exact-build backup recording, package/access checks |
+| 1:00-1:30 PM | Lunch | Lunch |
+| 1:30-2:30 PM | Two timed pitch rehearsals and teammate handoffs | Rehearse live and backup demo paths |
+| 2:30-3:00 PM | Final deck/submission links and content | Package/recording/source access and technical accuracy |
+| 3:00-3:15 PM | Submit and verify receipt | Independently verify submitted materials/access |
+| 3:15-4:00 PM | Submission buffer | Submission buffer |
 
-React Flow is the renderer; ELK is the planned automatic layout for new visible structure, not a database format.
-Keep manually positioned nodes pinned and layout only the visible graph.
-M2-A owns the shared toolbar/inspector, node/edge distinctions, cycle-safe focus/collapse/search, outline fallback, and accessible connection controls specified in FEATURE_SPEC.
-Use application logic to preserve manual coordinates around an ELK result; library installation alone does not provide these interactions.
-The current initial grid must not be described as ELK already working.
-Retain the tested popover/visualViewport behavior while adding left docking and a bounded resizable panel.
-Save panel width/dock preference separately from graph coordinates; optional floating panel placement is tracked in X4-A/X4-B with viewport-clamped persistence; its delivery slot remains explicit.
+Show assisted creation without GPT before showing the AI improvement so the product's value is clear.
+Only demonstrate features that passed step 14, and distinguish remaining intended work from the live product.
 
-The extension-owned workspace/reader may access the shared repository directly.
-Drive/Docs content scripts use a typed client through Eddy's single background dispatcher; they do not open IndexedDB on Google's origin.
-Add editing commands for create/connect/edit/remove, position/view changes, personal overrides, refresh, and backup actions used by the on-page UI.
-Use revision checks for content edits and validate references before writes.
-Store lookup must consider verified account plus source binding, support independent personal maps, and avoid duplicate default graphs when imports arrive together.
-A READ_GRAPH or LIST_GRAPHS request from a Google panel must not expose another account's imported data.
+## File ownership and working checkpoints
 
-## Source navigation, refresh, and useful graph behavior
+Rajvansh owns panels, the shared editor/chooser, React Flow/ELK integration, visual styles, PDF reader UI, and coordinated root dependency changes.
+Eddy owns Google reads/actions, candidate extraction, background messages/validation, content extraction, generation relay, and storage extensions after the shared contract review.
+He owns a separate relay package; coordinate root lockfile edits instead of both changing it independently.
+Do not create another scaffold, dispatcher, graph schema, or editor for each source.
 
-For Drive, begin with the current folder or My Drive root and fetch children on demand.
-Expose loading, empty, error, partial-results, and pagination states.
-A partial result must never delete unseen nodes or claim a complete refresh.
-Offer file opening separately from expanding a folder; recognize supported Docs as documents with real destinations.
-Unsupported file formats may still be link nodes, but are not silently treated as AI-readable text.
-
-For Docs, retain document ID and tab ID throughout import, selection, evidence, and navigation.
-Recurse nested tabs and verify the actual tab changes in the existing editor.
-Text extraction for G1 reads supported tab content; the current tab-title mapper alone does not supply AI input.
-The current NAVIGATE worker command opens a new browser tab with `browser.tabs.create`.
-Its exact-destination check does not fulfill same-tab Docs navigation; M3-B must add a validated current-source-tab path and M3-A must test it in the real editor.
-Do not claim exact paragraph highlighting until implemented and verified.
-The MVP evidence destination can be the correct tab plus a displayed excerpt.
-
-For PDFs, support a local text-based file, bundled PDF.js/worker, and bookmarks first.
-When bookmarks are absent, offer page-aware section anchors with correction and a clearly labeled page fallback.
-Persist the original bytes separately from graph records and use their SHA-256 fingerprint to identify reattachments.
-The same reader must implement the saved page/section jump; Chrome's built-in viewer is not the integration surface.
-An unsupported scan receives an explicit explanation; OCR and arbitrary publisher URL loading are later work.
-
-Refresh updates imported base records and containment while keeping personal labels, notes, edges, positions, and decisions.
-A missing folder child may have moved; only a confirmed source error makes its target unavailable.
-Show unavailable targets without retargeting a node or deleting personal links.
-Exercise worker restart, account changes, repeated imports, complete/partial refresh, source rename, and stale concurrent edits.
-
-## V2 contract: selected text to an editable graph
-
-G1-A/G1-B agree the following input before G2 integration:
-
-- Selected source identity and version/content hash, selected tab IDs or PDF pages, and current graph revision.
-- Bounded passages with stable passage IDs, plain text, and resolvable Doc-tab or PDF-page locators.
-- Existing graph item IDs and prior accepted/rejected decisions relevant to the selected scope.
-- A visible scope summary and explicit Generate action authorizing submission of that selected content.
-
-Start with one Doc or one PDF at a time.
-Initial target limits are 20,000 selected text characters, 20 proposed new nodes, 30 two-member relationships, one active request, and a 60-second request timeout.
-These are planned guardrails, not already enforced limits; measure and tune them during G4.
-Show an oversize-selection error or ask the user to narrow the selection; do not silently omit text and claim the whole document was analyzed.
-No full-Drive crawl, embedding database, or autonomous tool-using agent is needed for this MVP.
-
-G2 returns a versioned draft with proposal IDs, temporary new-node IDs, references to allowed existing nodes, labels, relationship kinds, and evidence passage IDs/excerpts.
-The application resolves source destinations from the validated input.
-Generated relationships must include useful non-containment connections where the text supports them, rather than merely restating a tab tree.
-Empty/insufficient-evidence results are valid and should not cause fabricated connections.
-Treat source text as data, including any instructions written inside it, and render all generated text as text rather than executable markup.
-
-Use the OpenAI Responses API with a supported structured-output model, selected after verifying project access and a small real evaluation.
-Schema-constrained output supplies the record shape; still check references and semantic support, and handle refusals/incomplete responses explicitly.
-[Official Structured Outputs documentation](https://developers.openai.com/api/docs/guides/structured-outputs).
-The exact model ID and measured latency/cost belong in the G2 handoff; no untested model or account access is assumed by this plan.
-
-For this two-laptop demo, implement one small Node/TypeScript relay package that runs locally on each testing laptop.
-The provider key belongs in the server environment, never in extension code, IndexedDB, GitHub, or chat.
-[Official API authentication guidance](https://developers.openai.com/api/reference/overview#authentication).
-Bind the local relay to loopback, restrict allowed extension origins, and require a local session credential so arbitrary pages cannot use it.
-Add payload/output limits and bounded retries; cancellation must prevent applying a late result even if an upstream request has already started.
-Log status/timing/request IDs without recording full source passages or credentials.
-A local relay is additional demo setup and needs to be running for AI; ordinary maps remain usable when it is stopped.
-A public hosted relay, accounts, billing, and installation without developer setup are separate release work.
-No AWS or cloud graph database is required.
-
-G3 stores proposal runs and review decisions separately from live graph records.
-Accepting a suggestion is one transaction that maps temporary IDs, saves evidence/provenance, creates valid nodes/relationships, and records the decision.
-Editing before acceptance stores the user's corrected version.
-Rejection and removal of an accepted item must survive regeneration so the same proposal is not silently resurrected.
-Use deterministic source/member/proposal identities to suppress exact repeats; do not claim perfect semantic deduplication of paraphrases.
-Changed source content marks old evidence for review without overwriting the accepted idea.
-Version the database and backup formats separately, retain old backups, and test an upgrade from the current saved workspace.
-
-## Acceptance matrix and release gate
-
-M6 cannot mark the complete MVP ready until every required row passes or a user-approved scope reduction is explicitly recorded.
-Runtime checks include the combined source code from both branches, not just the earlier 22-test workspace checkpoint.
-
-| Check | Rajvansh verifies | Eddy verifies | Evidence to record |
-| --- | --- | --- | --- |
-| Google access and imports | Own-account raw reads and on-page controls | Own-account reads, imported records, nested parents, pagination | Commit, extension ID, counts, real destination clicks; no tokens |
-| Manual editing | Add an idea, connect it to two real nodes, label/edit/remove, close/reopen | Worker command validation, revisions, transaction rollback | Saved state and working destinations on Drive and Docs |
-| Refresh and accounts | Personal work survives rename/refresh; unavailable state is understandable | Account-qualified lookup/read/list, no cross-account result; partial refresh and concurrent import tests | Before/after IDs and test results using authorized fixtures |
-| Layout and host editing | Left Docs panel, reachable X/Escape, restored focus, normal typing/scrolling, 100%/150% zoom | Saved panel/view/layout restores and never alters source structure | Both laptops and actual Chrome versions |
-| AI value and review | Inspect evidence; accept/edit/reject; show at least two supported non-containment links in the prepared demo | Validate every referenced ID/excerpt, persist decisions, reject malformed/unselected references | Two real generation runs, selected scope, model ID, duration; no unsupported quality claim |
-| AI failure and regeneration | Retry/cancel/empty states leave manual editing usable | Timeout, refusal, invalid response, duplicate click, stale revision, source change, and late response tests | Zero unintended live graph changes on rejected/failed requests |
-| PDF | Three correct jumps, personal edit/reopen, selected-text AI review | Byte identity, persistence, page anchors, unsupported scan/oversize errors | File fingerprint and results from an authorized demo PDF |
-| Backup and upgrade | Export/import a separate map; reattach PDF when necessary | Current-to-new DB upgrade; old/new backup validation; no credentials in export | Test results and recovered original notes/layout/decisions |
-| Bounded graph | Search/focus/collapse keep the graph readable | 500 stored nodes and 50 visible-node cap; excess capacity fails visibly | Actual load/reopen/layout times and request counts on stated hardware |
-| Release | Complete the walkthrough from a clean reload of the final build | npm ci, typecheck, production build, full tests, zip, documented relay startup | Shared commit, both acceptance records, package location, known limitations |
-
-Current storage caps are 500 nodes, 2,000 relationships, 32 members, and a 5 MB JSON backup.
-Do not reuse the older plan's 1,000-stored-node fixture without first changing and testing the implementation limits.
-A practical first responsiveness target is a usable cached 50-node view within two seconds on the demo laptops; record the actual result and investigate if it misses.
-Provider request and generation times are measured separately from local render time.
-Existing model-independent automated tests must continue to pass.
-Use synthetic fixtures for deterministic edge cases and actual authorized sources/model calls for integration acceptance.
-
-## Time checks and recovery
-
-- By 1:40: if Google access or API project setup is blocked, identify the exact laptop/account action immediately.
-  Continue independent UI work with labeled fixtures while Eddy investigates; fixtures do not fulfill live acceptance.
-- By 3:05: Drive and Docs must have a working on-page manual path before spreading effort to more surfaces.
-  If behind, remove optional styling/animation/automatic-layout refinements and discuss the PDF slot; keep navigation, saving, and visible errors.
-- By 4:30: the Doc AI generation/review/save loop should pass.
-  If it does not, use the PDF slot to finish that loop only after Rajvansh explicitly accepts the reduced demo scope; leave PDF tasks open.
-  If a local relay/model request is still blocked, do not rename structural import as AI generation.
-- At 5:15: stop expanding scope and run the release matrix on the intended demo build.
-  Fix data loss, wrong destinations, broken auth, inaccessible controls, and broken setup before cosmetic changes.
-- At 6:00: freeze the verified build and record any incomplete capabilities honestly.
-  Do not let unfinished features consume the reserved sleep/meals/presentation blocks by default.
-
-## Original requirements needing an explicit delivery slot
-
-Do not repeat the earlier blanket deferral as though the user approved it.
-X1 covers group editing, X2 selected multi-source project maps, X3 real folder/tab authoring, X4 floating panel placement, and X7 heading/bookmark navigation.
-FEATURE_SPEC identifies their UI, APIs, data changes, account actions, and acceptance; TASK_LIST assigns both lanes.
-These remain intended-product completion requirements whose delivery must be reconciled with the 6 AM target.
-If all are required by code freeze as well as the core, explicitly revise the deadline or scope against demonstrated progress rather than promise unsupported completion.
-
-Keep destructive source restructuring, arbitrary remote PDF loading, OCR, automatic whole-Drive discovery, additional management platforms, cloud sync, and public Web Store release in the separately scoped expansion track X5/X6.
-An expansion is not automatically selected merely because the architecture can support it.
-Multiple ordinary connections per node remain core, and a group-capable schema alone does not satisfy the group editing use case.
-
-The immediate implementation handoff is M1-C contract/integration review followed by M2-A/M2-B on-page editing, while G0-A resolves API access in parallel.
-Then finish same-tab Docs navigation and selected text, prove a real reviewed AI loop, reuse it in the PDF reader, and pass the release matrix.
-Use FEATURE_SPEC's five end-to-end stories at each relevant gate.
-
-## After code freeze: rest, pitch, and submission
-
-All times are the user's local Eastern time on September 12.
-This reserves five hours for sleep, both meals, at least three hours for presentation/release work, and submission buffer.
-
-| Time | Rajvansh | Eddy | Result |
-| --- | --- | --- | --- |
-| 6:00-11:00 | Sleep | Sleep | Stop development after saving the exact checkpoint |
-| 11:00-11:30 | Breakfast | Breakfast | Resume with the frozen build |
-| 11:30-1:00 | M7-A: short deck, product story, screenshots, honest scope | M7-B: clean demo setup, exact-commit backup recording, setup checklist | Deck and recording show the same working features |
-| 1:00-1:30 | Lunch | Lunch | No new feature commitments |
-| 1:30-2:30 | M8-A: rehearse problem/product/value and handoffs | M8-B: rehearse live demo, technical explanation, and failure recovery | Two complete timed runs, including a backup-demo switch |
-| 2:30-3:00 | Check submission text, links, deck export | Check package, permissions, demo links, recording | Final submission materials complete |
-| 3:00-3:15 | Submit with teammate review | Verify receipt/access | Aim to submit before the hard deadline |
-| 3:15-4:00 | Submission buffer and final organizer requirements | Submission buffer | 4 PM deadline protected |
-
-Suggested demo: open Drive and navigate a file, open the Doc's left graph, add a personal link, generate selected-content suggestions, show evidence and accept one, reopen with the saved work, then show PDF navigation if its gate passed.
-Keep the walkthrough within the organizer's actual limit and prepare a 2-3 minute version.
-Do not invent user metrics or show an unimplemented feature as live.
-
-## GitHub handoff rules
-
-Rajvansh works on `rajvansh-ui`; Eddy works on `partner-data`, each in their own clone.
-Fetch before starting, preserve local edits, and claim one task at a time in TASK_LIST.
-Each assistant reads AGENTS, README, IDEA, this plan, STATUS, and its exact task row.
-At every gate, commit/push a reviewable slice and return a GitHub link with tests and the remaining laptop actions.
-Review and merge working slices normally into main, then bring main into both branches without resets or force pushes.
-If an unmerged checkpoint is needed early, use an explicit normal merge and record its hash; do not claim it is on main.
-The merger updates STATUS with actual shared progress.
-GitHub shares code and plans, not private graph databases, Google content, PDFs, or credentials.
-
-For either coding assistant, use: “Work in SchrodingersCatLooks/graphnav on my assigned branch.
-Read AGENTS.md, README.md, IDEA.md, FEATURE_SPEC.md, BUILD_PLAN.md, TASK_LIST.md, and STATUS.md.
-I am [Rajvansh/Eddy], implementing [one task ID].
-Inspect the latest remote checkpoint and preserve existing work.
-Use the current shared contract and coordinate shared-file changes.
-Implement the task's exit check, run applicable tests, update my task evidence, commit/push, and return the exact laptop actions and GitHub link.
-Do not treat the schedule as evidence that a feature passes.”
+Before editing, each person fetches, preserves local work, claims the exact task row, and agrees any shared type changes.
+At each gate, commit/push a reviewable slice with actual checks and a short handoff: task ID, commit/PR, supported operations, limits, remaining laptop actions, and next owner task.
+Review and merge normally into main, then bring main into both branches; no force-push or reset.
+TASK_LIST is the status record, not this ordered plan.
+GitHub shares code and documents, not private graphs, PDFs, Google content, or credentials.
+Use README's actual install/reload commands; the model relay instructions must be added when implemented.
