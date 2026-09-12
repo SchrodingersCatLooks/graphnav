@@ -1,0 +1,28 @@
+/* TextLayer geometry adapted from Mozilla PDF.js (Apache-2.0):
+ * https://github.com/mozilla/pdf.js/blob/master/web/text_layer_builder.css
+ * Keep this scoped. The complete viewer stylesheet also styles .sidebar and
+ * other generic classes used by our graph editor, which breaks its layout.
+ */
+.pdf-paper .textLayer {
+  position: absolute; inset: 0; overflow: clip; opacity: 1;
+  text-align: initial; line-height: 1; letter-spacing: normal; word-spacing: normal;
+  text-size-adjust: none; forced-color-adjust: none; transform-origin: 0 0;
+  color-scheme: only light; caret-color: CanvasText; z-index: 0;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.pdf-paper .textLayer :is(span, br) {
+  position: absolute; color: transparent; white-space: pre; cursor: text;
+  transform-origin: 0 0; user-select: text;
+}
+.pdf-paper .textLayer > :not(.markedContent),
+.pdf-paper .textLayer .markedContent span:not(.markedContent) {
+  z-index: 1; --font-height: 0; --scale-x: 1; --rotate: 0deg;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.pdf-paper .textLayer .markedContent { display: contents; }
+.pdf-paper .textLayer span[role="img"] { user-select: none; cursor: default; }
+.pdf-paper .textLayer ::selection { color: transparent; background: #46ab9560; }
+.pdf-paper .textLayer br::selection { background: transparent; }

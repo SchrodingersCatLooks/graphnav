@@ -17,6 +17,7 @@ async function openFixture(): Promise<{ document: PdfDocumentLike; bytes: Uint8A
   const document = await pdfjs.getDocument({
     data: bytes.slice(),
     useWorkerFetch: false,
+    standardFontDataUrl: fileURLToPath(new URL('../node_modules/pdfjs-dist/standard_fonts/', import.meta.url)),
   }).promise;
   return { document: document as unknown as PdfDocumentLike, bytes };
 }
