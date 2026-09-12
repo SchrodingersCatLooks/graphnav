@@ -5,7 +5,7 @@ import { createRelayServer, EXTENSION_ORIGIN, MAX_BODY_BYTES, type RelayConfig }
 import { callProvider, type ProviderCall } from '../relay/src/providers';
 import { extractFromDocument } from '../lib/google/docs-content';
 import { draftJsonSchema } from '../lib/generation/relay-provider';
-import { graphDraftSchema } from '../lib/generation/types';
+import { graphDraftSchema, generationInputSchema, hashGenerationInput } from '../lib/generation/types';
 
 const config: RelayConfig = { token: 'synthetic-session-code-for-testing-only', apiKey: 'synthetic-provider-key', model: 'gpt-5-mini', provider: 'openai' };
 async function listen(server: Server) {
@@ -49,6 +49,7 @@ test('invalid and oversized selections never call the provider; valid input uses
     expect(response.status).toBe(200); expect(calls).toBe(1);
     const reply = await response.json();
     expect(graphDraftSchema.safeParse(JSON.parse(reply.text)).success).toBe(true);
+    expect(JSON.parse(reply.text).inputHash).toBe(await hashGenerationInput(generationInputSchema.parse(valid)));
     expect(captured!.schema).toEqual(draftJsonSchema());
     expect(captured!.instructions).toContain('untrusted source material');
     expect(JSON.parse(captured!.input).passages.map((passage: { text: string }) => passage.text)).toEqual(valid.passages.map((passage) => passage.text));
