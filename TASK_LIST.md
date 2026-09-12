@@ -53,7 +53,7 @@ Planned next stage. All tasks are TODO, not evidence of work in progress. Start 
 
 | Owner | Current task and branch | Latest result and checks | Blocker | Next action |
 | --- | --- | --- | --- | --- |
-| Rajvansh | M1-C design / `rajvansh-ui` | M1-A remains DONE. Drafting the requested storage/schema proposal against the current implementation and official browser storage references. | Database and shared graph types are not implemented; Eddy has not agreed the new design yet. | Publish the concrete proposal and examples for review without changing M1-B manifest/background files or dependencies. |
+| Rajvansh | M1-C design / `rajvansh-ui` | M1-A remains DONE. [Storage proposal](./STORAGE_DESIGN.md) prepared: extension-owned IndexedDB/Dexie, eight V1 stores, multi-member relationships, stable source locators, saved layouts, and a V2 draft store. Documentation checks and browser review of the explainer completed. | Database and shared graph types are not implemented; Eddy has not agreed the new design yet. | Eddy reviews the proposed account/locator, relationship-members, and command contracts; then agree and implement shared types before M2. No manifest, background, or dependency changes in this checkpoint. |
 | Partner | M1-B / `partner-data` | Eddy reports Google Cloud setup complete and full M1-A acceptance after correcting the stale-content-script reload. Public manifest configuration is in [GOOGLE_SETUP.md at 9f68af6](https://github.com/SchrodingersCatLooks/graphnav/blob/9f68af6/GOOGLE_SETUP.md). | Scaffold dependency cleared by PR #3. No real API read reported; demo sources and sharing are still being prepared. | Bring main into partner-data, apply the public key/Identity/OAuth/API manifest settings, implement the background Connect Google flow, and prove one real folder read and one Doc read. |
 
 Each person updates only their task rows and handoff row, then commits/pushes them. Include the PR link when work reaches REVIEW. The person merging updates shared STATUS. These files do not update themselves in the background; AI assistants are instructed to maintain them while performing tasks.
@@ -86,7 +86,7 @@ Eddy owns the public manifest key, Identity permission, OAuth client/scopes, req
 The exact public block remains in his GOOGLE_SETUP.md at `9f68af6`.
 After adding it, both laptops must verify extension ID `pidejkbkldalibjaehjfpjkcpjpcenpk`.
 Rajvansh retains the shell component and CSS; dependency changes remain coordinated.
-M1-C is DOING: Rajvansh is drafting the requested design; shared agreement and implementation remain outstanding.
+M1-C is DOING: Rajvansh has prepared the storage proposal; shared agreement and implementation remain outstanding.
 
 Eddy is preparing a Doc with three top-level tabs and one nested sub-tab, and a Drive folder with ten subfolders including one nested level.
 M0 is DOING; source preparation is underway, but the links, required demo sources, and both-account access are not yet confirmed.

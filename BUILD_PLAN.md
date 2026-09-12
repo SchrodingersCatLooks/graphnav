@@ -17,7 +17,8 @@ Both spend the same blocks on the same milestone. For example, during Docs work 
 The user chooses **Create your own map** or **Generate from existing content**, then edits the resulting graph with the same controls.
 Creating a personal map starts empty and allows idea/note nodes without an existing source.
 Generating a map creates real nodes and navigation destinations from a Drive folder, Doc, or PDF, then allows personal edits and extra connections.
-Automatic generation is core; optional meaning-based suggestions are a separate feature.
+V1 can import source structure and supports user-created meaningful connections.
+V2 adds generated concepts and relationships with evidence and review.
 
 Keep M1-A scoped to its shell and M1-B to authorized reads.
 Agree support for both graph origins in M1-C before graph and storage code diverge.
@@ -86,6 +87,10 @@ If auth has no successful read by hour 2, stop spending both people's time on it
 | Extension local storage + IndexedDB | Save graph metadata and PDF bytes | Partner; you show save status |
 
 Agree on this small data contract before writing adapters:
+
+The M1-C [storage proposal](./STORAGE_DESIGN.md) specifies records, relationships with two or more members, stable source locators, saved layouts, and AI draft review.
+It proposes extension-owned IndexedDB for graph records and PDFs, with chrome.storage.local reserved for small preferences.
+This refines the earlier metadata-storage split; Eddy's agreement and shared types/storage implementation remain outstanding.
 
 - **Graph:** stable graph ID, origin (`manual` or `generated`), optional source kind/source ID for a manual map, account key where relevant, refresh time when applicable, nodes, and edges.
   A source-generated map must retain its source identity.

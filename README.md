@@ -25,6 +25,7 @@ See [TASK_LIST.md](./TASK_LIST.md#m1-a-second-machine-acceptance).
 | [TASK_LIST.md](./TASK_LIST.md) | What is each person doing next? | When claiming, blocking, reviewing, or finishing a task |
 | [STATUS.md](./STATUS.md) | What works, what is blocked, and what happens next? | After a merged milestone or shared blocker changes |
 | [AGENTS.md](./AGENTS.md) | How should AI work in this repository? | When the team changes its workflow |
+| [STORAGE_DESIGN.md](./STORAGE_DESIGN.md) | Proposed graph records, multi-node relationships, local database, layouts, and AI review | During M1-C agreement; proposal, not implemented storage |
 
 ## Install and build
 
