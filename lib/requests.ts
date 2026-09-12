@@ -25,6 +25,7 @@ export const requestSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('LIST_GRAPHS') }).strict(),
   z.object({ type: z.literal('READ_GRAPH'), graphId: id }).strict(),
   z.object({ type: z.literal('NAVIGATE'), locator: locatorSchema }).strict(),
+  z.object({ type: z.literal('CHECK_TARGETS'), graphId: id }).strict(),
 ]);
 
 /** Content scripts are declared for these origins only. */

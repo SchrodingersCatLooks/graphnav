@@ -47,7 +47,8 @@ export type Request =
   | { type: 'IMPORT_DOC_TABS'; documentId: string; intoGraphId?: string }
   | { type: 'LIST_GRAPHS' }
   | { type: 'READ_GRAPH'; graphId: string }
-  | { type: 'NAVIGATE'; locator: Locator };
+  | { type: 'NAVIGATE'; locator: Locator }
+  | { type: 'CHECK_TARGETS'; graphId: string };
 
 export type Response<T = unknown> =
   | { ok: true; data: T }
@@ -69,6 +70,8 @@ export type ScopedImport = {
 export type ImportResult = { graphId: string; scopeKey: string; nodeCount: number; complete: boolean };
 /** Where a NAVIGATE request actually sent the user. */
 export type NavigateResult = { url: string };
+/** `unknown` means the check failed, not that the target is gone. */
+export type CheckTargetsResult = { checked: number; unavailable: number; unknown: number; changed: number };
 export type ListFolderResult = { items: SourceItem[]; truncated: boolean };
 export type DocTabsResult = { title: string; items: SourceItem[] };
 

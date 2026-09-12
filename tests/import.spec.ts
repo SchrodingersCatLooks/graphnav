@@ -100,3 +100,148 @@ test('a complete refresh of one scope leaves another scope intact', async () => 
   expect(snapshot.nodes.map((n) => n.baseLabel).sort()).toEqual(['Child', 'Root', 'log.csv']);
   expect(snapshot.relationships).toHaveLength(2);
 });
+
+test('personal work survives a source refresh, including a renamed and moved file', async () => {
+  const graph = await repo.createGraph('Research', crypto.randomUUID(), 'import');
+  const parent = drive('folder-root', 'Research', 'folder');
+  const paper = { ...drive('file-paper', 'draft.md', 'file'), parentKey: importedKey(parent) };
+
+  await repo.refreshScope(graph.id, graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent, paper],
+  });
+
+  let snapshot = await repo.readGraph(graph.id);
+  const paperNode = snapshot.nodes.find((n) => n.baseLabel === 'draft.md')!;
+
+  // The user does real work: an idea of their own, a labeled connection to the
+  // imported file, a note on it, and a dragged position.
+  const ideaId = crypto.randomUUID();
+  await repo.addNode(graph.id, snapshot.graph.contentRevision, {
+    id: ideaId, label: 'Argument needs a counterexample', position: { x: 40, y: 60 },
+  });
+  snapshot = await repo.readGraph(graph.id);
+  await repo.connect(graph.id, snapshot.graph.contentRevision, {
+    id: crypto.randomUUID(),
+    label: 'contradicts',
+    members: [{ nodeId: ideaId, role: 'from' }, { nodeId: paperNode.id, role: 'to' }],
+  });
+  snapshot = await repo.readGraph(graph.id);
+  await repo.setPersonalEdit(
+    { graphId: graph.id, itemType: 'node', itemId: paperNode.id },
+    snapshot.graph.contentRevision,
+    { notes: 'Check section 3 against the 2019 result.' },
+  );
+  await repo.savePosition({ graphId: graph.id, itemType: 'node', itemId: paperNode.id }, { x: 123, y: 456 });
+
+  // Now the source changes: the file is renamed upstream and refreshed.
+  snapshot = await repo.readGraph(graph.id);
+  const renamed = { ...drive('file-paper', 'draft-v2.md', 'file'), parentKey: importedKey(parent) };
+  await repo.refreshScope(graph.id, snapshot.graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent, renamed],
+  });
+
+  snapshot = await repo.readGraph(graph.id);
+
+  // Same node, updated title from the source.
+  const after = snapshot.nodes.find((n) => n.id === paperNode.id)!;
+  expect(after.baseLabel).toBe('draft-v2.md');
+
+  // The personal idea, its labeled connection, the note and the position all survive.
+  expect(snapshot.nodes.find((n) => n.id === ideaId)).toBeTruthy();
+  const personalEdge = snapshot.relationships.find((r) => r.origin === 'manual')!;
+  expect(personalEdge.baseLabel).toBe('contradicts');
+  expect(personalEdge.memberNodeIds).toContain(paperNode.id);
+  expect(snapshot.itemEdits.find((e) => e.itemId === paperNode.id)!.notes)
+    .toBe('Check section 3 against the 2019 result.');
+  const layout = snapshot.layoutItems.find((l) => l.itemId === paperNode.id)!;
+  expect([layout.x, layout.y]).toEqual([123, 456]);
+});
+
+test('a file missing from a refreshed folder keeps its node and personal links', async () => {
+  const graph = await repo.createGraph('Research', crypto.randomUUID(), 'import');
+  const parent = drive('folder-root', 'Research', 'folder');
+  const paper = { ...drive('file-paper', 'draft.md', 'file'), parentKey: importedKey(parent) };
+
+  await repo.refreshScope(graph.id, graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent, paper],
+  });
+  let snapshot = await repo.readGraph(graph.id);
+  const paperNode = snapshot.nodes.find((n) => n.baseLabel === 'draft.md')!;
+
+  const ideaId = crypto.randomUUID();
+  await repo.addNode(graph.id, snapshot.graph.contentRevision, {
+    id: ideaId, label: 'Cite this', position: { x: 0, y: 0 },
+  });
+  snapshot = await repo.readGraph(graph.id);
+  await repo.connect(graph.id, snapshot.graph.contentRevision, {
+    id: crypto.randomUUID(), label: 'supports',
+    members: [{ nodeId: ideaId, role: 'from' }, { nodeId: paperNode.id, role: 'to' }],
+  });
+
+  // The file disappears from the folder. It may have moved rather than been
+  // deleted, so its node and the user's link must not be discarded.
+  snapshot = await repo.readGraph(graph.id);
+  await repo.refreshScope(graph.id, snapshot.graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent],
+  });
+
+  snapshot = await repo.readGraph(graph.id);
+  expect(snapshot.nodes.find((n) => n.id === paperNode.id)).toBeTruthy();
+  expect(snapshot.relationships.find((r) => r.origin === 'manual')!.memberNodeIds).toContain(paperNode.id);
+  // Its containment edge is gone, because that folder no longer lists it.
+  expect(snapshot.relationships.filter((r) => r.kind === 'contains')).toHaveLength(0);
+});
+
+test('availability marking is deliberate and only moves on a real answer', async () => {
+  const graph = await repo.createGraph('Research', crypto.randomUUID(), 'import');
+  const parent = drive('folder-root', 'Research', 'folder');
+  const paper = { ...drive('file-paper', 'draft.md', 'file'), parentKey: importedKey(parent) };
+  await repo.refreshScope(graph.id, graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent, paper],
+  });
+
+  const snapshot = await repo.readGraph(graph.id);
+  const paperSource = snapshot.sources.find((s) => s.resourceId === 'file-paper')!;
+  expect(paperSource.availability).toBe('available');
+
+  // A direct check says the target is gone.
+  expect(await repo.markSourceAvailability(paperSource.sourceKey, 'unavailable')).toBe(true);
+  let after = await repo.readGraph(graph.id);
+  expect(after.sources.find((s) => s.resourceId === 'file-paper')!.availability).toBe('unavailable');
+
+  // The node and its destination are kept, so the user can still see what broke.
+  expect(after.nodes.find((n) => n.baseLabel === 'draft.md')!.locator).toEqual({ kind: 'drive', fileId: 'file-paper' });
+
+  // Marking the same state again is a no-op, so a repeated check writes nothing.
+  expect(await repo.markSourceAvailability(paperSource.sourceKey, 'unavailable')).toBe(false);
+
+  // A later successful check restores it rather than leaving it broken forever.
+  expect(await repo.markSourceAvailability(paperSource.sourceKey, 'available')).toBe(true);
+  after = await repo.readGraph(graph.id);
+  expect(after.sources.find((s) => s.resourceId === 'file-paper')!.availability).toBe('available');
+
+  // An unknown source key changes nothing.
+  expect(await repo.markSourceAvailability('no-such-source', 'unavailable')).toBe(false);
+});
+
+test('a refresh does not quietly resurrect a target a direct check found missing', async () => {
+  const graph = await repo.createGraph('Research', crypto.randomUUID(), 'import');
+  const parent = drive('folder-root', 'Research', 'folder');
+  const paper = { ...drive('file-paper', 'draft.md', 'file'), parentKey: importedKey(parent) };
+  await repo.refreshScope(graph.id, graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent, paper],
+  });
+
+  let snapshot = await repo.readGraph(graph.id);
+  const sourceKey = snapshot.sources.find((s) => s.resourceId === 'file-paper')!.sourceKey;
+  await repo.markSourceAvailability(sourceKey, 'unavailable');
+
+  // Refreshing a folder that no longer lists the file must not flip it back.
+  snapshot = await repo.readGraph(graph.id);
+  await repo.refreshScope(graph.id, snapshot.graph.contentRevision, {
+    scopeKey: 'scope-root', accountKey: ACCOUNT, complete: true, items: [parent],
+  });
+
+  snapshot = await repo.readGraph(graph.id);
+  expect(snapshot.sources.find((s) => s.resourceId === 'file-paper')!.availability).toBe('unavailable');
+});

@@ -99,6 +99,18 @@ export class GraphRepository {
     await this.db.graphs.add(graph);
     return graph;
   }
+  /**
+   * Records whether a source's target still resolves. Marking is deliberately
+   * separate from refreshScope: absence from a folder listing is not proof a
+   * file was deleted, so only a direct check may declare a target unavailable.
+   */
+  async markSourceAvailability(sourceKey: string, availability: Source['availability']) {
+    const source = await this.db.sources.where('sourceKey').equals(sourceKey).first();
+    if (!source || source.availability === availability) return false;
+    await this.db.sources.put({ ...source, availability, updatedAt: Date.now() });
+    return true;
+  }
+
   async readGraph(id: string): Promise<GraphSnapshot> {
     return this.db.transaction('r', this.tables(), async () => {
       const graph = await this.graph(id);
